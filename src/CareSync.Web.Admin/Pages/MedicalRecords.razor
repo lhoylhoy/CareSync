@@ -1,698 +1,453 @@
 @page "/medical-records"
+@using CareSync.Application.DTOs.MedicalRecords
+@using CareSync.Application.DTOs.Patients
+@using CareSync.Application.DTOs.Doctors
+@using CareSync.Web.Admin.Components
+@using CareSync.Web.Admin.Forms
+@using System.Linq
 @inject IMedicalRecordService MedicalRecordService
 @inject IPatientService PatientService
 @inject IDoctorService DoctorService
-@inject IJSRuntime JsRuntime
 @inject IToastService ToastService
-@using CareSync.Web.Admin.Shared
 
-<PageTitle>Medical Records - CareSync</PageTitle>
+<BaseCrudPage
+    TDto="MedicalRecordDto"
+    TCreateDto="UpsertMedicalRecordDto"
+    TUpdateDto="UpsertMedicalRecordDto"
+    TFormDto="MedicalRecordFormDto"
+    @ref="_crudPage"
+    PageTitle="Medical Records"
+    PageDescription="Patient medical history and treatment records"
+    PageIcon="fas fa-file-medical"
+    EntityName="Medical Record"
+    TableTitle="All Medical Records"
+    TableIcon="fas fa-history"
+    CreateButtonText="Add Medical Record"
+    EmptyStateTitle="No medical records found"
+    EmptyStateMessage="Start by documenting the first medical record."
+    EmptyStateIcon="fas fa-notes-medical"
+    DeleteItemIcon="fas fa-file-medical-times"
+    CrudService="@MedicalRecordService"
+    CreateNewModel="@CreateNewMedicalRecord"
+    MapToUpdateModel="@MapRecordToModel"
+    GetItemDisplayName="@GetMedicalRecordDisplayName"
+    ConvertToCreateDto="@ConvertToUpsertDto"
+    ConvertToUpdateDto="@ConvertToUpsertDto"
+    AllowView="true"
+    OnItemViewed="HandleRecordViewed">
 
-<div class="fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="text-primary mb-0">
-                <i class="fas fa-file-medical me-2"></i>Medical Records
-            </h1>
-            <p class="text-muted mb-0">Patient medical history and treatment records</p>
-        </div>
-        <button class="btn btn-primary" @onclick="ShowAddRecordModal">
-            <i class="fas fa-plus me-2"></i>Add New Record
-        </button>
-    </div>
+    <HeaderTemplate>
+        <th>Patient</th>
+        <th>Doctor</th>
+        <th>Record Date</th>
+        <th>Chief Complaint</th>
+        <th>Status</th>
+        <th class="text-center">Quick Actions</th>
+    </HeaderTemplate>
 
-
-    <!-- Medical Records -->
-    <div class="card">
-        <div class="card-header">
-            <i class="fas fa-history me-2"></i>All Medical Records
-            @if (_medicalRecords?.Any() == true)
-            {
-                <span class="cs-badge cs-badge-primary ms-2">@_medicalRecords.Count records</span>
-            }
-        </div>
-        <div class="card-body">
-            @if (_isLoadingRecords)
-            {
-                <div class="text-center py-4">
-                    <div class="spinner"></div>
-                    <p class="mt-2 text-muted">Loading medical records...</p>
+    <RowTemplate Context="record">
+        <td>
+            <div class="d-flex align-items-center">
+                <div class="avatar-circle me-3">
+                    <i class="fas fa-user"></i>
                 </div>
-            }
-            else if (_medicalRecords?.Any() == true)
-            {
-                <div class="timeline">
-                    @foreach (var record in _medicalRecords.OrderByDescending(r => r.RecordDate))
+                <div>
+                    <div class="fw-semibold text-primary">@record.PatientName</div>
+                    <small class="text-muted">ID: @record.PatientId.ToString("N")[..8]</small>
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="d-flex align-items-center">
+                <i class="fas fa-user-md me-2 text-success"></i>
+                <div>
+                    <div class="fw-semibold">@record.DoctorName</div>
+                    <small class="text-muted">Seen at @record.RecordDate.ToLocalTime().ToString("HH:mm")</small>
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="fw-semibold">@record.RecordDate.ToLocalTime().ToString("MMM dd, yyyy")</div>
+            <small class="text-muted">Created @record.CreatedAt.ToLocalTime().ToString("MMM dd")</small>
+        </td>
+        <td>
+            <span class="text-truncate d-inline-block" style="max-width: 240px;" title="@record.ChiefComplaint">
+                @record.ChiefComplaint
+            </span>
+        </td>
+        <td>
+            <StatusBadge Value="@GetStatusText(record)" />
+        </td>
+        <td class="text-center">
+            <div class="btn-group btn-group-sm" role="group">
+                <button class="btn btn-outline-primary" title="View Details" @onclick="() => HandleRecordViewed(record)">
+                    <i class="fas fa-eye"></i>
+                </button>
+                @if (!record.IsFinalized)
+                {
+                    <button class="btn btn-outline-success" title="Finalize Record" @onclick="() => PromptFinalizeAsync(record)">
+                        <i class="fas fa-lock"></i>
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-outline-warning" title="Reopen Record" @onclick="() => PromptReopenAsync(record)">
+                        <i class="fas fa-unlock"></i>
+                    </button>
+                }
+            </div>
+        </td>
+    </RowTemplate>
+
+    <FormTemplate Context="model">
+        @if (model is MedicalRecordFormDto formModel)
+        {
+            <MedicalRecordForm Model="@formModel" Patients="@_patients" Doctors="@_doctors" />
+        }
+    </FormTemplate>
+
+</BaseCrudPage>
+
+<ConfirmationDialog @ref="_finalizeDialog"
+                    DialogType="ConfirmationDialogType.Warning"
+                    Title="Finalize Medical Record"
+                    Subtitle="Lock further edits"
+                    Message="Finalizing a record prevents additional edits. Continue?"
+                    ItemIcon="fas fa-lock"
+                    ItemName="@(_recordToFinalize?.ChiefComplaint ?? string.Empty)"
+                    ItemType="Medical Record"
+                    ConfirmText="Yes, finalize"
+                    OnConfirm="ConfirmFinalizeAsync" />
+
+<ConfirmationDialog @ref="_reopenDialog"
+                    DialogType="ConfirmationDialogType.Info"
+                    Title="Reopen Medical Record"
+                    Subtitle="Allow further updates"
+                    Message="Reopening will allow edits to this record."
+                    ItemIcon="fas fa-unlock"
+                    ItemName="@(_recordToReopen?.ChiefComplaint ?? string.Empty)"
+                    ItemType="Medical Record"
+                    ConfirmText="Yes, reopen"
+                    OnConfirm="ConfirmReopenAsync" />
+
+@if (_showRecordDetails && _recordToView is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-medical me-2"></i>Record Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseRecordDetails"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="text-muted small">Patient</div>
+                            <div class="fw-semibold">@_recordToView.PatientName</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted small">Doctor</div>
+                            <div class="fw-semibold">@_recordToView.DoctorName</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted small">Status</div>
+                            <StatusBadge Value="@GetStatusText(_recordToView)" />
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="text-muted small">Record Date</div>
+                            <div class="fw-semibold">@_recordToView.RecordDate.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted small">Created</div>
+                            <div>@_recordToView.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted small">Last Updated</div>
+                            <div>@(_recordToView.UpdatedAt?.ToLocalTime().ToString("MMM dd, yyyy HH:mm") ?? "—")</div>
+                        </div>
+                    </div>
+
+                    <div class="record-section">
+                        <h6 class="text-primary"><i class="fas fa-notes-medical me-2"></i>Chief Complaint</h6>
+                        <p class="mb-3">@_recordToView.ChiefComplaint</p>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(_recordToView.HistoryOfPresentIllness))
                     {
-                        <div class="timeline-item">
-                            <div class="timeline-marker">
-                                <i class="fas fa-stethoscope"></i>
-                            </div>
-                            <div class="timeline-content">
-                                <div class="record-card">
-                                    <div class="record-header">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h6 class="record-title">@record.ChiefComplaint</h6>
-                                                <div class="record-meta">
-                                                        <span class="me-3">
-                                                            <i class="fas fa-user-md me-1 text-success"></i>
-                                                            Dr. @record.DoctorName
-                                                        </span>
-                                                    <span class="me-3">
-                                                            <i class="fas fa-calendar me-1 text-primary"></i>
-                                                        @record.RecordDate.ToString("MMM dd, yyyy")
-                                                        </span>
-                                                    @if (record.IsFinalized)
+                        <div class="record-section">
+                            <h6 class="text-primary"><i class="fas fa-file-alt me-2"></i>History of Present Illness</h6>
+                            <p class="mb-3">@_recordToView.HistoryOfPresentIllness</p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_recordToView.PhysicalExamination))
+                    {
+                        <div class="record-section">
+                            <h6 class="text-primary"><i class="fas fa-user-md me-2"></i>Physical Examination</h6>
+                            <p class="mb-3">@_recordToView.PhysicalExamination</p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_recordToView.Assessment))
+                    {
+                        <div class="record-section">
+                            <h6 class="text-primary"><i class="fas fa-diagnoses me-2"></i>Assessment</h6>
+                            <p class="mb-3">@_recordToView.Assessment</p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_recordToView.TreatmentPlan))
+                    {
+                        <div class="record-section">
+                            <h6 class="text-primary"><i class="fas fa-clipboard-list me-2"></i>Treatment Plan</h6>
+                            <p class="mb-3">@_recordToView.TreatmentPlan</p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_recordToView.Notes))
+                    {
+                        <div class="record-section">
+                            <h6 class="text-primary"><i class="fas fa-sticky-note me-2"></i>Notes</h6>
+                            <pre class="bg-light p-3 rounded">@_recordToView.Notes</pre>
+                        </div>
+                    }
+
+                    @if (_recordToView.VitalSigns?.Any() == true)
+                    {
+                        <div class="record-section">
+                            <h6 class="text-primary"><i class="fas fa-heartbeat me-2"></i>Vital Signs</h6>
+                            <div class="row g-3">
+                                @foreach (var vital in _recordToView.VitalSigns)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="card shadow-sm border-0">
+                                            <div class="card-body">
+                                                <div class="small text-muted">@vital.MeasurementDate.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</div>
+                                                <div class="d-flex flex-wrap gap-3 mt-2">
+                                                    @if (vital.Temperature.HasValue)
                                                     {
-                                                        <StatusBadge Value="@("Finalized")" />
+                                                        <span><strong>Temp:</strong> @vital.Temperature°C</span>
                                                     }
-                                                    else
+                                                    @if (vital.SystolicBp.HasValue && vital.DiastolicBp.HasValue)
                                                     {
-                                                        <StatusBadge Value="@("Draft")" />
+                                                        <span><strong>BP:</strong> @vital.SystolicBp/@vital.DiastolicBp</span>
+                                                    }
+                                                    @if (vital.HeartRate.HasValue)
+                                                    {
+                                                        <span><strong>HR:</strong> @vital.HeartRate bpm</span>
+                                                    }
+                                                    @if (vital.RespiratoryRate.HasValue)
+                                                    {
+                                                        <span><strong>RR:</strong> @vital.RespiratoryRate breaths</span>
+                                                    }
+                                                    @if (vital.OxygenSaturation.HasValue)
+                                                    {
+                                                        <span><strong>SpO2:</strong> @vital.OxygenSaturation%</span>
                                                     }
                                                 </div>
-                                            </div>
-                                            <div class="action-buttons">
-                                                <button class="btn btn-sm btn-outline-primary" title="View Details" @onclick="() => ViewRecord(record)">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-success" title="Edit Record"
-                                                        @onclick="() => EditMedicalRecord(record.Id)" disabled="@record.IsFinalized">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                @if (!record.IsFinalized)
+                                                @if (!string.IsNullOrWhiteSpace(vital.Notes))
                                                 {
-                                                    <button class="btn btn-sm btn-outline-secondary" title="Finalize Record" @onclick="() => PromptFinalizeRecord(record)" disabled="@(_finalizingRecordId == record.Id)">
-                                                        @if (_finalizingRecordId == record.Id)
-                                                        {
-                                                            <span class="spinner-border spinner-border-sm"></span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <i class="fas fa-lock"></i>
-                                                        }
-                                                    </button>
+                                                    <div class="mt-2 small text-muted">@vital.Notes</div>
                                                 }
-                                                else
-                                                {
-                                                    <button class="btn btn-sm btn-outline-warning" title="Reopen Record" @onclick="() => PromptReopenRecord(record)" disabled="@(_reopeningRecordId == record.Id)">
-                                                        @if (_reopeningRecordId == record.Id)
-                                                        {
-                                                            <span class="spinner-border spinner-border-sm"></span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <i class="fas fa-unlock"></i>
-                                                        }
-                                                    </button>
-                                                }
-                                                <button class="btn btn-sm btn-outline-danger" title="Delete Record" @onclick="() => PromptDeleteRecord(record)" disabled="@record.IsFinalized">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
+                                }
+                            </div>
+                        </div>
+                    }
 
-                                    @if (!string.IsNullOrEmpty(record.Assessment))
-                                    {
-                                        <div class="record-section">
-                                            <h6><i class="fas fa-diagnoses me-2"></i>Assessment</h6>
-                                            <p class="record-text">@record.Assessment</p>
-                                        </div>
-                                    }
-
-                                    @if (!string.IsNullOrEmpty(record.TreatmentPlan))
-                                    {
-                                        <div class="record-section">
-                                            <h6><i class="fas fa-clipboard-list me-2"></i>Treatment Plan</h6>
-                                            <p class="record-text">@record.TreatmentPlan</p>
-                                        </div>
-                                    }
-
-                                    @if (record.VitalSigns?.Any() == true)
-                                    {
-                                        <div class="record-section">
-                                            <h6><i class="fas fa-heartbeat me-2"></i>Vital Signs</h6>
-                                            <div class="vitals-grid">
-                                                @foreach (var vital in record.VitalSigns)
-                                                {
-                                                    <div class="vital-item">
-                                                        @if (vital.Temperature.HasValue)
-                                                        {
-                                                            <span class="vital-label">Temp:</span>
-                                                            <span class="vital-value">@vital.Temperature°C</span>
-                                                        }
-                                                        @if (vital.SystolicBp.HasValue && vital.DiastolicBp.HasValue)
-                                                        {
-                                                            <span class="vital-label">BP:</span>
-                                                            <span
-                                                                class="vital-value">@vital.SystolicBp/@vital.DiastolicBp</span>
-                                                        }
-                                                        @if (vital.HeartRate.HasValue)
-                                                        {
-                                                            <span class="vital-label">HR:</span>
-                                                            <span class="vital-value">@vital.HeartRate bpm</span>
-                                                        }
-                                                    </div>
-                                                }
-                                            </div>
-                                        </div>
-                                    }
-
-                                    @if (record.Prescriptions?.Any() == true)
-                                    {
-                                        <div class="record-section">
-                                            <h6><i class="fas fa-pills me-2"></i>Prescriptions</h6>
-                                            <div class="prescription-list">
-                                                @foreach (var prescription in record.Prescriptions)
-                                                {
-                                                    <div class="prescription-item">
-                                                        <strong>@prescription.MedicationName</strong>
-                                                        <span class="prescription-details">
-                                                                @prescription.Dosage - @prescription.Frequency
-                                                            </span>
-                                                    </div>
-                                                }
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
+                    @if (_recordToView.Prescriptions?.Any() == true)
+                    {
+                        <div class="record-section">
+                            <h6 class="text-primary"><i class="fas fa-pills me-2"></i>Prescriptions</h6>
+                            <div class="list-group">
+                                @foreach (var prescription in _recordToView.Prescriptions)
+                                {
+                                    <div class="list-group-item list-group-item-action">
+                                        <div class="fw-semibold">@prescription.MedicationName</div>
+                                        <div class="small text-muted">@prescription.Dosage • @prescription.Frequency</div>
+                                        @if (!string.IsNullOrWhiteSpace(prescription.Instructions))
+                                        {
+                                            <div class="mt-1">@prescription.Instructions</div>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </div>
                     }
                 </div>
-            }
-            else if (!_isLoadingRecords)
-            {
-                <div class="text-center py-5">
-                    <i class="fas fa-file-medical-alt fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">No medical records found</h5>
-                    <p class="text-muted">No medical records found in the system.</p>
-                    <button class="btn btn-primary" @onclick="ShowAddRecordModal">
-                        <i class="fas fa-plus me-2"></i>Create First Record
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseRecordDetails">
+                        <i class="fas fa-times me-2"></i>Close
                     </button>
                 </div>
-            }
-        </div>
-    </div>
-</div>
-
-<!-- Medical Record Modal -->
-<div class="modal fade medical-record-modal" id="medicalRecordModal" tabindex="-1"
-     aria-labelledby="medicalRecordModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"
-                    id="medicalRecordModalLabel">@(_isEditing ? "Edit Medical Record" : "Add New Medical Record")</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form @onsubmit="HandleSubmit" class="row g-3">
-                    <div class="col-md-6">
-                        <label for="patientId" class="form-label">Patient *</label>
-                        <select class="form-select" id="patientId" @bind="_medicalRecordModel.PatientIdString" required>
-                            <option value="">Select Patient</option>
-                            @if (_patients != null)
-                            {
-                                @foreach (var patient in _patients)
-                                {
-                                    <option value="@patient.Id.ToString()">@patient.DisplayName</option>
-                                }
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="doctorId" class="form-label">Doctor *</label>
-                        <select class="form-select" id="doctorId" @bind="_medicalRecordModel.DoctorIdString" required>
-                            <option value="">Select Doctor</option>
-                            @if (_doctors != null)
-                            {
-                                @foreach (var doctor in _doctors)
-                                {
-                                    <option value="@doctor.Id.ToString()">Dr. @doctor.DisplayName</option>
-                                }
-                            }
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label for="chiefComplaint" class="form-label">Chief Complaint *</label>
-                        <textarea class="form-control" id="chiefComplaint" rows="2"
-                                  @bind="_medicalRecordModel.ChiefComplaint" required></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label for="assessment" class="form-label">Assessment</label>
-                        <textarea class="form-control" id="assessment" rows="3"
-                                  @bind="_medicalRecordModel.Assessment"></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label for="treatmentPlan" class="form-label">Treatment Plan</label>
-                        <textarea class="form-control" id="treatmentPlan" rows="3"
-                                  @bind="_medicalRecordModel.TreatmentPlan"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary" @onclick="HandleSubmit" disabled="@_isSubmitting">
-                    @if (_isSubmitting)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    }
-                    @(_isEditing ? "Update Record" : "Create Record")
-                </button>
             </div>
         </div>
     </div>
-
-            <!-- View Record Modal -->
-            <div class="modal fade" id="viewRecordModal" tabindex="-1" aria-labelledby="viewRecordModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="viewRecordModalLabel">Record Details</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            @if (_recordToView != null)
-                            {
-                                <div class="mb-3">
-                                    <h6 class="text-primary mb-1">Chief Complaint</h6>
-                                    <p class="mb-0">@_recordToView.ChiefComplaint</p>
-                                </div>
-                                @if (!string.IsNullOrWhiteSpace(_recordToView.Assessment))
-                                {
-                                    <div class="mb-3">
-                                        <h6 class="text-primary mb-1">Assessment</h6>
-                                        <p class="mb-0">@_recordToView.Assessment</p>
-                                    </div>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(_recordToView.TreatmentPlan))
-                                {
-                                    <div class="mb-3">
-                                        <h6 class="text-primary mb-1">Treatment Plan</h6>
-                                        <p class="mb-0">@_recordToView.TreatmentPlan</p>
-                                    </div>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(_recordToView.Notes))
-                                {
-                                    <div class="mb-3">
-                                        <h6 class="text-primary mb-1">Notes</h6>
-                                        <pre class="bg-light p-2 small" style="white-space: pre-wrap;">@_recordToView.Notes</pre>
-                                    </div>
-                                }
-                                <div class="mb-2 small text-muted">
-                                    <span class="me-3"><i class="fas fa-calendar me-1"></i>@_recordToView.RecordDate.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</span>
-                                    @if (_recordToView.IsFinalized)
-                                    {
-                                        <span class="me-3"><i class="fas fa-lock me-1"></i>Finalized</span>
-                                    }
-                                </div>
-                            }
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-                </div>
-</div>
+}
 
 <style>
-    .patient-info {
-        text-align: right;
-    }
-
-    .timeline {
-        position: relative;
-        padding-left: 2rem;
-    }
-
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 1rem;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
-    }
-
-    .timeline-item {
-        position: relative;
-        margin-bottom: 2rem;
-    }
-
-    .timeline-marker {
-        position: absolute;
-        left: -2.5rem;
-        top: 0.5rem;
-        width: 2rem;
-        height: 2rem;
+    .avatar-circle {
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-        color: var(--text-inverse);
+        background: var(--bs-primary-bg-subtle, #e7f1ff);
+        color: var(--bs-primary, #0d6efd);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.75rem;
-        z-index: 1;
-        box-shadow: var(--shadow-medical);
+        font-size: 0.9rem;
     }
 
-    .timeline-content {
-        margin-left: 1rem;
-    }
-
-    .record-card {
-        background: var(--surface-primary);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-sm);
-        padding: 1.5rem;
-        border-left: 4px solid var(--primary-color);
-    }
-
-    .record-header {
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-primary);
-    }
-
-    .record-title {
-        color: var(--primary-color);
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .record-meta {
-        font-size: 0.875rem;
-        color: #6c757d;
-    }
-
-    .record-section {
-        margin-bottom: 1rem;
-    }
-
-    .record-section h6 {
-        color: var(--dark-color);
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .record-text {
-        color: #6c757d;
-        line-height: 1.5;
-        margin-bottom: 0;
-    }
-
-    .vitals-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 1rem;
-    }
-
-    .vital-item {
-        background: rgba(0, 102, 204, 0.1);
-        padding: 0.75rem;
-        border-radius: var(--border-radius);
-        text-align: center;
-    }
-
-    .vital-label {
-        font-weight: 600;
-        color: var(--primary-color);
-        display: block;
-        font-size: 0.75rem;
-    }
-
-    .vital-value {
-        font-weight: 700;
-        color: var(--dark-color);
-        font-size: 1.1rem;
-    }
-
-    .prescription-list {
-        display: grid;
-        gap: 0.5rem;
-    }
-
-    .prescription-item {
-        padding: 0.75rem;
-        background: rgba(40, 167, 69, 0.1);
-        border-radius: var(--border-radius);
-        border-left: 3px solid var(--secondary-color);
-    }
-
-    .prescription-details {
-        color: #6c757d;
-        font-size: 0.875rem;
-        margin-left: 0.5rem;
+    .record-section + .record-section {
+        border-top: 1px solid var(--bs-border-color, #e5e7eb);
+        padding-top: 1rem;
+        margin-top: 1rem;
     }
 </style>
 
-<ConfirmationDialog @ref="deleteRecordDialog"
-                    DialogType="ConfirmationDialogType.Danger"
-                    Title="Delete Medical Record"
-                    Message="@UiMessages.DeleteConfirmation("medical record", _recordToDelete?.ChiefComplaint)"
-                    ItemName="@(_recordToDelete?.ChiefComplaint)"
-                    ItemType="Medical Record"
-                    ConfirmText="Yes, Delete"
-                    OnConfirm="ConfirmDeleteRecord" />
-
-<ConfirmationDialog @ref="finalizeRecordDialog"
-                    DialogType="ConfirmationDialogType.Warning"
-                    Title="Finalize Medical Record"
-                    Message="This will lock the record from further edits. Continue?"
-                    ItemName="@(_recordToFinalize?.ChiefComplaint)"
-                    ItemType="Medical Record"
-                    ConfirmText="Yes, Finalize"
-                    OnConfirm="ConfirmFinalizeRecord" />
-
-<ConfirmationDialog @ref="reopenRecordDialog"
-                    DialogType="ConfirmationDialogType.Info"
-                    Title="Reopen Medical Record"
-                    Message="Reopening allows edits again. Proceed?"
-                    ItemName="@(_recordToReopen?.ChiefComplaint)"
-                    ItemType="Medical Record"
-                    ConfirmText="Yes, Reopen"
-                    OnConfirm="ConfirmReopenRecord" />
-
 @code {
-    private List<MedicalRecordDto>? _medicalRecords;
-    private List<PatientDto>? _patients;
-    private List<DoctorDto>? _doctors;
-    private MedicalRecordFormDto _medicalRecordModel = new();
-    private bool _isLoadingRecords;
-    private bool _isEditing;
-    private bool _isSubmitting;
+    private BaseCrudPage<MedicalRecordDto, UpsertMedicalRecordDto, UpsertMedicalRecordDto, MedicalRecordFormDto>? _crudPage;
+    private List<PatientDto> _patients = new();
+    private List<DoctorDto> _doctors = new();
+    private MedicalRecordDto? _recordToFinalize;
+    private MedicalRecordDto? _recordToReopen;
+    private MedicalRecordDto? _recordToView;
+    private ConfirmationDialog? _finalizeDialog;
+    private ConfirmationDialog? _reopenDialog;
+    private bool _showRecordDetails;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadInitialData();
+        await LoadLookupsAsync();
     }
 
-    private async Task LoadInitialData()
-    {
-        await Task.WhenAll(
-            LoadMedicalRecords(),
-            LoadPatients(),
-            LoadDoctors()
-        );
-    }
-
-    private async Task LoadMedicalRecords()
+    private async Task LoadLookupsAsync()
     {
         try
         {
-            _isLoadingRecords = true;
-            _medicalRecords = await MedicalRecordService.GetAllMedicalRecordsAsync();
-        }
-        catch
-        {
-            _medicalRecords = new List<MedicalRecordDto>();
-        }
-        finally
-        {
-            _isLoadingRecords = false;
-        }
-    }
-
-    private async Task LoadPatients()
-    {
-        try
-        {
-            _patients = await PatientService.GetPatientsAsync();
-        }
-        catch
-        {
-            _patients = new List<PatientDto>();
-        }
-    }
-
-    private async Task LoadDoctors()
-    {
-        try
-        {
-            _doctors = await DoctorService.GetDoctorsAsync();
-        }
-        catch
-        {
-            _doctors = new List<DoctorDto>();
-        }
-    }
-
-    private async Task ShowAddRecordModal()
-    {
-        _isEditing = false;
-        _medicalRecordModel = new MedicalRecordFormDto();
-        await JsRuntime.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('medicalRecordModal')).show()");
-    }
-
-    private async Task EditMedicalRecord(Guid recordId)
-    {
-        try
-        {
-            var record = await MedicalRecordService.GetMedicalRecordByIdAsync(recordId);
-            _isEditing = true;
-            _medicalRecordModel = MedicalRecordFormDto.FromDto(record);
-            await JsRuntime.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('medicalRecordModal')).show()");
-        }
-        catch
-        {
-            await ToastService.ShowErrorAsync("Failed to load medical record data. Please try again.");
-        }
-    }
-
-    private async Task HandleSubmit()
-    {
-        if (_isSubmitting) return;
-
-        try
-        {
-            _isSubmitting = true;
-
-            var upsertDto = _medicalRecordModel.ToUpsertDto();
-            await MedicalRecordService.UpsertMedicalRecordAsync(upsertDto);
-            await ToastService.ShowSuccessAsync(_isEditing ? "Medical record updated successfully." : "Medical record created successfully.");
-
-            // Close the modal first
-            await JsRuntime.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('medicalRecordModal')).hide()");
-
-            // Refresh the medical records list
-            await LoadMedicalRecords();
-
-            // Force UI update
-            await InvokeAsync(StateHasChanged);
+            var patientTask = PatientService.GetPatientsAsync();
+            var doctorTask = DoctorService.GetDoctorsAsync();
+            await Task.WhenAll(patientTask, doctorTask);
+            _patients = patientTask.Result ?? new List<PatientDto>();
+            _doctors = doctorTask.Result ?? new List<DoctorDto>();
         }
         catch (Exception ex)
         {
-            await ToastService.ShowErrorAsync($"Failed to save medical record: {ex.Message}");
-        }
-        finally
-        {
-            _isSubmitting = false;
+            await ToastService.ShowErrorAsync($"Failed to load supporting data: {ex.Message}");
         }
     }
 
-    private MedicalRecordDto? _recordToDelete;
-    private ConfirmationDialog deleteRecordDialog = null!;
-    private MedicalRecordDto? _recordToFinalize;
-    private MedicalRecordDto? _recordToReopen;
-    private ConfirmationDialog finalizeRecordDialog = null!;
-    private ConfirmationDialog reopenRecordDialog = null!;
-    private MedicalRecordDto? _recordToView;
-    private Guid? _finalizingRecordId;
-    private Guid? _reopeningRecordId;
+    private MedicalRecordFormDto CreateNewMedicalRecord() => new();
 
+    private MedicalRecordFormDto MapRecordToModel(MedicalRecordDto record) => MedicalRecordFormDto.FromDto(record);
 
-    private async Task PromptDeleteRecord(MedicalRecordDto record)
+    private UpsertMedicalRecordDto ConvertToUpsertDto(MedicalRecordFormDto form) => form.ToUpsertDto();
+
+    private string GetMedicalRecordDisplayName(MedicalRecordDto record)
+        => $"{record.PatientName} • {record.ChiefComplaint}";
+
+    private static string GetStatusText(MedicalRecordDto record)
+        => record.IsFinalized ? "Finalized" : "Draft";
+
+    private async Task RefreshRecordsAsync()
     {
-        _recordToDelete = record;
-        await deleteRecordDialog.ShowAsync();
-    }
-
-    private async Task ConfirmDeleteRecord()
-    {
-        if (_recordToDelete == null) return;
-        try
+        if (_crudPage is not null)
         {
-            await MedicalRecordService.DeleteMedicalRecordAsync(_recordToDelete.Id);
-            await LoadMedicalRecords();
-            await ToastService.ShowSuccessAsync(UiMessages.Deleted("Medical record"));
-        }
-        catch (Exception ex)
-        {
-            await ToastService.ShowErrorAsync($"Failed to delete record: {ex.Message}");
-        }
-        finally
-        {
-            _recordToDelete = null;
+            await _crudPage.RefreshAsync();
         }
     }
 
-    private async Task PromptFinalizeRecord(MedicalRecordDto record)
+    private async Task PromptFinalizeAsync(MedicalRecordDto record)
     {
         _recordToFinalize = record;
-        await finalizeRecordDialog.ShowAsync();
+        if (_finalizeDialog != null)
+        {
+            await _finalizeDialog.ShowAsync();
+        }
     }
 
-    private async Task ConfirmFinalizeRecord()
+    private async Task ConfirmFinalizeAsync()
     {
-        if (_recordToFinalize == null) return;
+        if (_recordToFinalize == null)
+        {
+            return;
+        }
+
         try
         {
-            _finalizingRecordId = _recordToFinalize.Id;
-            await MedicalRecordService.FinalizeMedicalRecordAsync(_recordToFinalize.Id, null, "System");
-            await LoadMedicalRecords();
-            await ToastService.ShowSuccessAsync("Record finalized.");
+            await MedicalRecordService.FinalizeMedicalRecordAsync(_recordToFinalize.Id, null, "Admin");
+            await ToastService.ShowSuccessAsync("Medical record finalized.");
+            await RefreshRecordsAsync();
         }
         catch (Exception ex)
         {
             await ToastService.ShowErrorAsync($"Failed to finalize record: {ex.Message}");
-            await LoadMedicalRecords();
         }
         finally
         {
-            _finalizingRecordId = null;
+            if (_finalizeDialog != null)
+            {
+                await _finalizeDialog.HideAsync();
+            }
+
             _recordToFinalize = null;
-            await LoadMedicalRecords();
         }
     }
 
-    private async Task PromptReopenRecord(MedicalRecordDto record)
+    private async Task PromptReopenAsync(MedicalRecordDto record)
     {
         _recordToReopen = record;
-        await reopenRecordDialog.ShowAsync();
+        if (_reopenDialog != null)
+        {
+            await _reopenDialog.ShowAsync();
+        }
     }
 
-    private async Task ConfirmReopenRecord()
+    private async Task ConfirmReopenAsync()
     {
-        if (_recordToReopen == null) return;
+        if (_recordToReopen == null)
+        {
+            return;
+        }
+
         try
         {
-            _reopeningRecordId = _recordToReopen.Id;
             await MedicalRecordService.ReopenMedicalRecordAsync(_recordToReopen.Id);
-            await LoadMedicalRecords();
-            await ToastService.ShowSuccessAsync("Record reopened.");
+            await ToastService.ShowSuccessAsync("Medical record reopened.");
+            await RefreshRecordsAsync();
         }
         catch (Exception ex)
         {
             await ToastService.ShowErrorAsync($"Failed to reopen record: {ex.Message}");
-            await LoadMedicalRecords();
         }
         finally
         {
-            _reopeningRecordId = null;
+            if (_reopenDialog != null)
+            {
+                await _reopenDialog.HideAsync();
+            }
+
             _recordToReopen = null;
-            await LoadMedicalRecords();
         }
     }
 
-    private async Task ViewRecord(MedicalRecordDto record)
+    private void HandleRecordViewed(MedicalRecordDto record)
     {
         _recordToView = record;
-        await JsRuntime.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('viewRecordModal')).show()");
+        _showRecordDetails = true;
+    }
+
+    private void CloseRecordDetails()
+    {
+        _showRecordDetails = false;
+        _recordToView = null;
     }
 }

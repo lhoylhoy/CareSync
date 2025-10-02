@@ -10,7 +10,7 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace CareSync.Application.UnitTests.Services.Staff;
+namespace CareSync.Application.UnitTests.Services.StaffTests;
 
 public class GetStaffByRoleQueryHandlerTests
 {

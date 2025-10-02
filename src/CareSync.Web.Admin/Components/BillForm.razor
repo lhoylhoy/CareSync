@@ -1,0 +1,57 @@
+@using CareSync.Application.DTOs.Patients
+@using CareSync.Web.Admin.Forms
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Linq
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Patient *</label>
+            <InputSelect @bind-Value="Model.PatientIdString" class="form-select">
+                <option value="">Select patient</option>
+                @if (Patients != null)
+                {
+                    foreach (var patient in Patients.OrderBy(p => p.DisplayName))
+                    {
+                        <option value="@patient.Id.ToString()">@patient.DisplayName</option>
+                    }
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Model.PatientIdString)" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Due Date *</label>
+            <InputDate @bind-Value="Model.DueDate" class="form-control" />
+            <ValidationMessage For="@(() => Model.DueDate)" />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Tax Rate *</label>
+            <InputNumber @bind-Value="Model.TaxRate" class="form-control" />
+            <ValidationMessage For="@(() => Model.TaxRate)" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Discount Amount</label>
+            <InputNumber @bind-Value="Model.DiscountAmount" class="form-control" />
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Notes</label>
+    <InputTextArea @bind-Value="Model.Notes" class="form-control" rows="3"
+        placeholder="Optional notes about this bill" />
+</div>
+
+@code {
+    [Parameter] public BillFormDto Model { get; set; } = null!;
+    [Parameter] public IEnumerable<PatientDto>? Patients { get; set; }
+}

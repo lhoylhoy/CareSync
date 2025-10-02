@@ -267,6 +267,16 @@ public static class ServiceCollectionExtensions
             options.AddPolicy("Patients-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(1)).Tag("patients-byid"));
             options.AddPolicy("Billing-All", b => b.Cache().Expire(TimeSpan.FromSeconds(15)).Tag("billing-all"));
             options.AddPolicy("Billing-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(1)).Tag("billing-byid"));
+            options.AddPolicy("Appointments-All", b => b.Cache().Expire(TimeSpan.FromSeconds(10)).Tag("appointments-all"));
+            options.AddPolicy("Appointments-ById", b => b.Cache().Expire(TimeSpan.FromSeconds(30)).Tag("appointments-byid"));
+            options.AddPolicy("Appointments-ByPatient", b => b.Cache()
+                .Expire(TimeSpan.FromSeconds(10))
+                .SetVaryByRouteValue("patientId")
+                .Tag("appointments-bypatient"));
+            options.AddPolicy("Appointments-ByDoctor", b => b.Cache()
+                .Expire(TimeSpan.FromSeconds(10))
+                .SetVaryByRouteValue("doctorId")
+                .Tag("appointments-bydoctor"));
         });
         return services;
     }

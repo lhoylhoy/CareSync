@@ -260,6 +260,11 @@
         }
     }
 
+    public async Task RefreshAsync()
+    {
+        await LoadItems();
+    }
+
     private async Task HandleDeleteConfirm()
     {
         if (CrudService == null || CurrentItem == null) return;

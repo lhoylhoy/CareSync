@@ -6,6 +6,7 @@ using CareSync.Application.DTOs.Appointments;
 using CareSync.Application.DTOs.Billing;
 using CareSync.Application.DTOs.MedicalRecords;
 using CareSync.Application.DTOs.Staff;
+using CareSync.Web.Admin.Services;
 
 public interface IDoctorService : ICrudService<DoctorDto, CreateDoctorDto, UpdateDoctorDto>
 {
@@ -27,37 +28,30 @@ public interface IPatientService : ICrudService<PatientDto, CreatePatientDto, Up
     Task DeletePatientAsync(Guid id);
 }
 
-public interface IAppointmentService : ICrudService<AppointmentDto, CreateAppointmentDto, UpdateAppointmentDto>
+public interface IAppointmentService : ICrudService<AppointmentDto, UpsertAppointmentDto, UpsertAppointmentDto>
 {
     Task<List<AppointmentDto>> GetAppointmentsAsync();
     Task<AppointmentDto> GetAppointmentByIdAsync(Guid id);
-    Task<AppointmentDto> CreateAppointmentAsync(CreateAppointmentDto appointment);
-    Task UpdateAppointmentAsync(UpdateAppointmentDto appointment);
-    Task<AppointmentDto> UpsertAppointmentAsync(UpsertAppointmentDto appointment);
     Task CancelAppointmentAsync(Guid id, string reason);
     Task<AppointmentDto> CompleteAppointmentAsync(Guid id, string? notes);
     Task DeleteAppointmentAsync(Guid id);
 }
 
-public interface IMedicalRecordService
+public interface IMedicalRecordService : ICrudService<MedicalRecordDto, UpsertMedicalRecordDto, UpsertMedicalRecordDto>
 {
     Task<List<MedicalRecordDto>> GetAllMedicalRecordsAsync();
     Task<List<MedicalRecordDto>> GetMedicalRecordsByPatientAsync(Guid patientId);
     Task<MedicalRecordDto> GetMedicalRecordByIdAsync(Guid id);
-    Task<MedicalRecordDto> CreateMedicalRecordAsync(CreateMedicalRecordDto record);
-    Task UpdateMedicalRecordAsync(UpdateMedicalRecordDto record);
     Task<MedicalRecordDto> UpsertMedicalRecordAsync(UpsertMedicalRecordDto record);
     Task DeleteMedicalRecordAsync(Guid id);
     Task<MedicalRecordDto> FinalizeMedicalRecordAsync(Guid id, string? finalNotes, string? finalizedBy);
     Task<MedicalRecordDto> ReopenMedicalRecordAsync(Guid id);
 }
 
-public interface IBillingService
+public interface IBillingService : ICrudService<BillDto, UpsertBillDto, UpsertBillDto>
 {
     Task<List<BillDto>> GetBillsAsync();
     Task<BillDto> GetBillByIdAsync(Guid id);
-    Task<BillDto> CreateBillAsync(CreateBillDto bill);
-    Task<BillDto> UpdateBillAsync(UpdateBillDto bill);
     Task<BillDto> UpsertBillAsync(UpsertBillDto bill);
     Task DeleteBillAsync(Guid id);
 }

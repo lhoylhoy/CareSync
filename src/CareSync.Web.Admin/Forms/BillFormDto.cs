@@ -13,5 +13,13 @@ public class BillFormDto
     public string? Notes { get; set; }
     public CreateBillDto ToCreateDto() => new() { PatientId = PatientId, DueDate = DueDate, TaxRate = TaxRate, DiscountAmount = DiscountAmount, Notes = Notes };
     public UpsertBillDto ToUpsertDto() => new(Id, PatientId, DueDate, TaxRate, DiscountAmount, Notes);
-    public static BillFormDto FromDto(BillDto dto) => new() { Id = dto.Id, PatientIdString = dto.PatientId.ToString(), DueDate = dto.DueDate, DiscountAmount = dto.DiscountAmount, Notes = dto.Notes };
+    public static BillFormDto FromDto(BillDto dto) => new()
+    {
+        Id = dto.Id,
+        PatientIdString = dto.PatientId.ToString(),
+        DueDate = dto.DueDate,
+        TaxRate = dto.TaxRate,
+        DiscountAmount = dto.DiscountAmount,
+        Notes = dto.Notes
+    };
 }

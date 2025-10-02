@@ -7,11 +7,24 @@ using MediatR;
 
 namespace CareSync.Application.Commands.Appointments;
 
-public class CreateAppointmentCommandHandler(IAppointmentRepository appointmentRepository, AppointmentMapper mapper, IUnitOfWork uow)
+public class CreateAppointmentCommandHandler(
+    IAppointmentRepository appointmentRepository,
+    AppointmentMapper mapper,
+    IUnitOfWork uow,
+    IPatientRepository patientRepository,
+    IDoctorRepository doctorRepository)
     : IRequestHandler<CreateAppointmentCommand, Result<AppointmentDto>>
 {
     public async Task<Result<AppointmentDto>> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
     {
+        var patient = await patientRepository.GetByIdAsync(request.Appointment.PatientId);
+        if (patient is not { IsActive: true })
+            return Result<AppointmentDto>.Failure("Patient not found or inactive.");
+
+        var doctor = await doctorRepository.GetByIdAsync(request.Appointment.DoctorId);
+        if (doctor is not { IsActive: true })
+            return Result<AppointmentDto>.Failure("Doctor not found or inactive.");
+
         var durationMinutes = (int)(request.Appointment.Duration?.TotalMinutes ?? 30);
         var appointment = new Appointment(
             request.Appointment.PatientId,
@@ -48,7 +61,12 @@ public class UpdateAppointmentCommandHandler(IAppointmentRepository appointmentR
     }
 }
 
-public class UpsertAppointmentCommandHandler(IAppointmentRepository appointmentRepository, AppointmentMapper mapper, IUnitOfWork uow)
+public class UpsertAppointmentCommandHandler(
+    IAppointmentRepository appointmentRepository,
+    AppointmentMapper mapper,
+    IUnitOfWork uow,
+    IPatientRepository patientRepository,
+    IDoctorRepository doctorRepository)
     : IRequestHandler<UpsertAppointmentCommand, Result<AppointmentDto>>
 {
     public async Task<Result<AppointmentDto>> Handle(UpsertAppointmentCommand request, CancellationToken cancellationToken)
@@ -81,6 +99,14 @@ public class UpsertAppointmentCommandHandler(IAppointmentRepository appointmentR
         }
 
         // Create new
+        var patient = await patientRepository.GetByIdAsync(request.Appointment.PatientId);
+        if (patient is not { IsActive: true })
+            return Result<AppointmentDto>.Failure("Patient not found or inactive.");
+
+        var doctor = await doctorRepository.GetByIdAsync(request.Appointment.DoctorId);
+        if (doctor is not { IsActive: true })
+            return Result<AppointmentDto>.Failure("Doctor not found or inactive.");
+
         var appointment = new Appointment(
             request.Appointment.PatientId,
             request.Appointment.DoctorId,

@@ -1,7 +1,8 @@
 @using CareSync.Application.DTOs.Doctors
 @using CareSync.Application.DTOs.Patients
-@using System.Linq
+@using CareSync.Web.Admin.Forms
 @using Microsoft.AspNetCore.Components.Forms
+@using System.Linq
 
 <div class="row">
     <div class="col-md-6">
@@ -38,52 +39,44 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="mb-3">
-            <label class="form-label">Appointment Date & Time *</label>
-            <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="Model.StartDateTime" class="form-control" />
-            <ValidationMessage For="@(() => Model.StartDateTime)" />
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="mb-3">
-            <label class="form-label">Duration (minutes) *</label>
-            <InputNumber @bind-Value="Model.DurationMinutes" class="form-control" />
-            <ValidationMessage For="@(() => Model.DurationMinutes)" />
-        </div>
-    </div>
+<div class="mb-3">
+    <label class="form-label">Chief Complaint *</label>
+    <InputTextArea @bind-Value="Model.ChiefComplaint" class="form-control" rows="2" />
+    <ValidationMessage For="@(() => Model.ChiefComplaint)" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">History of Present Illness</label>
+    <InputTextArea @bind-Value="Model.HistoryOfPresentIllness" class="form-control" rows="3" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Physical Examination</label>
+    <InputTextArea @bind-Value="Model.PhysicalExamination" class="form-control" rows="3" />
 </div>
 
 <div class="row">
     <div class="col-md-6">
         <div class="mb-3">
-            <label class="form-label">Appointment Type *</label>
-            <InputText @bind-Value="Model.AppointmentType" class="form-control" placeholder="e.g., Consultation" />
-            <ValidationMessage For="@(() => Model.AppointmentType)" />
+            <label class="form-label">Assessment</label>
+            <InputTextArea @bind-Value="Model.Assessment" class="form-control" rows="3" />
         </div>
     </div>
     <div class="col-md-6">
         <div class="mb-3">
-            <label class="form-label">Reason for Visit</label>
-            <InputText @bind-Value="Model.ReasonForVisit" class="form-control" placeholder="Enter reason" />
-            <ValidationMessage For="@(() => Model.ReasonForVisit)" />
+            <label class="form-label">Treatment Plan</label>
+            <InputTextArea @bind-Value="Model.TreatmentPlan" class="form-control" rows="3" />
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-label">Notes</label>
-            <InputTextArea @bind-Value="Model.Notes" class="form-control" rows="3" placeholder="Additional notes" />
-            <ValidationMessage For="@(() => Model.Notes)" />
-        </div>
-    </div>
+<div class="mb-3">
+    <label class="form-label">Notes</label>
+    <InputTextArea @bind-Value="Model.Notes" class="form-control" rows="3" />
 </div>
 
 @code {
-    [Parameter] public AppointmentFormDto Model { get; set; } = null!;
+    [Parameter] public MedicalRecordFormDto Model { get; set; } = null!;
     [Parameter] public IEnumerable<PatientDto>? Patients { get; set; }
     [Parameter] public IEnumerable<DoctorDto>? Doctors { get; set; }
 }
