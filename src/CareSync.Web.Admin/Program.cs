@@ -97,7 +97,20 @@ builder.Services.AddScoped<IValidationService, ValidationService>();
 // Add geographic data service with HttpClient
 builder.Services.AddHttpClient<IPhilippineGeographicDataService, CareSync.Web.Admin.Services.ApiGeographicDataService>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7262/");
+    // Reuse the configured API base URL (falls back to localhost if missing)
+    var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7262";
+    client.BaseAddress = new Uri(apiBaseUrl.EndsWith('/') ? apiBaseUrl : apiBaseUrl + "/");
+    // Disable caching to always fetch fresh geographic data
+    client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+    {
+        NoCache = true,
+        NoStore = true,
+        MustRevalidate = true
+    };
+    if (!client.DefaultRequestHeaders.Contains("Pragma"))
+    {
+        client.DefaultRequestHeaders.Add("Pragma", "no-cache");
+    }
 });
 
 // Add CRUD services

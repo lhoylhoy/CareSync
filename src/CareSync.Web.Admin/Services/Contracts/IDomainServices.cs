@@ -48,6 +48,8 @@ public interface IMedicalRecordService
     Task UpdateMedicalRecordAsync(UpdateMedicalRecordDto record);
     Task<MedicalRecordDto> UpsertMedicalRecordAsync(UpsertMedicalRecordDto record);
     Task DeleteMedicalRecordAsync(Guid id);
+    Task<MedicalRecordDto> FinalizeMedicalRecordAsync(Guid id, string? finalNotes, string? finalizedBy);
+    Task<MedicalRecordDto> ReopenMedicalRecordAsync(Guid id);
 }
 
 public interface IBillingService

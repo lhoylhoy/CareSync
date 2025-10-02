@@ -34,7 +34,7 @@ namespace CareSync.Shared.Services
         public string? ValidateEmail(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                return ValidationMessages.Required("Email");
+                return null; // Email is optional; no error when blank
 
             return IsValidEmail(value) ? null : ValidationMessages.InvalidEmail;
         }

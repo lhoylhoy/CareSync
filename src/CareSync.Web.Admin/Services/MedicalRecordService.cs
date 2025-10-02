@@ -62,4 +62,19 @@ public class MedicalRecordService : IMedicalRecordService
     {
         return await _httpClient.GetFromJsonAsync<List<MedicalRecordDto>>(ApiEndpoints.MedicalRecords.Base) ?? new List<MedicalRecordDto>();
     }
+
+    public async Task<MedicalRecordDto> FinalizeMedicalRecordAsync(Guid id, string? finalNotes, string? finalizedBy)
+    {
+        var payload = new FinalizeMedicalRecordDto { Id = id, FinalNotes = finalNotes, FinalizedBy = finalizedBy };
+        var response = await _httpClient.PutAsJsonAsync(ApiEndpoints.MedicalRecords.Finalize.Replace("{id}", id.ToString()), payload);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<MedicalRecordDto>() ?? throw new Exception("Could not finalize medical record");
+    }
+
+    public async Task<MedicalRecordDto> ReopenMedicalRecordAsync(Guid id)
+    {
+        var response = await _httpClient.PutAsync(ApiEndpoints.MedicalRecords.Reopen.Replace("{id}", id.ToString()), null);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<MedicalRecordDto>() ?? throw new Exception("Could not reopen medical record");
+    }
 }

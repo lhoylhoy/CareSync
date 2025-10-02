@@ -263,8 +263,8 @@ public static class ServiceCollectionExtensions
             options.AddBasePolicy(builder => builder.Cache() // default: cache successful GET/HEAD
                 .Expire(TimeSpan.FromSeconds(30))
                 .SetVaryByQuery("page", "pageSize"));
-            options.AddPolicy("Patients-All", b => b.Cache().Expire(TimeSpan.FromSeconds(15)));
-            options.AddPolicy("Patients-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(1)));
+            options.AddPolicy("Patients-All", b => b.Cache().Expire(TimeSpan.FromSeconds(15)).Tag("patients-all"));
+            options.AddPolicy("Patients-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(1)).Tag("patients-byid"));
         });
         return services;
     }

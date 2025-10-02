@@ -1,6 +1,7 @@
 using CareSync.Domain.Entities;
 using CareSync.Domain.Interfaces;
 using CareSync.Domain.ValueObjects;
+using CareSync.Shared.Interfaces;
 using CareSync.Application.DTOs.Patients;
 using CareSync.Application.Common.Mapping;
 using MediatR;
@@ -8,7 +9,7 @@ using CareSync.Application.Common.Results;
 
 namespace CareSync.Application.Commands.Patients;
 
-public class UpdatePatientCommandHandler(IPatientRepository patientRepository, PatientMapper mapper, IUnitOfWork uow)
+public class UpdatePatientCommandHandler(IPatientRepository patientRepository, IPhilippineGeographicDataService geographicService, PatientMapper mapper, IUnitOfWork uow)
     : IRequestHandler<UpdatePatientCommand, Result<PatientDto>>
 {
     public async Task<Result<PatientDto>> Handle(UpdatePatientCommand request, CancellationToken cancellationToken)
@@ -16,6 +17,11 @@ public class UpdatePatientCommandHandler(IPatientRepository patientRepository, P
         var existingPatient = await patientRepository.GetByIdAsync(request.Patient.Id);
         if (existingPatient == null)
             return Result<PatientDto>.Failure($"Patient with ID {request.Patient.Id} not found.");
+
+        // Get geographic names from codes (align with create/upsert behavior)
+        var province = await geographicService.GetProvinceByCodeAsync(request.Patient.ProvinceCode, cancellationToken);
+        var city = await geographicService.GetCityByCodeAsync(request.Patient.CityCode, cancellationToken);
+        var barangay = await geographicService.GetBarangayByCodeAsync(request.Patient.BarangayCode, cancellationToken);
 
         // Update existing patient using available methods
         existingPatient.UpdatePersonalInformation(
@@ -27,12 +33,12 @@ public class UpdatePatientCommandHandler(IPatientRepository patientRepository, P
         existingPatient.UpdateContactInformation(
             request.Patient.Street,
             request.Patient.ProvinceCode,
-            "Unknown", // Province name - will be populated by service
+            province?.Name ?? existingPatient.ProvinceName,
             request.Patient.CityCode,
-            "Unknown", // City name - will be populated by service
+            city?.Name ?? existingPatient.CityName,
             request.Patient.CityZipCode,
             request.Patient.BarangayCode,
-            "Unknown", // Barangay name - will be populated by service
+            barangay?.Name ?? existingPatient.BarangayName,
             string.IsNullOrEmpty(request.Patient.PhoneNumber) ? null : new PhoneNumber(request.Patient.PhoneNumber),
             string.IsNullOrEmpty(request.Patient.Email) ? null : new Email(request.Patient.Email)
         );

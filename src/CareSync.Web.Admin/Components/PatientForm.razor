@@ -98,7 +98,7 @@
         <div class="mb-3">
             <label class="form-label">Province *</label>
             <InputSelect @bind-Value="Model.ProvinceCode" @bind-Value:after="OnProvinceChanged"
-                class="@GetProvinceClass">
+                @onfocus="OnProvinceDropdownFocused" class="@GetProvinceClass">
                 <option value="">Select province</option>
                 @if (Provinces != null)
                 {
@@ -117,8 +117,8 @@
     <div class="col-md-4">
         <div class="mb-3">
             <label class="form-label">City *</label>
-            <InputSelect @bind-Value="Model.CityCode" @bind-Value:after="OnCityChanged" class="@GetCityClass"
-                disabled="@(string.IsNullOrEmpty(Model.ProvinceCode))">
+            <InputSelect @bind-Value="Model.CityCode" @bind-Value:after="OnCityChanged" @onfocus="OnCityDropdownFocused"
+                class="@GetCityClass" disabled="@(string.IsNullOrEmpty(Model.ProvinceCode))">
                 <option value="">Select city</option>
                 @if (Cities != null)
                 {
@@ -138,7 +138,8 @@
         <div class="mb-3">
             <label class="form-label">Barangay *</label>
             <InputSelect @bind-Value="Model.BarangayCode" @bind-Value:after="OnBarangayChangedWrapper"
-                class="@GetBarangayClass" disabled="@(string.IsNullOrEmpty(Model.CityCode))">
+                @onfocus="OnBarangayDropdownFocused" class="@GetBarangayClass"
+                disabled="@(string.IsNullOrEmpty(Model.CityCode))">
                 <option value="">Select barangay</option>
                 @if (Barangays != null)
                 {
@@ -242,7 +243,12 @@
         if (TouchedFields.Contains(fieldName))
         {
             var error = ValidationService.ValidateEmail(value);
-            if (error != null)
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                // Email empty => clear any previous error (it's optional)
+                ValidationErrors.Remove(fieldName);
+            }
+            else if (error != null)
             {
                 ValidationErrors[fieldName] = error;
             }
@@ -496,7 +502,11 @@
         ValidateRequiredField("FirstName", Model.FirstName, "First name");
         ValidateRequiredField("LastName", Model.LastName, "Last name");
         ValidateDateOfBirthField("DateOfBirth", Model.DateOfBirth == DateTime.MinValue ? null : Model.DateOfBirth);
-        ValidateEmailField("Email", Model.Email);
+        // Email optional - validate format only if provided
+        if (!string.IsNullOrWhiteSpace(Model.Email))
+        {
+            ValidateEmailField("Email", Model.Email);
+        }
         // PhoneNumber is nullable - only validate format if provided
         if (!string.IsNullOrWhiteSpace(Model.PhoneNumber))
         {
@@ -528,8 +538,9 @@
     }
     protected override async Task OnParametersSetAsync()
     {
-        // No setup needed - just display the patient data that's already in the Model!
-        await Task.CompletedTask;
+        // Ensure that existing selected city and barangay appear in dropdown (placeholder) on edit without fetching lists yet.
+        AddPlaceholdersForExistingSelections();
+        await Task.CompletedTask; // No automatic remote calls here.
     }
 
     private async Task LoadProvinces()
@@ -546,6 +557,72 @@
         {
             // Log error but don't crash the form
             Console.WriteLine($"Error loading provinces: {ex.Message}");
+        }
+    }
+
+    // Focus handlers to lazily load dependent data when user explicitly interacts
+    private async Task OnProvinceDropdownFocused(FocusEventArgs _)
+    {
+        // Always refresh provinces (requirement: call external API on user intent to update province)
+        await LoadProvinces();
+    }
+
+    private async Task OnCityDropdownFocused(FocusEventArgs _)
+    {
+        if (string.IsNullOrWhiteSpace(Model.ProvinceCode)) return; // Cannot load cities without a province
+                                                                   // Load/refresh cities when user shows intent to change city
+        await LoadCitiesForProvince(Model.ProvinceCode);
+        // After loading, ensure the current city (if any) name is aligned
+        if (!string.IsNullOrWhiteSpace(Model.CityCode))
+        {
+            var city = Cities?.FirstOrDefault(c => c.Code == Model.CityCode);
+            if (city != null) Model.CityName = city.Name;
+        }
+    }
+
+    private async Task OnBarangayDropdownFocused(FocusEventArgs _)
+    {
+        if (string.IsNullOrWhiteSpace(Model.CityCode)) return; // Cannot load barangays without a city
+                                                               // Load barangays (and ensure zip) only when user focuses barangay dropdown
+        await PopulateZipCodeAndLoadBarangays(Model.CityCode);
+        if (!string.IsNullOrWhiteSpace(Model.BarangayCode))
+        {
+            var brgy = Barangays?.FirstOrDefault(b => b.Code == Model.BarangayCode);
+            if (brgy != null) Model.BarangayName = brgy.Name;
+        }
+    }
+
+    // Adds placeholder entries so that existing selected city / barangay display before user opens dropdown
+    private void AddPlaceholdersForExistingSelections()
+    {
+        // City placeholder
+        if (!string.IsNullOrWhiteSpace(Model.CityCode) && !string.IsNullOrWhiteSpace(Model.CityName))
+        {
+            if (Cities == null || !Cities.Any())
+            {
+                Cities = new List<CityDto> { new(Model.CityCode, Model.CityName, Model.ProvinceCode, Model.ProvinceName ?? string.Empty,
+Model.CityZipCode) };
+            }
+            else if (!Cities.Any(c => c.Code == Model.CityCode))
+            {
+                Cities = Cities.Append(new CityDto(Model.CityCode, Model.CityName, Model.ProvinceCode, Model.ProvinceName ??
+                string.Empty, Model.CityZipCode));
+            }
+        }
+
+        // Barangay placeholder
+        if (!string.IsNullOrWhiteSpace(Model.BarangayCode) && !string.IsNullOrWhiteSpace(Model.BarangayName))
+        {
+            if (Barangays == null || !Barangays.Any())
+            {
+                Barangays = new List<BarangayDto> { new(Model.BarangayCode, Model.BarangayName, Model.CityCode, Model.CityName ??
+string.Empty, Model.ProvinceCode, Model.ProvinceName ?? string.Empty, Model.CityZipCode) };
+            }
+            else if (!Barangays.Any(b => b.Code == Model.BarangayCode))
+            {
+                Barangays = Barangays.Append(new BarangayDto(Model.BarangayCode, Model.BarangayName, Model.CityCode, Model.CityName ??
+                string.Empty, Model.ProvinceCode, Model.ProvinceName ?? string.Empty, Model.CityZipCode));
+            }
         }
     }
 

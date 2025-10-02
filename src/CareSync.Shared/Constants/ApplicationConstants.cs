@@ -52,6 +52,8 @@ public static class ApiEndpoints
         public const string Upsert = $"{Base}/upsert";
         public const string Delete = $"{Base}/{{id}}";
         public const string ByPatient = $"{Base}/patient/{{patientId}}";
+        public const string Finalize = $"{Base}/{{id}}/finalize";
+        public const string Reopen = $"{Base}/{{id}}/reopen";
     }
 
     // Billing endpoints

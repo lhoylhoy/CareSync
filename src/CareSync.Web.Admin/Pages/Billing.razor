@@ -387,13 +387,34 @@
         if (_billToDelete == null) return;
         try
         {
-            await BillingService.DeleteBillAsync(_billToDelete.Id);
-            await LoadBills();
-            await ToastService.ShowSuccessAsync(UiMessages.Deleted("Bill"));
+            var id = _billToDelete.Id;
+            // Optimistic UI removal
+            if (_bills != null)
+            {
+                var existing = _bills.FirstOrDefault(b => b.Id == id);
+                if (existing != null)
+                {
+                    _bills.Remove(existing);
+                }
+            }
+            await InvokeAsync(StateHasChanged);
+
+            await BillingService.DeleteBillAsync(id);
+
+            // Optionally refresh from server to stay consistent
+            _ = Task.Run(async () =>
+            {
+                try { await LoadBills(); await InvokeAsync(StateHasChanged); } catch { /* ignore refresh errors */ }
+            });
+
+            await ToastService.ShowSuccessAsync(UiMessages.Deleted("Invoice"));
         }
         catch (Exception ex)
         {
             await ToastService.ShowErrorAsync($"Failed to delete bill: {ex.Message}");
+            // If optimistic removal happened but delete failed, force full reload
+            await LoadBills();
+            await InvokeAsync(StateHasChanged);
         }
         finally
         {
