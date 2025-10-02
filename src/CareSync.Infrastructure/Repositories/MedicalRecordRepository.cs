@@ -148,6 +148,7 @@ public class MedicalRecordRepository(CareSyncDbContext context) : IMedicalRecord
             .Include(mr => mr.Diagnoses)
             .Include(mr => mr.Prescriptions)
             .Include(mr => mr.VitalSigns)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(mr => mr.Id == id);
 
         if (record == null)

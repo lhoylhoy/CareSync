@@ -265,6 +265,8 @@ public static class ServiceCollectionExtensions
                 .SetVaryByQuery("page", "pageSize"));
             options.AddPolicy("Patients-All", b => b.Cache().Expire(TimeSpan.FromSeconds(15)).Tag("patients-all"));
             options.AddPolicy("Patients-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(1)).Tag("patients-byid"));
+            options.AddPolicy("Billing-All", b => b.Cache().Expire(TimeSpan.FromSeconds(15)).Tag("billing-all"));
+            options.AddPolicy("Billing-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(1)).Tag("billing-byid"));
         });
         return services;
     }

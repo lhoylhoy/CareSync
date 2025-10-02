@@ -3,8 +3,9 @@ using CareSync.Application.Queries.Billing;
 using CareSync.Application.DTOs.Billing;
 using MediatR;
 using CareSync.Application.Common.Results;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Logging;
 
 namespace CareSync.API.Controllers;
 
@@ -13,10 +14,14 @@ namespace CareSync.API.Controllers;
 public class BillingController : BaseApiController
 {
     private readonly IMediator _mediator;
+    private readonly IOutputCacheStore _cacheStore;
+    private readonly ILogger<BillingController> _logger;
 
-    public BillingController(IMediator mediator) : base(mediator)
+    public BillingController(IMediator mediator, IOutputCacheStore cacheStore, ILogger<BillingController> logger) : base(mediator)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _cacheStore = cacheStore ?? throw new ArgumentNullException(nameof(cacheStore));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -24,6 +29,7 @@ public class BillingController : BaseApiController
     /// </summary>
     /// <returns>List of bills</returns>
     [HttpGet]
+    [OutputCache(PolicyName = "Billing-All")]
     public async Task<ActionResult<IEnumerable<BillDto>>> GetAllBills()
     {
         var result = await _mediator.Send(new GetAllBillsQuery());
@@ -36,6 +42,7 @@ public class BillingController : BaseApiController
     /// <param name="id">Bill ID</param>
     /// <returns>Bill details</returns>
     [HttpGet("{id:guid}")]
+    [OutputCache(PolicyName = "Billing-ById")]
     public async Task<ActionResult<BillDto>> GetBill(Guid id)
     {
         var bill = await _mediator.Send(new GetBillQuery(id));
@@ -115,6 +122,10 @@ public class BillingController : BaseApiController
     public async Task<ActionResult<Guid>> CreateBill([FromBody] CreateBillDto createBill)
     {
         var billId = await _mediator.Send(new CreateBillCommand(createBill));
+        if (billId.IsSuccess && billId.Value != Guid.Empty)
+        {
+            await InvalidateBillingCachesAsync(billId.Value, HttpContext.RequestAborted);
+        }
         // Route value only used on success (method short-circuits on failure)
         return CreatedOrBadRequest(billId, nameof(GetBill), new { id = billId.Value });
     }
@@ -128,6 +139,10 @@ public class BillingController : BaseApiController
     public async Task<ActionResult<Guid>> ProcessPayment([FromBody] ProcessPaymentDto processPayment)
     {
         var paymentId = await _mediator.Send(new ProcessPaymentCommand(processPayment));
+        if (paymentId.IsSuccess)
+        {
+            await InvalidateBillingCachesAsync(processPayment.BillId, HttpContext.RequestAborted);
+        }
         return CreatedOrBadRequest(paymentId, nameof(GetBill), new { id = processPayment.BillId });
     }
 
@@ -140,6 +155,10 @@ public class BillingController : BaseApiController
     public async Task<ActionResult<Guid>> CreateInsuranceClaim([FromBody] CreateInsuranceClaimDto createClaim)
     {
         var claimId = await _mediator.Send(new CreateInsuranceClaimCommand(createClaim));
+        if (claimId.IsSuccess)
+        {
+            await InvalidateBillingCachesAsync(createClaim.BillId, HttpContext.RequestAborted);
+        }
         return CreatedOrBadRequest(claimId, nameof(GetBill), new { id = createClaim.BillId });
     }
 
@@ -182,6 +201,10 @@ public class BillingController : BaseApiController
     {
         if (id != updateBill.Id) return BadRequest("ID mismatch between route and body");
         var bill = await _mediator.Send(new UpdateBillCommand(updateBill));
+        if (bill.IsSuccess && bill.Value is not null)
+        {
+            await InvalidateBillingCachesAsync(bill.Value.Id, HttpContext.RequestAborted);
+        }
         return UpdatedOrNotFound(bill);
     }
 
@@ -194,6 +217,10 @@ public class BillingController : BaseApiController
     public async Task<ActionResult<BillDto>> UpsertBill([FromBody] UpsertBillDto upsertBill)
     {
         var bill = await _mediator.Send(new UpsertBillCommand(upsertBill));
+        if (bill.IsSuccess && bill.Value is not null)
+        {
+            await InvalidateBillingCachesAsync(bill.Value.Id, HttpContext.RequestAborted);
+        }
         return UpsertOkOrBadRequest(bill);
     }
 
@@ -206,6 +233,23 @@ public class BillingController : BaseApiController
     public async Task<ActionResult> DeleteBill(Guid id)
     {
         var deleted = await _mediator.Send(new DeleteBillCommand(id));
+        if (deleted.IsSuccess)
+        {
+            await InvalidateBillingCachesAsync(id, HttpContext.RequestAborted);
+        }
         return NoContentOrNotFound(deleted);
+    }
+
+    private async Task InvalidateBillingCachesAsync(Guid billId, CancellationToken token)
+    {
+        try
+        {
+            await _cacheStore.EvictByTagAsync("billing-all", token);
+            await _cacheStore.EvictByTagAsync("billing-byid", token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to evict billing cache for bill {BillId}", billId);
+        }
     }
 }

@@ -1,7 +1,10 @@
 using CareSync.Domain.Entities;
+using CareSync.Domain.ValueObjects;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CareSync.Infrastructure.Data;
 
@@ -169,23 +172,42 @@ public class CareSyncDbContext(DbContextOptions<CareSyncDbContext> options) : Id
                 .IsRequired(false);
         });
 
-        // Configure Email value object for Patient
-        modelBuilder.Entity<Patient>().OwnsOne(p => p.Email, e =>
-        {
-            e.Property(em => em.Value)
-                .HasColumnName("Email")
-                .HasMaxLength(255)
-                .IsRequired(false); // Make nullable
-        });
+        // Configure Email and PhoneNumber value objects for Patient using converters (avoids optional owned warnings)
+        var emailConverter = new ValueConverter<Email?, string?>(
+            email => email == null ? null : email.Value,
+            value => string.IsNullOrWhiteSpace(value) ? null : new Email(value));
+        var emailComparer = new ValueComparer<Email?>(
+            (left, right) =>
+                (left == null && right == null) ||
+                (left != null && right != null && left.Value == right.Value),
+            value => value == null ? 0 : value.Value.GetHashCode(),
+            value => value == null ? null : new Email(value.Value));
 
-        // Configure PhoneNumber value object for Patient
-        modelBuilder.Entity<Patient>().OwnsOne(p => p.PhoneNumber, pn =>
-        {
-            pn.Property(ph => ph.Number)
-                .HasColumnName("PhoneNumber")
-                .HasMaxLength(20)
-                .IsRequired(false); // Make nullable
-        });
+        modelBuilder.Entity<Patient>()
+            .Property(p => p.Email)
+            .HasConversion(emailConverter)
+            .HasColumnName("Email")
+            .HasMaxLength(255)
+            .IsRequired(false)
+            .Metadata.SetValueComparer(emailComparer);
+
+        var phoneConverter = new ValueConverter<PhoneNumber?, string?>(
+            phone => phone == null ? null : phone.Number,
+            value => string.IsNullOrWhiteSpace(value) ? null : new PhoneNumber(value));
+        var phoneComparer = new ValueComparer<PhoneNumber?>(
+            (left, right) =>
+                (left == null && right == null) ||
+                (left != null && right != null && left.Number == right.Number),
+            value => value == null ? 0 : value.Number.GetHashCode(),
+            value => value == null ? null : new PhoneNumber(value.Number));
+
+        modelBuilder.Entity<Patient>()
+            .Property(p => p.PhoneNumber)
+            .HasConversion(phoneConverter)
+            .HasColumnName("PhoneNumber")
+            .HasMaxLength(20)
+            .IsRequired(false)
+            .Metadata.SetValueComparer(phoneComparer);
 
         // Configure Patient properties as simple columns
         modelBuilder.Entity<Patient>()
