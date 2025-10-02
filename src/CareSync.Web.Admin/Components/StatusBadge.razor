@@ -1,0 +1,55 @@
+@typeparam TStatus
+@* Reusable status badge component *@
+@if (Value is null)
+{
+    <span class="cs-badge cs-badge-neutral">N/A</span>
+}
+else
+{
+    <span class="@CssClass">@Text</span>
+}
+
+@code {
+    [Parameter] public TStatus? Value { get; set; }
+    [Parameter] public string? OverrideText { get; set; }
+    [Parameter] public string? AdditionalClasses { get; set; }
+
+    private string Text => OverrideText ?? Format(Value);
+
+    private string CssClass => $"cs-badge {MapClass(Value)} {AdditionalClasses}".Trim();
+
+    private static string Format(object? value)
+        => value?.ToString()?.Replace("_", " ") ?? string.Empty;
+
+    private static string MapClass(object? value)
+    {
+        if (value is null) return "cs-badge-neutral";
+        var s = value.ToString()!.ToLowerInvariant();
+        return s switch
+        {
+            // Appointment statuses
+            "scheduled" => "cs-badge-primary",
+            "inprogress" => "cs-badge-warning",
+            "in_progress" => "cs-badge-warning",
+            "completed" => "cs-badge-success",
+            "cancelled" => "cs-badge-neutral",
+            "noshow" => "cs-badge-danger",
+            "no_show" => "cs-badge-danger",
+
+            // Bill statuses
+            "draft" => "cs-badge-neutral",
+            "pending" => "cs-badge-warning",
+            "paid" => "cs-badge-success",
+            "partiallypaid" => "cs-badge-warning",
+            "partially_paid" => "cs-badge-warning",
+            "overdue" => "cs-badge-danger",
+
+            // Payment statuses
+            "failed" => "cs-badge-danger",
+            "refunded" => "cs-badge-warning",
+
+            // Generic / fallback
+            _ => "cs-badge-primary"
+        };
+    }
+}

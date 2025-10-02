@@ -1,0 +1,193 @@
+@page "/examples"
+@inject IToastService ToastService
+
+<PageTitle>Component Examples - CareSync</PageTitle>
+
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-primary mb-0">
+                <i class="fas fa-puzzle-piece me-2"></i>Reusable Components Examples
+            </h1>
+            <p class="text-muted mb-0">Examples of standardized UI components</p>
+        </div>
+    </div>
+
+    <!-- Confirmation Dialog Examples -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-exclamation-circle me-2"></i>Confirmation Dialogs
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <button class="btn btn-danger w-100" @onclick="ShowDangerDialog">
+                        <i class="fas fa-trash me-2"></i>Danger Dialog
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-warning w-100" @onclick="ShowWarningDialog">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Warning Dialog
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-info w-100" @onclick="ShowInfoDialog">
+                        <i class="fas fa-info-circle me-2"></i>Info Dialog
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-success w-100" @onclick="ShowSuccessDialog">
+                        <i class="fas fa-check-circle me-2"></i>Success Dialog
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Examples -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-bell me-2"></i>Toast Notifications
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <button class="btn btn-success w-100" @onclick="ShowSuccessToast">
+                        <i class="fas fa-check me-2"></i>Success Toast
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-danger w-100" @onclick="ShowErrorToast">
+                        <i class="fas fa-times me-2"></i>Error Toast
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-warning w-100" @onclick="ShowWarningToast">
+                        <i class="fas fa-exclamation me-2"></i>Warning Toast
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-info w-100" @onclick="ShowInfoToast">
+                        <i class="fas fa-info me-2"></i>Info Toast
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Examples -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-code me-2"></i>Usage Examples
+        </div>
+        <div class="card-body">
+            <h6>Confirmation Dialog</h6>
+            <pre class="bg-light p-3 rounded mb-3"><code>&lt;ConfirmationDialog @@ref="confirmationDialog"
+                    Type="ConfirmationDialogType.Danger"
+                    Title="Confirm Action"
+                    Message="Are you sure you want to proceed?"
+                    ConfirmText="Yes, Continue"
+                    OnConfirm="HandleConfirmation" /&gt;</code></pre>
+
+            <h6>Toast Service</h6>
+            <pre class="bg-light p-3 rounded"><code>@@inject IToastService ToastService
+
+                    // In your method
+                    await ToastService.ShowSuccessAsync("Operation completed successfully!");</code></pre>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Dialogs -->
+<ConfirmationDialog @ref="dangerDialog" DialogType="ConfirmationDialogType.Danger" Title="Dangerous Action"
+                    Message="This is a dangerous action that will permanently delete data. Are you sure you want to continue?"
+                    ConfirmText="Yes, Delete" OnConfirm="HandleDangerConfirm"/>
+
+<ConfirmationDialog @ref="warningDialog" DialogType="ConfirmationDialogType.Warning" Title="Warning"
+                    Message="This action may have unintended consequences. Please proceed with caution."
+                    ConfirmText="Proceed"
+                    OnConfirm="HandleWarningConfirm"/>
+
+<ConfirmationDialog @ref="infoDialog" DialogType="ConfirmationDialogType.Info" Title="Information"
+                    Message="This will provide additional information about the current process." ConfirmText="Continue"
+                    OnConfirm="HandleInfoConfirm"/>
+
+<ConfirmationDialog @ref="successDialog" DialogType="ConfirmationDialogType.Success" Title="Success Action"
+                    Message="This action will complete a successful operation. Would you like to proceed?"
+                    ConfirmText="Yes, Complete"
+                    OnConfirm="HandleSuccessConfirm"/>
+
+@code {
+    private ConfirmationDialog dangerDialog = null!;
+    private ConfirmationDialog warningDialog = null!;
+    private ConfirmationDialog infoDialog = null!;
+    private ConfirmationDialog successDialog = null!;
+
+    // Dialog Show Methods
+    private async Task ShowDangerDialog()
+    {
+        await dangerDialog.ShowAsync();
+    }
+
+    private async Task ShowWarningDialog()
+    {
+        await warningDialog.ShowAsync();
+    }
+
+    private async Task ShowInfoDialog()
+    {
+        await infoDialog.ShowAsync();
+    }
+
+    private async Task ShowSuccessDialog()
+    {
+        await successDialog.ShowAsync();
+    }
+
+    // Dialog Confirm Handlers
+    private async Task HandleDangerConfirm()
+    {
+        await ToastService.ShowSuccessAsync("Dangerous action confirmed!");
+        await dangerDialog.HideAsync();
+    }
+
+    private async Task HandleWarningConfirm()
+    {
+        await ToastService.ShowWarningAsync("Warning action confirmed!");
+        await warningDialog.HideAsync();
+    }
+
+    private async Task HandleInfoConfirm()
+    {
+        await ToastService.ShowInfoAsync("Information action confirmed!");
+        await infoDialog.HideAsync();
+    }
+
+    private async Task HandleSuccessConfirm()
+    {
+        await ToastService.ShowSuccessAsync("Success action confirmed!");
+        await successDialog.HideAsync();
+    }
+
+    // Toast Methods
+    private async Task ShowSuccessToast()
+    {
+        await ToastService.ShowSuccessAsync("This is a success message!");
+    }
+
+    private async Task ShowErrorToast()
+    {
+        await ToastService.ShowErrorAsync("This is an error message!");
+    }
+
+    private async Task ShowWarningToast()
+    {
+        await ToastService.ShowWarningAsync("This is a warning message!");
+    }
+
+    private async Task ShowInfoToast()
+    {
+        await ToastService.ShowInfoAsync("This is an info message!", "Information");
+    }
+
+}

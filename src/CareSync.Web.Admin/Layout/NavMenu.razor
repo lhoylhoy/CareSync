@@ -1,0 +1,59 @@
+<div class="sidebar-content d-flex flex-column h-100">
+    <div class="navbar-brand">
+        <i class="fas fa-heartbeat me-2"></i>
+        CareSync
+    </div>
+
+    <nav class="flex-column mt-3 flex-grow-1">
+        <div class="nav-item">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="patients">
+                <i class="fas fa-users me-2"></i> Patients
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="doctors">
+                <i class="fas fa-user-md me-2"></i> Doctors
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="appointments">
+                <i class="fas fa-calendar-alt me-2"></i> Appointments
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="medical-records">
+                <i class="fas fa-file-medical me-2"></i> Medical Records
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="billing">
+                <i class="fas fa-dollar-sign me-2"></i> Billing
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="staff">
+                <i class="fas fa-users-cog me-2"></i> Staff
+            </NavLink>
+        </div>
+    </nav>
+
+    <!-- Login/Welcome Section at bottom of sidebar -->
+    <div class="sidebar-footer">
+        <LoginDisplay />
+    </div>
+</div>
+
+@code {
+    private bool _collapseNavMenu = true;
+
+    private void ToggleNavMenu()
+    {
+        _collapseNavMenu = !_collapseNavMenu;
+    }
+
+}

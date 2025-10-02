@@ -1,0 +1,302 @@
+@typeparam TDto where TDto : class
+@typeparam TCreateDto where TCreateDto : class
+@typeparam TUpdateDto where TUpdateDto : class
+@typeparam TFormDto where TFormDto : class
+@inject IToastService ToastService
+
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-primary mb-0">
+                <i class="@PageIcon me-2"></i>@PageTitle
+            </h1>
+            <p class="text-muted mb-0">@PageDescription</p>
+        </div>
+    </div>
+
+    <!-- Main CRUD Table -->
+    <CrudTableComponent TDto="TDto" Items="@Items" IsLoading="@IsLoading" TableTitle="@TableTitle"
+        TableIcon="@TableIcon" LoadingMessage="@LoadingMessage" CreateButtonText="@CreateButtonText"
+        EmptyStateTitle="@EmptyStateTitle" EmptyStateMessage="@EmptyStateMessage" EmptyStateIcon="@EmptyStateIcon"
+        ShowActions="@ShowActions" AllowCreate="@AllowCreate" AllowEdit="@AllowEdit" AllowDelete="@AllowDelete"
+        AllowView="@AllowView" ShowPagination="@ShowPagination" CurrentPage="@CurrentPage" TotalPages="@TotalPages"
+        OnCreateClicked="@HandleCreate" OnEditClicked="@HandleEdit" OnDeleteClicked="@HandleDelete"
+        OnViewClicked="@HandleView" OnPageChanged="@HandlePageChanged" HeaderTemplate="@HeaderTemplate"
+        RowTemplate="@RowTemplate" />
+
+    <!-- CRUD Modal -->
+    <CrudModalComponent TDto="TFormDto" @ref="CrudModal" ModalId="@($"{EntityName.ToLower()}CrudModal")"
+        IsEditing="@IsEditing" IsLoading="@IsModalLoading" IsProcessing="@IsProcessing" CurrentModel="@CurrentModel"
+        ValidationMessages="@ValidationMessages" CreateTitle="@($"Create New {EntityName}")"
+        EditTitle="@($"Edit {EntityName}")" CreateIcon="@CreateIcon" EditIcon="@EditIcon"
+        CreateSubmitText="@CreateSubmitText" EditSubmitText="@EditSubmitText" FormTemplate="@FormTemplate"
+        OnSubmit="@HandleSubmit" />
+
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmationDialog @ref="DeleteConfirmDialog" Title="@($"Delete {EntityName}")"
+        Message="@($"Are you sure you want to delete {ItemToDeleteName}? This action cannot be undone.")"
+        ConfirmText="Delete" ItemIcon="@DeleteItemIcon" OnConfirm="@HandleDeleteConfirm" />
+</div>
+
+@code {
+
+    // Page Configuration
+    [Parameter] public string PageTitle { get; set; } = "Items";
+    [Parameter] public string PageDescription { get; set; } = "Manage your items";
+    [Parameter] public string PageIcon { get; set; } = "fas fa-list";
+    [Parameter] public string EntityName { get; set; } = "Item";
+
+    // Table Configuration
+    [Parameter] public string TableTitle { get; set; } = "Items";
+    [Parameter] public string TableIcon { get; set; } = "fas fa-table";
+    [Parameter] public string LoadingMessage { get; set; } = "Loading items...";
+    [Parameter] public string CreateButtonText { get; set; } = "Add New";
+    [Parameter] public string EmptyStateTitle { get; set; } = "No items found";
+    [Parameter] public string EmptyStateMessage { get; set; } = "Start by creating your first item.";
+    [Parameter] public string EmptyStateIcon { get; set; } = "fas fa-inbox";
+
+    // Action Controls
+    [Parameter] public bool ShowActions { get; set; } = true;
+    [Parameter] public bool AllowCreate { get; set; } = true;
+    [Parameter] public bool AllowEdit { get; set; } = true;
+    [Parameter] public bool AllowDelete { get; set; } = true;
+    [Parameter] public bool AllowView { get; set; }
+
+    // Pagination
+    [Parameter] public bool ShowPagination { get; set; }
+
+    // Modal Configuration
+    [Parameter] public string CreateIcon { get; set; } = "fas fa-plus";
+    [Parameter] public string EditIcon { get; set; } = "fas fa-edit";
+    [Parameter] public string CreateSubmitText { get; set; } = "Create";
+    [Parameter] public string EditSubmitText { get; set; } = "Update";
+    [Parameter] public string DeleteItemIcon { get; set; } = "fas fa-file";
+
+    // Templates
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment<TDto>? RowTemplate { get; set; }
+    [Parameter] public RenderFragment<TFormDto>? FormTemplate { get; set; }
+
+    // Service
+    [Parameter] public ICrudService<TDto, TCreateDto, TUpdateDto>? CrudService { get; set; }
+
+    // Event Callbacks
+    [Parameter] public EventCallback<TDto> OnItemCreated { get; set; }
+    [Parameter] public EventCallback<TDto> OnItemUpdated { get; set; }
+    [Parameter] public EventCallback<TDto> OnItemDeleted { get; set; }
+    [Parameter] public EventCallback<TDto> OnItemViewed { get; set; }
+    [Parameter] public Func<TFormDto>? CreateNewModel { get; set; }
+    [Parameter] public Func<TDto, TFormDto>? MapToUpdateModel { get; set; }
+    [Parameter] public Func<TDto, string>? GetItemDisplayName { get; set; }
+    [Parameter] public Func<TFormDto, TCreateDto>? ConvertToCreateDto { get; set; }
+    [Parameter] public Func<TFormDto, TUpdateDto>? ConvertToUpdateDto { get; set; }
+
+    // State
+    private List<TDto> Items = new();
+    private bool IsLoading;
+    private readonly bool IsModalLoading = false;
+    private bool IsProcessing;
+    private bool IsEditing;
+    private TFormDto? CurrentModel;
+    private TDto? CurrentItem;
+    private readonly List<string> ValidationMessages = new();
+    private string ItemToDeleteName = string.Empty;
+
+    // Pagination
+    private int CurrentPage = 1;
+    private readonly int TotalPages = 1;
+
+    // Component References
+    private CrudModalComponent<TFormDto>? CrudModal;
+    private ConfirmationDialog? DeleteConfirmDialog;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItems();
+    }
+
+    private async Task LoadItems()
+    {
+        if (CrudService == null) return;
+
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await CrudService.GetAllAsync();
+            if (response.Success && response.Data != null)
+            {
+                Items = response.Data.ToList();
+            }
+            else
+            {
+                await ToastService.ShowErrorAsync(response.Message ?? "Failed to load items");
+            }
+        }
+        catch (Exception ex)
+        {
+            await ToastService.ShowErrorAsync($"Error loading items: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleCreate()
+    {
+        if (CreateNewModel == null) return;
+
+        IsEditing = false;
+        CurrentModel = CreateNewModel();
+        ValidationMessages.Clear();
+
+        if (CrudModal != null)
+            await CrudModal.ShowAsync();
+    }
+
+    private async Task HandleEdit(TDto item)
+    {
+        if (MapToUpdateModel == null) return;
+
+        IsEditing = true;
+        CurrentItem = item;
+        CurrentModel = MapToUpdateModel(item);
+        ValidationMessages.Clear();
+
+        if (CrudModal != null)
+            await CrudModal.ShowAsync();
+    }
+
+    private async Task HandleDelete(TDto item)
+    {
+        CurrentItem = item;
+        ItemToDeleteName = GetItemDisplayName?.Invoke(item) ?? "Unknown";
+
+        if (DeleteConfirmDialog != null)
+            await DeleteConfirmDialog.ShowAsync();
+    }
+
+    private async Task HandleView(TDto item)
+    {
+        await OnItemViewed.InvokeAsync(item);
+    }
+
+    private async Task HandlePageChanged(int page)
+    {
+        CurrentPage = page;
+        await LoadItems();
+    }
+
+    private async Task HandleSubmit(TFormDto model)
+    {
+        if (CrudService == null) return;
+
+        IsProcessing = true;
+        ValidationMessages.Clear();
+        StateHasChanged();
+
+        try
+        {
+            if (IsEditing)
+            {
+                if (CurrentItem != null && ConvertToUpdateDto != null)
+                {
+                    var updateModel = ConvertToUpdateDto(model);
+
+                    // Get the ID from the current item - assuming all DTOs have an Id property
+                    var idProperty = typeof(TDto).GetProperty("Id");
+                    if (idProperty != null && idProperty.GetValue(CurrentItem) is Guid id)
+                    {
+                        var response = await CrudService.UpdateAsync(id, updateModel);
+                        if (response.Success && response.Data != null)
+                        {
+                            await ToastService.ShowSuccessAsync(response.Message ?? $"{EntityName} updated successfully");
+                            await OnItemUpdated.InvokeAsync(response.Data);
+                            await LoadItems();
+
+                            if (CrudModal != null)
+                                await CrudModal.HideAsync();
+                        }
+                        else
+                        {
+                            ValidationMessages.Add(response.Message ?? "Failed to update item");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (ConvertToCreateDto != null)
+                {
+                    var createModel = ConvertToCreateDto(model);
+                    var response = await CrudService.CreateAsync(createModel);
+                    if (response.Success && response.Data != null)
+                    {
+                        await ToastService.ShowSuccessAsync(response.Message ?? $"{EntityName} created successfully");
+                        await OnItemCreated.InvokeAsync(response.Data);
+                        await LoadItems();
+
+                        if (CrudModal != null)
+                            await CrudModal.HideAsync();
+                    }
+                    else
+                    {
+                        ValidationMessages.Add(response.Message ?? "Failed to create item");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ValidationMessages.Add($"An error occurred: {ex.Message}");
+        }
+        finally
+        {
+            IsProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleDeleteConfirm()
+    {
+        if (CrudService == null || CurrentItem == null) return;
+
+        IsProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            // Get the ID from the current item - assuming all DTOs have an Id property
+            var idProperty = typeof(TDto).GetProperty("Id");
+            if (idProperty != null && idProperty.GetValue(CurrentItem) is Guid id)
+            {
+                var response = await CrudService.DeleteAsync(id);
+                if (response.Success)
+                {
+                    await ToastService.ShowSuccessAsync(response.Message ?? $"{EntityName} deleted successfully");
+                    await OnItemDeleted.InvokeAsync(CurrentItem);
+                    await LoadItems();
+                }
+                else
+                {
+                    await ToastService.ShowErrorAsync(response.Message ?? "Failed to delete item");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await ToastService.ShowErrorAsync($"Error deleting item: {ex.Message}");
+        }
+        finally
+        {
+            IsProcessing = false;
+            StateHasChanged();
+            if (DeleteConfirmDialog != null)
+                await DeleteConfirmDialog.HideAsync();
+        }
+    }
+
+}

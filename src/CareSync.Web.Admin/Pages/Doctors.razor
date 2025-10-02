@@ -1,0 +1,81 @@
+@page "/doctors"
+@using CareSync.Shared.DTOs
+@using CareSync.Web.Admin.Components
+@inject CareSync.Web.Admin.Services.Contracts.IDoctorService DoctorService
+
+<BaseCrudPage TDto="DoctorDto" TCreateDto="CreateDoctorDto" TUpdateDto="UpdateDoctorDto" TFormDto="DoctorFormDto"
+    PageTitle="Medical Staff" PageDescription="Manage doctors and medical personnel" PageIcon="fas fa-user-md"
+    EntityName="Doctor" TableTitle="Medical Team Directory" TableIcon="fas fa-stethoscope"
+    CreateButtonText="Add New Doctor" EmptyStateTitle="No doctors found"
+    EmptyStateMessage="Start by adding your first doctor." EmptyStateIcon="fas fa-user-plus"
+    DeleteItemIcon="fas fa-user-md" CrudService="@DoctorService" CreateNewModel="@CreateNewDoctor"
+    MapToUpdateModel="@MapDoctorToUpdateModel" GetItemDisplayName="@GetDoctorDisplayName"
+    ConvertToCreateDto="@ConvertToCreateDto" ConvertToUpdateDto="@ConvertToUpdateDto">
+
+    <HeaderTemplate>
+        <th>Name</th>
+        <th>Specialty</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Status</th>
+        <th>Created</th>
+    </HeaderTemplate>
+
+    <RowTemplate Context="doctor">
+        <td>
+            <div class="d-flex align-items-center">
+                <div class="avatar-circle bg-primary text-white me-3">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div>
+                    <div class="fw-bold">@doctor.DisplayName</div>
+                    <small class="text-muted">Dr. @doctor.LastName</small>
+                </div>
+            </div>
+        </td>
+        <td>
+            <span class="cs-badge cs-badge-primary">@doctor.Specialty</span>
+        </td>
+        <td>@doctor.Email</td>
+        <td>@doctor.PhoneNumber</td>
+        <td>
+            <StatusBadge Value="@(doctor.IsActive ? "Active" : "Inactive")" />
+        </td>
+        <td>@doctor.CreatedAt.ToString("MMM dd, yyyy")</td>
+    </RowTemplate>
+
+    <FormTemplate Context="model">
+        @if (model is DoctorFormDto formModel)
+        {
+            <DoctorForm Model="@formModel" />
+        }
+    </FormTemplate>
+
+</BaseCrudPage>
+
+@code {
+    private DoctorFormDto CreateNewDoctor()
+    {
+        return new DoctorFormDto();
+    }
+
+    private DoctorFormDto MapDoctorToUpdateModel(DoctorDto doctor)
+    {
+        return DoctorFormDto.FromDto(doctor);
+    }
+
+    private string GetDoctorDisplayName(DoctorDto doctor)
+    {
+        return doctor.DisplayName;
+    }
+
+    private CreateDoctorDto ConvertToCreateDto(DoctorFormDto form)
+    {
+        return form.ToCreateDto();
+    }
+
+    private UpdateDoctorDto ConvertToUpdateDto(DoctorFormDto form)
+    {
+        return form.ToUpdateDto();
+    }
+}

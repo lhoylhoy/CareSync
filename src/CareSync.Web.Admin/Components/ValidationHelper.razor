@@ -1,0 +1,66 @@
+@using CareSync.Shared.Services
+@using CareSync.Shared.Constants
+@inject IValidationService ValidationService
+
+@*
+    Universal Validation Component Usage Examples:
+
+    1. Required Field Validation:
+       var error = ValidationService.ValidateRequired(value, "Field Name");
+
+    2. Email Validation:
+       var error = ValidationService.ValidateEmail(emailValue);
+
+    3. Philippine Phone Number Validation:
+       var error = ValidationService.ValidatePhilippinePhoneNumber(phoneValue);
+
+    4. Date of Birth Validation:
+       var error = ValidationService.ValidateDateOfBirth(dateValue);
+
+    5. PhilHealth Number Validation:
+       var error = ValidationService.ValidatePhilHealthNumber(philHealthValue);
+
+    6. SSS Number Validation:
+       var error = ValidationService.ValidateSssNumber(sssValue);
+
+    7. TIN Validation:
+       var error = ValidationService.ValidateTinNumber(tinValue);
+
+    8. Length Validation:
+       var error = ValidationService.ValidateLength(value, "Field Name", minLength: 5, maxLength: 50);
+
+    9. Number Validation:
+       var error = ValidationService.ValidateNumber(numberValue, "Amount", minValue: 0, maxValue: 1000000);
+
+    10. Check if field is valid:
+        bool isValid = ValidationService.IsValidEmail(email);
+        bool isValid = ValidationService.IsValidPhilippinePhoneNumber(phone);
+*@
+
+@code {
+    // Example implementation for a simple form field validation
+    public static string? ValidateFormField(IValidationService validationService,
+    string fieldType,
+    string? value,
+    string fieldName,
+    Dictionary<string, object>? options = null)
+    {
+        return fieldType.ToLower() switch
+        {
+            "required" => validationService.ValidateRequired(value, fieldName),
+            "email" => validationService.ValidateEmail(value),
+            "phone" => validationService.ValidatePhilippinePhoneNumber(value),
+            "philhealth" => validationService.ValidatePhilHealthNumber(value),
+            "sss" => validationService.ValidateSssNumber(value),
+            "tin" => validationService.ValidateTinNumber(value),
+            "length" when options != null => validationService.ValidateLength(
+            value,
+            fieldName,
+            options.ContainsKey("minLength") ? (int?)options["minLength"] : null,
+            options.ContainsKey("maxLength") ? (int?)options["maxLength"] : null,
+            options.ContainsKey("exactLength") ? (int?)options["exactLength"] : null
+            ),
+            _ => null
+        };
+    }
+}

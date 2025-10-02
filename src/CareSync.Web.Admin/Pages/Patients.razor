@@ -1,0 +1,121 @@
+@page "/patients"
+@inject CareSync.Web.Admin.Services.Contracts.IPatientService PatientService
+
+<BaseCrudPage TDto="PatientDto" TCreateDto="CreatePatientDto" TUpdateDto="UpdatePatientDto" TFormDto="PatientFormDto"
+    PageTitle="Patient Management" PageDescription="Manage patient records and information" PageIcon="fas fa-users"
+    EntityName="Patient" TableTitle="Patient Directory" TableIcon="fas fa-users" CreateButtonText="Add Patient"
+    EmptyStateTitle="No patients found" EmptyStateMessage="Start by adding your first patient."
+    EmptyStateIcon="fas fa-user-plus" DeleteItemIcon="fas fa-user" CrudService="@PatientService"
+    CreateNewModel="@CreateNewPatient" MapToUpdateModel="@MapPatientToUpdateModel"
+    GetItemDisplayName="@GetPatientDisplayName" ConvertToCreateDto="@ConvertToCreateDto"
+    ConvertToUpdateDto="@ConvertToUpdateDto">
+
+    <HeaderTemplate>
+        <th>Name</th>
+        <th>Date of Birth</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Location</th>
+        <th>Age</th>
+        <th>Created</th>
+    </HeaderTemplate>
+
+    <RowTemplate Context="patient">
+        <td>
+            <div class="d-flex align-items-center">
+                <div class="avatar-circle me-3">
+                    @(patient.FirstName?.FirstOrDefault())@(patient.LastName?.FirstOrDefault())
+                </div>
+                <div>
+                    <strong>@patient.FirstName @patient.LastName</strong>
+                    <div class="text-muted small">ID: @patient.Id.ToString()[..8]...</div>
+                </div>
+            </div>
+        </td>
+        <td>
+            @if (patient.DateOfBirth.HasValue)
+            {
+                @patient.DateOfBirth.Value.ToString("MMM dd, yyyy")
+            }
+            else
+            {
+                <span class="text-muted">Not provided</span>
+            }
+        </td>
+        <td>
+            @if (!string.IsNullOrEmpty(patient.Email))
+            {
+                <a href="mailto:@patient.Email" class="text-decoration-none">@patient.Email</a>
+            }
+            else
+            {
+                <span class="text-muted">Not provided</span>
+            }
+        </td>
+        <td>
+            @if (!string.IsNullOrEmpty(patient.PhoneNumber))
+            {
+                <a href="tel:@patient.PhoneNumber" class="text-decoration-none">@patient.PhoneNumber</a>
+            }
+            else
+            {
+                <span class="text-muted">Not provided</span>
+            }
+        </td>
+        <td>
+            <div class="text-truncate" style="max-width: 200px;">
+                @if (!string.IsNullOrEmpty(patient.CityName))
+                {
+                    <span>@patient.CityName, @patient.ProvinceName</span>
+                }
+                else
+                {
+                    <span class="text-muted">Not specified</span>
+                }
+            </div>
+        </td>
+        <td>
+            <span class="cs-badge cs-badge-primary">@patient.Age years</span>
+        </td>
+        <td>
+            <small class="text-muted">@patient.CreatedAt.ToString("MMM dd, yyyy")</small>
+        </td>
+    </RowTemplate>
+
+    <FormTemplate Context="model">
+        @if (model is PatientFormDto formModel)
+        {
+            <PatientForm Model="@formModel" />
+        }
+    </FormTemplate>
+
+</BaseCrudPage>
+
+@code {
+
+    private PatientFormDto CreateNewPatient()
+    {
+        return new PatientFormDto();
+    }
+
+    private PatientFormDto MapPatientToUpdateModel(PatientDto patient)
+    {
+        return PatientFormDto.FromDto(patient);
+    }
+
+    private string GetPatientDisplayName(PatientDto patient)
+    {
+        return $"{patient.FirstName} {patient.LastName}";
+    }
+
+    private CreatePatientDto ConvertToCreateDto(PatientFormDto form)
+    {
+        return form.ToCreateDto();
+    }
+
+    private UpdatePatientDto ConvertToUpdateDto(PatientFormDto form)
+    {
+        return form.ToUpdateDto();
+    }
+
+}

@@ -1,0 +1,109 @@
+@inject IJSRuntime JSRuntime
+
+<div class="modal fade" id="@ModalId" tabindex="-1" aria-labelledby="@($"{ModalId}Label")" aria-hidden="true"
+     @ref="modalElement">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-@GetHeaderColor() text-white border-0">
+                <div class="d-flex align-items-center">
+                    <i class="@GetIcon() fa-lg me-3"></i>
+                    <h5 class="modal-title mb-0" id="@($"{ModalId}Label")">@Title</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-3">@Message</p>
+                <div class="form-group">
+                    <label for="@($"{ModalId}Input")" class="form-label">@InputLabel</label>
+                    <textarea id="@($"{ModalId}Input")"
+                              class="form-control"
+                              rows="3"
+                              @bind="inputValue"
+                              @bind:event="oninput"
+                              placeholder="@Placeholder"
+                              maxlength="500"></textarea>
+                    <div class="form-text">@($"{inputValue?.Length ?? 0}/500 characters")</div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>@CancelText
+                </button>
+                <button type="button"
+                        class="btn btn-@GetButtonColor()"
+                        @onclick="HandleConfirm"
+                        disabled="@(string.IsNullOrWhiteSpace(inputValue))">
+                    <i class="@GetIcon() me-2"></i>@ConfirmText
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Input Required";
+    [Parameter] public string Message { get; set; } = "Please provide your input:";
+    [Parameter] public string InputLabel { get; set; } = "Input";
+    [Parameter] public string Placeholder { get; set; } = "Enter your input here...";
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public ConfirmationDialogType Type { get; set; } = ConfirmationDialogType.Info;
+    [Parameter] public EventCallback<string> OnConfirm { get; set; }
+
+    private string ModalId => $"inputDialog_{GetHashCode()}";
+    private ElementReference modalElement;
+    private string? inputValue;
+
+    public async Task ShowAsync()
+    {
+        inputValue = string.Empty;
+        await JSRuntime.InvokeVoidAsync("eval", $"new bootstrap.Modal(document.getElementById('{ModalId}')).show()");
+    }
+
+    private async Task HandleConfirm()
+    {
+        if (!string.IsNullOrWhiteSpace(inputValue))
+        {
+            await JSRuntime.InvokeVoidAsync("eval", $"bootstrap.Modal.getInstance(document.getElementById('{ModalId}'))?.hide()");
+            await OnConfirm.InvokeAsync(inputValue);
+        }
+    }
+
+    private string GetHeaderColor()
+    {
+        return Type switch
+        {
+            ConfirmationDialogType.Danger => "danger",
+            ConfirmationDialogType.Warning => "warning",
+            ConfirmationDialogType.Success => "success",
+            ConfirmationDialogType.Info => "info",
+            _ => "info"
+        };
+    }
+
+    private string GetButtonColor()
+    {
+        return Type switch
+        {
+            ConfirmationDialogType.Danger => "danger",
+            ConfirmationDialogType.Warning => "warning",
+            ConfirmationDialogType.Success => "success",
+            ConfirmationDialogType.Info => "primary",
+            _ => "primary"
+        };
+    }
+
+    private string GetIcon()
+    {
+        return Type switch
+        {
+            ConfirmationDialogType.Danger => "fas fa-exclamation-triangle",
+            ConfirmationDialogType.Warning => "fas fa-exclamation-circle",
+            ConfirmationDialogType.Success => "fas fa-check-circle",
+            ConfirmationDialogType.Info => "fas fa-info-circle",
+            _ => "fas fa-info-circle"
+        };
+    }
+
+}

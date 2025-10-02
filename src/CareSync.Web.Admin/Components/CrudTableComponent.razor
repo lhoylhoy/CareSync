@@ -1,0 +1,163 @@
+@typeparam TDto
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <i class="@TableIcon me-2"></i>@TableTitle
+        </div>
+        @if (ShowActions && AllowCreate)
+        {
+            <button class="btn btn-primary btn-sm" @onclick="OnCreateClicked">
+                <i class="fas fa-plus me-2"></i>@CreateButtonText
+            </button>
+        }
+    </div>
+    <div class="card-body">
+        @if (IsLoading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">@LoadingMessage</p>
+            </div>
+        }
+        else if (Items?.Any() == true)
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        @HeaderTemplate
+                        @if (ShowActions)
+                        {
+                            <th class="text-center" style="width: 120px;">Actions</th>
+                        }
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Items)
+                    {
+                        <tr>
+                            @RowTemplate?.Invoke(item)
+                            @if (ShowActions)
+                            {
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        @if (AllowEdit)
+                                        {
+                                            <button class="btn btn-outline-primary btn-sm"
+                                                    @onclick="() => OnEditClicked.InvokeAsync(item)"
+                                                    title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        }
+                                        @if (AllowDelete)
+                                        {
+                                            var hasRelatedProp = item?.GetType().GetProperty("HasRelatedData");
+                                            bool disableDelete = hasRelatedProp != null && (hasRelatedProp.GetValue(item) as bool? == true);
+                                            var deleteTitle = disableDelete
+                                                ? "Cannot delete: related appointments, records, or bills exist"
+                                                : "Delete";
+                                            <button class="btn btn-outline-danger btn-sm"
+                                                    disabled="@disableDelete"
+                                                    @onclick="() => { if(!disableDelete) OnDeleteClicked.InvokeAsync(item); }"
+                                                    title="@deleteTitle">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        }
+                                        @if (AllowView)
+                                        {
+                                            <button class="btn btn-outline-info btn-sm"
+                                                    @onclick="() => OnViewClicked.InvokeAsync(item)"
+                                                    title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (ShowPagination && TotalPages > 1)
+            {
+                <nav aria-label="Table pagination">
+                    <ul class="pagination justify-content-center mb-0">
+                        <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                            <button class="page-link" @onclick="() => OnPageChanged.InvokeAsync(CurrentPage - 1)">
+                                Previous
+                            </button>
+                        </li>
+                        @for (var i = 1; i <= TotalPages; i++)
+                        {
+                            var pageNum = i;
+                            <li class="page-item @(CurrentPage == pageNum ? "active" : "")">
+                                <button class="page-link"
+                                        @onclick="() => OnPageChanged.InvokeAsync(pageNum)">@pageNum</button>
+                            </li>
+                        }
+                        <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                            <button class="page-link" @onclick="() => OnPageChanged.InvokeAsync(CurrentPage + 1)">Next
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="@EmptyStateIcon fa-3x text-muted opacity-50"></i>
+                </div>
+                <h5 class="text-muted">@EmptyStateTitle</h5>
+                <p class="text-muted mb-0">@EmptyStateMessage</p>
+                @if (AllowCreate && ShowActions)
+                {
+                    <button class="btn btn-primary mt-3" @onclick="OnCreateClicked">
+                        <i class="fas fa-plus me-2"></i>@CreateButtonText
+                    </button>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public IEnumerable<TDto>? Items { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string TableTitle { get; set; } = "Items";
+    [Parameter] public string TableIcon { get; set; } = "fas fa-table";
+    [Parameter] public string LoadingMessage { get; set; } = "Loading items...";
+    [Parameter] public string CreateButtonText { get; set; } = "Add New";
+    [Parameter] public string EmptyStateTitle { get; set; } = "No items found";
+    [Parameter] public string EmptyStateMessage { get; set; } = "Start by creating your first item.";
+    [Parameter] public string EmptyStateIcon { get; set; } = "fas fa-inbox";
+
+    // Action Controls
+    [Parameter] public bool ShowActions { get; set; } = true;
+    [Parameter] public bool AllowCreate { get; set; } = true;
+    [Parameter] public bool AllowEdit { get; set; } = true;
+    [Parameter] public bool AllowDelete { get; set; } = true;
+    [Parameter] public bool AllowView { get; set; }
+
+    // Pagination
+    [Parameter] public bool ShowPagination { get; set; }
+    [Parameter] public int CurrentPage { get; set; } = 1;
+    [Parameter] public int TotalPages { get; set; } = 1;
+
+    // Templates
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment<TDto>? RowTemplate { get; set; }
+
+    // Event Callbacks
+    [Parameter] public EventCallback OnCreateClicked { get; set; }
+    [Parameter] public EventCallback<TDto> OnEditClicked { get; set; }
+    [Parameter] public EventCallback<TDto> OnDeleteClicked { get; set; }
+    [Parameter] public EventCallback<TDto> OnViewClicked { get; set; }
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+}

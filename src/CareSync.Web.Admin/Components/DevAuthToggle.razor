@@ -1,0 +1,45 @@
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@if (_isDevelopment)
+{
+    <div class="dev-auth-toggle"
+         style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: #f0f0f0; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        <h6>Development Auth</h6>
+        <button class="btn btn-sm @(_isAuthenticated ? "btn-success" : "btn-danger")" @onclick="ToggleAuth">
+            @(_isAuthenticated ? "Logout" : "Login")
+        </button>
+        @if (_isAuthenticated)
+        {
+            <p style="margin: 5px 0 0 0; font-size: 0.8em;">User: @_currentUser?.Identity?.Name</p>
+        }
+    </div>
+}
+
+@code {
+    private bool _isAuthenticated = true;
+    private ClaimsPrincipal? _currentUser;
+    private bool _isDevelopment;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if we're in development by looking at the authentication provider type
+        _isDevelopment = AuthenticationStateProvider is LocalAuthenticationStateProvider;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _currentUser = authState.User;
+        _isAuthenticated = _currentUser.Identity?.IsAuthenticated ?? false;
+    }
+
+    private async Task ToggleAuth()
+    {
+        if (AuthenticationStateProvider is LocalAuthenticationStateProvider localProvider)
+        {
+            localProvider.ToggleAuthentication();
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            _currentUser = authState.User;
+            _isAuthenticated = _currentUser.Identity?.IsAuthenticated ?? false;
+        }
+    }
+
+}

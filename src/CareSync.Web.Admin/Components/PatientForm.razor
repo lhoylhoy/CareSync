@@ -1,0 +1,656 @@
+@inject IPhilippineGeographicDataService GeographicService
+@inject IValidationService ValidationService
+@using Microsoft.AspNetCore.Components.Forms
+@using CareSync.Shared.Constants
+@using CareSync.Shared.Services
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">First Name *</label>
+            <InputText @bind-Value="Model.FirstName" @oninput="OnFirstNameChanged" class="@GetFirstNameClass"
+                placeholder="Enter first name" />
+            @if (ValidationErrors.TryGetValue("FirstName", out var firstNameError))
+            {
+                <div class="invalid-feedback d-block">@firstNameError</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Middle Name</label>
+            <InputText @bind-Value="Model.MiddleName" class="@GetMiddleNameClass" placeholder="Enter middle name" />
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Last Name *</label>
+            <InputText @bind-Value="Model.LastName" @oninput="OnLastNameChanged" class="@GetLastNameClass"
+                placeholder="Enter last name" />
+            @if (ValidationErrors.TryGetValue("LastName", out var lastNameError))
+            {
+                <div class="invalid-feedback d-block">@lastNameError</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Date of Birth</label>
+            <InputDate @bind-Value="Model.DateOfBirth" @onchange="OnDateOfBirthChanged" class="@GetDateOfBirthClass" />
+            @if (ValidationErrors.TryGetValue("DateOfBirth", out var dobError))
+            {
+                <div class="invalid-feedback d-block">@dobError</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Gender *</label>
+            <InputSelect @bind-Value="Model.Gender" @onchange="OnGenderChanged" class="@GetGenderClass">
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </InputSelect>
+            @if (ValidationErrors.TryGetValue("Gender", out var genderError))
+            {
+                <div class="invalid-feedback d-block">@genderError</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText @bind-Value="Model.Email" @oninput="OnEmailChanged" class="@GetEmailClass" type="email"
+                placeholder="Enter email address" />
+            @if (ValidationErrors.TryGetValue("Email", out var emailError))
+            {
+                <div class="invalid-feedback d-block">@emailError</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <InputText @bind-Value="Model.PhoneNumber" @oninput="OnPhoneChanged" class="@GetPhoneClass"
+                placeholder="Enter phone number" />
+            @if (ValidationErrors.TryGetValue("PhoneNumber", out var phoneError))
+            {
+                <div class="invalid-feedback d-block">@phoneError</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Street Address</label>
+    <InputText @bind-Value="Model.Street" class="@GetStreetClass" placeholder="Enter street address" />
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Province *</label>
+            <InputSelect @bind-Value="Model.ProvinceCode" @bind-Value:after="OnProvinceChanged"
+                class="@GetProvinceClass">
+                <option value="">Select province</option>
+                @if (Provinces != null)
+                {
+                    @foreach (var province in Provinces)
+                    {
+                        <option value="@province.Code">@province.Name</option>
+                    }
+                }
+            </InputSelect>
+            @if (ValidationErrors.TryGetValue("ProvinceCode", out var provinceError))
+            {
+                <div class="invalid-feedback d-block">@provinceError</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">City *</label>
+            <InputSelect @bind-Value="Model.CityCode" @bind-Value:after="OnCityChanged" class="@GetCityClass"
+                disabled="@(string.IsNullOrEmpty(Model.ProvinceCode))">
+                <option value="">Select city</option>
+                @if (Cities != null)
+                {
+                    @foreach (var city in Cities)
+                    {
+                        <option value="@city.Code">@city.Name</option>
+                    }
+                }
+            </InputSelect>
+            @if (ValidationErrors.TryGetValue("CityCode", out var cityError))
+            {
+                <div class="invalid-feedback d-block">@cityError</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Barangay *</label>
+            <InputSelect @bind-Value="Model.BarangayCode" @bind-Value:after="OnBarangayChangedWrapper"
+                class="@GetBarangayClass" disabled="@(string.IsNullOrEmpty(Model.CityCode))">
+                <option value="">Select barangay</option>
+                @if (Barangays != null)
+                {
+                    @foreach (var barangay in Barangays)
+                    {
+                        <option value="@barangay.Code">@barangay.Name</option>
+                    }
+                }
+            </InputSelect>
+            @if (ValidationErrors.TryGetValue("BarangayCode", out var barangayError))
+            {
+                <div class="invalid-feedback d-block">@barangayError</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">ZIP Code *</label>
+            <InputText @bind-Value="Model.CityZipCode" class="@GetZipClass" placeholder="ZIP Code" readonly />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">PhilHealth Number</label>
+            <InputText @bind-Value="Model.PhilHealthNumber" @oninput="OnPhilHealthChanged" class="@GetPhilHealthClass"
+                placeholder="Enter PhilHealth number (12 digits)" />
+            @if (ValidationErrors.TryGetValue("PhilHealthNumber", out var philHealthError))
+            {
+                <div class="invalid-feedback d-block">@philHealthError</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">SSS Number</label>
+            <InputText @bind-Value="Model.SssNumber" @oninput="OnSssChanged" class="@GetSssClass"
+                placeholder="Enter SSS number (10 digits)" />
+            @if (ValidationErrors.TryGetValue("SssNumber", out var sssError))
+            {
+                <div class="invalid-feedback d-block">@sssError</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">TIN</label>
+            <InputText @bind-Value="Model.Tin" @oninput="OnTinChanged" class="@GetTinClass"
+                placeholder="Enter TIN (9-15 digits)" />
+            @if (ValidationErrors.TryGetValue("Tin", out var tinError))
+            {
+                <div class="invalid-feedback d-block">@tinError</div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public PatientFormDto Model { get; set; } = null!;
+    [Parameter] public EventCallback<PatientFormDto> ModelChanged { get; set; }
+
+    // Validation state
+    private Dictionary<string, string> ValidationErrors { get; set; } = new();
+    private HashSet<string> TouchedFields { get; set; } = new();
+
+    // Validation methods for immediate feedback
+    private void ValidateRequiredField(string fieldName, string? value, string displayName, bool markAsTouched = true)
+    {
+        if (markAsTouched)
+        {
+            TouchedFields.Add(fieldName);
+        }
+
+        if (TouchedFields.Contains(fieldName))
+        {
+            var error = ValidationService.ValidateRequired(value, displayName);
+            if (error != null)
+            {
+                ValidationErrors[fieldName] = error;
+            }
+            else
+            {
+                ValidationErrors.Remove(fieldName);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ValidateEmailField(string fieldName, string? value, bool markAsTouched = true)
+    {
+        if (markAsTouched)
+        {
+            TouchedFields.Add(fieldName);
+        }
+
+        if (TouchedFields.Contains(fieldName))
+        {
+            var error = ValidationService.ValidateEmail(value);
+            if (error != null)
+            {
+                ValidationErrors[fieldName] = error;
+            }
+            else
+            {
+                ValidationErrors.Remove(fieldName);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ValidatePhoneField(string fieldName, string? value, bool markAsTouched = true)
+    {
+        if (markAsTouched)
+        {
+            TouchedFields.Add(fieldName);
+        }
+
+        if (TouchedFields.Contains(fieldName) && !string.IsNullOrWhiteSpace(value))
+        {
+            var error = ValidationService.ValidatePhilippinePhoneNumber(value);
+            if (error != null)
+            {
+                ValidationErrors[fieldName] = error;
+            }
+            else
+            {
+                ValidationErrors.Remove(fieldName);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ValidateDateOfBirthField(string fieldName, DateTime? dateValue, bool markAsTouched = true)
+    {
+        if (markAsTouched)
+        {
+            TouchedFields.Add(fieldName);
+        }
+
+        if (TouchedFields.Contains(fieldName))
+        {
+            var error = ValidationService.ValidateDateOfBirth(dateValue);
+            if (error != null)
+            {
+                ValidationErrors[fieldName] = error;
+            }
+            else
+            {
+                ValidationErrors.Remove(fieldName);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ValidatePhilHealthField(string fieldName, string? value, bool markAsTouched = true)
+    {
+        if (markAsTouched)
+        {
+            TouchedFields.Add(fieldName);
+        }
+
+        if (TouchedFields.Contains(fieldName) && !string.IsNullOrWhiteSpace(value))
+        {
+            var error = ValidationService.ValidatePhilHealthNumber(value);
+            if (error != null)
+            {
+                ValidationErrors[fieldName] = error;
+            }
+            else
+            {
+                ValidationErrors.Remove(fieldName);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ValidateSssField(string fieldName, string? value, bool markAsTouched = true)
+    {
+        if (markAsTouched)
+        {
+            TouchedFields.Add(fieldName);
+        }
+
+        if (TouchedFields.Contains(fieldName) && !string.IsNullOrWhiteSpace(value))
+        {
+            var error = ValidationService.ValidateSssNumber(value);
+            if (error != null)
+            {
+                ValidationErrors[fieldName] = error;
+            }
+            else
+            {
+                ValidationErrors.Remove(fieldName);
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void ValidateTinField(string fieldName, string? value, bool markAsTouched = true)
+    {
+        if (markAsTouched)
+        {
+            TouchedFields.Add(fieldName);
+        }
+
+        if (TouchedFields.Contains(fieldName) && !string.IsNullOrWhiteSpace(value))
+        {
+            var error = ValidationService.ValidateTinNumber(value);
+            if (error != null)
+            {
+                ValidationErrors[fieldName] = error;
+            }
+            else
+            {
+                ValidationErrors.Remove(fieldName);
+            }
+            StateHasChanged();
+        }
+    }
+
+    // Event handlers for immediate validation
+    private void OnFirstNameChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        Model.FirstName = value;
+        ValidateRequiredField("FirstName", value, "First name");
+    }
+
+    private void OnLastNameChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        Model.LastName = value;
+        ValidateRequiredField("LastName", value, "Last name");
+    }
+
+    private void OnEmailChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        Model.Email = value;
+        ValidateEmailField("Email", value);
+    }
+
+    private void OnPhoneChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        Model.PhoneNumber = value;
+        // PhoneNumber is nullable - only validate format if value is provided
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            ValidatePhoneField("PhoneNumber", value);
+        }
+        else
+        {
+            // Clear any existing validation errors for phone when empty
+            ValidationErrors.Remove("PhoneNumber");
+        }
+    }
+
+    private void OnGenderChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        Model.Gender = value;
+        ValidateRequiredField("Gender", value, "Gender");
+    }
+
+    private void OnDateOfBirthChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var date))
+        {
+            Model.DateOfBirth = date;
+        }
+        else
+        {
+            // If parsing fails, use MinValue to indicate invalid/empty date
+            Model.DateOfBirth = DateTime.MinValue;
+        }
+        ValidateDateOfBirthField("DateOfBirth", Model.DateOfBirth == DateTime.MinValue ? null : Model.DateOfBirth);
+    }
+
+    private void OnPhilHealthChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        Model.PhilHealthNumber = value;
+        ValidatePhilHealthField("PhilHealthNumber", value);
+    }
+
+    private void OnSssChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        Model.SssNumber = value;
+        ValidateSssField("SssNumber", value);
+    }
+
+    private void OnTinChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        Model.Tin = value;
+        ValidateTinField("Tin", value);
+    }
+
+    private void OnBarangayChanged(string value)
+    {
+        Model.BarangayCode = value;
+
+        // Validate the barangay selection
+        ValidateRequiredField("BarangayCode", Model.BarangayCode, "Barangay");
+
+        // Update barangay name
+        if (!string.IsNullOrEmpty(value))
+        {
+            var barangay = Barangays?.FirstOrDefault(b => b.Code == value);
+            if (barangay != null)
+            {
+                Model.BarangayName = barangay.Name;
+            }
+        }
+        else
+        {
+            Model.BarangayName = string.Empty;
+        }
+
+        StateHasChanged();
+    }
+
+    private string GetFirstNameClass => $"form-control {GetValidationClass("FirstName")}";
+    private string GetMiddleNameClass => "form-control";
+    private string GetLastNameClass => $"form-control {GetValidationClass("LastName")}";
+    private string GetDateOfBirthClass => $"form-control {GetValidationClass("DateOfBirth")}";
+    private string GetGenderClass => $"form-select {GetValidationClass("Gender")}";
+    private string GetEmailClass => $"form-control {GetValidationClass("Email")}";
+    private string GetPhoneClass => $"form-control {GetValidationClass("PhoneNumber")}";
+    private string GetStreetClass => "form-control";
+    private string GetProvinceClass => $"form-select {GetValidationClass("ProvinceCode")}";
+    private string GetCityClass => $"form-select {GetValidationClass("CityCode")}";
+    private string GetBarangayClass => $"form-select {GetValidationClass("BarangayCode")}";
+    private string GetZipClass => $"form-control {GetValidationClass("CityZipCode")}";
+    private string GetPhilHealthClass => $"form-control {GetValidationClass("PhilHealthNumber")}";
+    private string GetSssClass => $"form-control {GetValidationClass("SssNumber")}";
+    private string GetTinClass => $"form-control {GetValidationClass("Tin")}";
+
+    // Helper method for CSS classes
+    private string GetValidationClass(string fieldName)
+    {
+        return ValidationErrors.ContainsKey(fieldName) ? "is-invalid" : "";
+    }
+
+    private void ValidateAllFields()
+    {
+        // Mark all fields as touched and validate them
+        ValidateRequiredField("FirstName", Model.FirstName, "First name");
+        ValidateRequiredField("LastName", Model.LastName, "Last name");
+        ValidateDateOfBirthField("DateOfBirth", Model.DateOfBirth == DateTime.MinValue ? null : Model.DateOfBirth);
+        ValidateEmailField("Email", Model.Email);
+        // PhoneNumber is nullable - only validate format if provided
+        if (!string.IsNullOrWhiteSpace(Model.PhoneNumber))
+        {
+            ValidatePhoneField("PhoneNumber", Model.PhoneNumber, false); // Don't mark as touched again
+        }
+        ValidateRequiredField("Gender", Model.Gender, "Gender");
+        ValidateRequiredField("ProvinceCode", Model.ProvinceCode, "Province");
+        ValidateRequiredField("CityCode", Model.CityCode, "City/Municipality");
+        ValidateRequiredField("BarangayCode", Model.BarangayCode, "Barangay");
+        ValidateRequiredField("CityZipCode", Model.CityZipCode, "ZIP Code");
+    }
+
+    // Public method to validate all fields (for form submission)
+    public bool IsFormValid()
+    {
+        ValidateAllFields();
+        return ValidationErrors.Count == 0;
+    }
+
+    private IEnumerable<ProvinceDto>? Provinces;
+    private IEnumerable<CityDto>? Cities = Array.Empty<CityDto>();
+    private IEnumerable<BarangayDto>? Barangays = Array.Empty<BarangayDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        // Load provinces when the form loads
+        await LoadProvinces();
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        // No setup needed - just display the patient data that's already in the Model!
+        await Task.CompletedTask;
+    }
+
+    private async Task LoadProvinces()
+    {
+        try
+        {
+            if (GeographicService != null)
+            {
+                Provinces = await GeographicService.GetProvincesAsync();
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't crash the form
+            Console.WriteLine($"Error loading provinces: {ex.Message}");
+        }
+    }
+
+    // Called when user selects a province
+    private async Task OnProvinceChanged()
+    {
+        // Validate the province selection
+        ValidateRequiredField("ProvinceCode", Model.ProvinceCode, "Province");
+
+        // Clear dependent fields completely (no caching)
+        Model.CityCode = string.Empty;
+        Model.CityName = string.Empty;
+        Model.BarangayCode = string.Empty;
+        Model.BarangayName = string.Empty;
+        Model.CityZipCode = string.Empty;
+        Cities = null; // Force null to ensure fresh load
+        Barangays = null; // Force null to ensure fresh load
+
+        // Clear validation for dependent fields
+        ValidationErrors.Remove("CityCode");
+        ValidationErrors.Remove("BarangayCode");
+        ValidationErrors.Remove("CityZipCode");
+
+        // Update province name and load cities
+        if (!string.IsNullOrEmpty(Model.ProvinceCode))
+        {
+            var province = Provinces?.FirstOrDefault(p => p.Code == Model.ProvinceCode);
+            if (province != null)
+            {
+                Model.ProvinceName = province.Name;
+            }
+
+            // Load cities for the selected province
+            await LoadCitiesForProvince(Model.ProvinceCode);
+        }
+
+        StateHasChanged();
+    }
+
+    // Called when user selects a city
+    private async Task OnCityChanged()
+    {
+        // Validate the city selection
+        ValidateRequiredField("CityCode", Model.CityCode, "City/Municipality");
+
+        // Clear dependent fields completely (no caching)
+        Model.BarangayCode = string.Empty;
+        Model.BarangayName = string.Empty;
+        Barangays = null; // Force null to ensure fresh load
+
+        // Clear validation for dependent fields
+        ValidationErrors.Remove("BarangayCode");
+
+        // Update city name and populate zip code and load barangays for the selected city
+        if (!string.IsNullOrEmpty(Model.CityCode))
+        {
+            var city = Cities?.FirstOrDefault(c => c.Code == Model.CityCode);
+            if (city != null)
+            {
+                Model.CityName = city.Name;
+            }
+
+            await PopulateZipCodeAndLoadBarangays(Model.CityCode);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LoadCitiesForProvince(string provinceCode)
+    {
+        try
+        {
+            Cities = await GeographicService.GetCitiesByProvinceCodeAsync(provinceCode);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading cities: {ex.Message}");
+        }
+    }
+
+    private async Task PopulateZipCodeAndLoadBarangays(string cityCode)
+    {
+        try
+        {
+            // Get the city details to populate zip code
+            var city = Cities?.FirstOrDefault(c => c.Code == cityCode);
+            if (city != null && !string.IsNullOrEmpty(city.ZipCode))
+            {
+                Model.CityZipCode = city.ZipCode;
+            }
+
+            // Load barangays for the selected city
+            Barangays = await GeographicService.GetBarangaysByCityCodeAsync(cityCode);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading city details and barangays: {ex.Message}");
+        }
+    }
+
+    private void OnBarangayChangedWrapper()
+    {
+        ValidateRequiredField("BarangayCode", Model.BarangayCode, "Barangay");
+        OnBarangayChanged(Model.BarangayCode);
+    }
+}

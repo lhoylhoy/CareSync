@@ -1,0 +1,265 @@
+@inject IJSRuntime JsRuntime
+
+<!-- Confirmation Dialog Modal -->
+<div class="modal fade" id="@ModalId" tabindex="-1" aria-labelledby="@($"{ModalId}Label")" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header @HeaderClass border-0">
+                <div class="d-flex align-items-center">
+                    <div class="warning-icon-container me-3">
+                        <i class="@IconClass fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="@($"{ModalId}Label")">@Title</h5>
+                        <small class="opacity-75">@Subtitle</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="warning-illustration mb-3">
+                        <i class="@IllustrationIcon fa-4x @IllustrationColorClass opacity-50"></i>
+                    </div>
+                    <h6 class="mb-3">@Message</h6>
+
+                    @if (!string.IsNullOrEmpty(ItemName))
+                    {
+                        <div class="item-info-card p-3 bg-light rounded-3 border-start @BorderClass border-4">
+                            <div class="d-flex align-items-center">
+                                <div class="item-avatar me-3">
+                                    <i class="@ItemIcon text-muted"></i>
+                                </div>
+                                <div class="text-start">
+                                    <strong class="text-dark">@ItemName</strong>
+                                    <div class="text-muted small">@ItemType</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (WarningDetails != null && WarningDetails.Any())
+                {
+                    <div class="alert @AlertClass border-0 @AlertBgClass mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="@AlertIcon me-2 mt-1"></i>
+                            <div class="small">
+                                <strong>@AlertTitle:</strong> @AlertMessage
+                                @if (WarningDetails.Any())
+                                {
+                                    <ul class="mb-0 mt-2">
+                                        @foreach (var detail in WarningDetails)
+                                        {
+                                            <li>@detail</li>
+                                        }
+                                    </ul>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <p class="text-muted text-center mb-0">
+                    <i class="fas fa-lock me-1"></i>
+                    @FooterMessage
+                </p>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>@CancelText
+                </button>
+                <button type="button" class="btn @ConfirmButtonClass px-4" @onclick="OnConfirm">
+                    <i class="@ConfirmIcon me-2"></i>@ConfirmText
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string ModalId { get; set; } = "confirmationModal";
+    [Parameter] public string Title { get; set; } = "Confirm Action";
+    [Parameter] public string Subtitle { get; set; } = "This action cannot be undone";
+    [Parameter] public string Message { get; set; } = "Are you sure you want to proceed?";
+    [Parameter] public string ItemName { get; set; } = string.Empty;
+    [Parameter] public string ItemType { get; set; } = "Record";
+    [Parameter] public string FooterMessage { get; set; } = "This action is permanent and cannot be reversed.";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public List<string> WarningDetails { get; set; } = new();
+    [Parameter] public string AlertTitle { get; set; } = "Warning";
+    [Parameter] public string AlertMessage { get; set; } = "This action will permanently remove:";
+
+    // Styling Parameters
+    [Parameter] public ConfirmationDialogType DialogType { get; set; } = ConfirmationDialogType.Danger;
+    [Parameter] public string ItemIcon { get; set; } = "fas fa-file";
+
+    // Event Callbacks
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    // Computed Properties based on DialogType
+    private string HeaderClass => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "bg-danger text-white",
+        ConfirmationDialogType.Warning => "bg-warning text-dark",
+        ConfirmationDialogType.Info => "bg-info text-white",
+        ConfirmationDialogType.Success => "bg-success text-white",
+        _ => "bg-danger text-white"
+    };
+
+    private string IconClass => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "fas fa-exclamation-triangle",
+        ConfirmationDialogType.Warning => "fas fa-exclamation-circle",
+        ConfirmationDialogType.Info => "fas fa-info-circle",
+        ConfirmationDialogType.Success => "fas fa-check-circle",
+        _ => "fas fa-exclamation-triangle"
+    };
+
+    private string IllustrationIcon => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "fas fa-user-times",
+        ConfirmationDialogType.Warning => "fas fa-exclamation-triangle",
+        ConfirmationDialogType.Info => "fas fa-info-circle",
+        ConfirmationDialogType.Success => "fas fa-check-circle",
+        _ => "fas fa-user-times"
+    };
+
+    private string IllustrationColorClass => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "text-danger",
+        ConfirmationDialogType.Warning => "text-warning",
+        ConfirmationDialogType.Info => "text-info",
+        ConfirmationDialogType.Success => "text-success",
+        _ => "text-danger"
+    };
+
+    private string BorderClass => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "border-danger",
+        ConfirmationDialogType.Warning => "border-warning",
+        ConfirmationDialogType.Info => "border-info",
+        ConfirmationDialogType.Success => "border-success",
+        _ => "border-danger"
+    };
+
+    private string ConfirmButtonClass => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "btn-danger",
+        ConfirmationDialogType.Warning => "btn-warning",
+        ConfirmationDialogType.Info => "btn-info",
+        ConfirmationDialogType.Success => "btn-success",
+        _ => "btn-danger"
+    };
+
+    private string ConfirmIcon => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "fas fa-trash",
+        ConfirmationDialogType.Warning => "fas fa-exclamation-triangle",
+        ConfirmationDialogType.Info => "fas fa-info",
+        ConfirmationDialogType.Success => "fas fa-check",
+        _ => "fas fa-trash"
+    };
+
+    private string AlertClass => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "alert-danger",
+        ConfirmationDialogType.Warning => "alert-warning",
+        ConfirmationDialogType.Info => "alert-info",
+        ConfirmationDialogType.Success => "alert-success",
+        _ => "alert-warning"
+    };
+
+    private string AlertBgClass => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "bg-danger bg-opacity-10",
+        ConfirmationDialogType.Warning => "bg-warning bg-opacity-10",
+        ConfirmationDialogType.Info => "bg-info bg-opacity-10",
+        ConfirmationDialogType.Success => "bg-success bg-opacity-10",
+        _ => "bg-warning bg-opacity-10"
+    };
+
+    private string AlertIcon => DialogType switch
+    {
+        ConfirmationDialogType.Danger => "fas fa-exclamation-triangle text-danger",
+        ConfirmationDialogType.Warning => "fas fa-info-circle text-warning",
+        ConfirmationDialogType.Info => "fas fa-info-circle text-info",
+        ConfirmationDialogType.Success => "fas fa-check-circle text-success",
+        _ => "fas fa-info-circle text-warning"
+    };
+
+    public async Task ShowAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("eval", $"new bootstrap.Modal(document.getElementById('{ModalId}')).show()");
+    }
+
+    public async Task HideAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("eval", $"bootstrap.Modal.getInstance(document.getElementById('{ModalId}'))?.hide()");
+    }
+
+}
+
+<style>
+    .warning-icon-container {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .item-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--bs-gray-200);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .warning-illustration {
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .item-info-card {
+        transition: all 0.3s ease;
+    }
+
+    .modal-content {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-danger:hover, .btn-warning:hover, .btn-info:hover, .btn-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-light:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+</style>

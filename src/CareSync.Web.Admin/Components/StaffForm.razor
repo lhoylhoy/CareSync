@@ -1,0 +1,151 @@
+@using CareSync.Application.DTOs.Staff
+@using Microsoft.AspNetCore.Components.Forms
+@using CareSync.Domain.Enums
+@inherits ComponentBase
+@using System.Text.RegularExpressions
+
+@if (Model is null)
+{
+    <div class="alert alert-danger">Staff form model not initialized.</div>
+}
+else
+{
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">First Name <span class="text-danger">*</span></label>
+            <input class='@GetInputClass("FirstName")' @bind="Model.FirstName"
+                @onblur='@(() => ValidateRequiredField("FirstName", Model!.FirstName, "First Name"))' />
+            @FieldError("FirstName")
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+            <input class='@GetInputClass("LastName")' @bind="Model.LastName"
+                @onblur='@(() => ValidateRequiredField("LastName", Model!.LastName, "Last Name"))' />
+            @FieldError("LastName")
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Middle Name</label>
+            <input class="form-control" @bind="Model.MiddleName" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" class='@GetInputClass("Email")' @bind="Model.Email" @onblur='@ValidateEmail' />
+            @FieldError("Email")
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Phone</label>
+            <input class='@GetInputClass("PhoneNumber")' @bind="Model.PhoneNumber" @onblur='@ValidatePhone' />
+            @FieldError("PhoneNumber")
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Role</label>
+            <InputSelect class="form-select" @bind-Value="Model.Role">
+                @foreach (var r in Enum.GetValues<StaffRole>())
+                {
+                    <option value="@r">@r</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Department <span class="text-danger">*</span></label>
+            <InputSelect class='@GetInputClass("Department")' @bind-Value="Model.Department"
+                @onblur='@(() => ValidateRequiredField("Department", Model!.Department.ToString(), "Department"))'>
+                @foreach (var d in Enum.GetValues<Department>())
+                {
+                    <option value="@d">@d</option>
+                }
+            </InputSelect>
+            @FieldError("Department")
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Employee ID <span class="text-danger">*</span></label>
+            <input class='@GetInputClass("EmployeeId")' @bind="Model.EmployeeId"
+                @onblur='@(() => ValidateRequiredField("EmployeeId", Model!.EmployeeId, "Employee ID"))' />
+            @FieldError("EmployeeId")
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Hire Date <span class="text-danger">*</span></label>
+            <input type="date" class='@GetInputClass("HireDate")' @bind="Model.HireDate" @onblur='@ValidateHireDate' />
+            @FieldError("HireDate")
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" rows="3" @bind="Model.Notes"></textarea>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public StaffFormDto? Model { get; set; }
+    [Parameter] public EventCallback<StaffFormDto?> ModelChanged { get; set; }
+
+    private Dictionary<string, string> _errors = new();
+    private HashSet<string> _touched = new();
+
+    private void SetError(string field, string? error)
+    {
+        if (string.IsNullOrWhiteSpace(error)) _errors.Remove(field); else _errors[field] = error;
+        StateHasChanged();
+    }
+
+    private void ValidateRequiredField(string field, string? value, string label)
+    {
+        _touched.Add(field);
+        var error = string.IsNullOrWhiteSpace(value) ? $"{label} is required" : null;
+        SetError(field, error);
+    }
+
+    private void ValidateEmail()
+    {
+        _touched.Add("Email");
+        var value = Model?.Email;
+        string? error = null;
+        if (string.IsNullOrWhiteSpace(value)) error = "Email is required";
+        else if (!Regex.IsMatch(value, @"^[^@\s]+@[^@\s]+\.[^@\s]+$")) error = "Invalid email format";
+        SetError("Email", error);
+    }
+
+    private void ValidatePhone()
+    {
+        if (string.IsNullOrWhiteSpace(Model?.PhoneNumber)) return; // optional
+        _touched.Add("PhoneNumber");
+        var digits = new string(Model!.PhoneNumber.Where(char.IsDigit).ToArray());
+        var error = digits.Length < 7 ? "Phone appears too short" : null;
+        SetError("PhoneNumber", error);
+    }
+
+    private void ValidateHireDate()
+    {
+        _touched.Add("HireDate");
+        if (Model?.HireDate == default)
+        {
+            SetError("HireDate", "Hire Date is required");
+            return;
+        }
+        if (Model!.HireDate > DateTime.Today.AddDays(1))
+        {
+            SetError("HireDate", "Hire Date cannot be in the future");
+            return;
+        }
+        SetError("HireDate", null);
+    }
+
+    private RenderFragment FieldError(string field) => builder =>
+    {
+        if (_errors.TryGetValue(field, out var msg))
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "invalid-feedback d-block");
+            builder.AddContent(2, msg);
+            builder.CloseElement();
+        }
+    };
+
+    private string GetFieldClass(string field)
+    {
+        if (!_touched.Contains(field)) return string.Empty;
+        return _errors.ContainsKey(field) ? "is-invalid" : "is-valid";
+    }
+
+    private string GetInputClass(string field) => $"form-control {GetFieldClass(field)}".Trim();
+}

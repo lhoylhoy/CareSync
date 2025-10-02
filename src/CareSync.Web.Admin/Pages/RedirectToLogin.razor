@@ -1,0 +1,26 @@
+@inject NavigationManager Navigation
+
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card" style="max-width: 400px; width: 100%;">
+        <div class="card-body text-center">
+            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+            <h4 class="card-title">Entra ID Authentication</h4>
+            <p class="card-text text-muted">
+                Please sign in with your Microsoft Entra ID account to access the CareSync clinic management system.
+            </p>
+            <button class="btn btn-primary btn-lg" @onclick="BeginSignIn">
+                <i class="fab fa-microsoft me-2"></i>
+                Sign in with Microsoft
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private void BeginSignIn()
+    {
+        Navigation.NavigateToLogin("authentication/login");
+    }
+
+}

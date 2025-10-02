@@ -1,0 +1,141 @@
+@typeparam TDto
+@inject IJSRuntime JsRuntime
+
+<!-- CRUD Modal -->
+<div class="modal fade" id="@ModalId" tabindex="-1" aria-labelledby="@($"{ModalId}Label")" aria-hidden="true">
+    <div class="modal-dialog @ModalSize">
+        <div class="modal-content">
+            <div class="modal-header bg-@ModalHeaderColor">
+                <h5 class="modal-title text-white" id="@($"{ModalId}Label")">
+                    <i class="@ModalIcon me-2"></i>@ModalTitle
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (IsLoading)
+                {
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">@(IsEditing ? "Loading item details..." : "Preparing form...")</p>
+                    </div>
+                }
+                else if (CurrentModel != null)
+                {
+                    <EditForm Model="@CurrentModel" OnValidSubmit="@HandleValidSubmit">
+                        <DataAnnotationsValidator/>
+
+                        @if (ValidationMessages?.Any() == true)
+                        {
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach (var message in ValidationMessages)
+                                    {
+                                        <li>@message</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        @if (FormTemplate != null)
+                        {
+                            @FormTemplate(CurrentModel)
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Form template not provided. Please define the FormTemplate parameter.
+                            </div>
+                        }
+
+                        <ValidationSummary class="text-danger"/>
+                    </EditForm>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Preparing form...
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" disabled="@IsProcessing">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-@SubmitButtonColor" @onclick="HandleValidSubmit"
+                        disabled="@(IsLoading || IsProcessing)">
+                    @if (IsProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    else
+                    {
+                        <i class="@SubmitIcon me-2"></i>
+                    }
+                    @SubmitButtonText
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string ModalId { get; set; } = "crudModal";
+    [Parameter] public string ModalSize { get; set; } = "modal-lg";
+    [Parameter] public bool IsEditing { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool IsProcessing { get; set; }
+    [Parameter] public TDto? CurrentModel { get; set; }
+    [Parameter] public List<string>? ValidationMessages { get; set; }
+
+    // UI Customization
+    [Parameter] public string CreateTitle { get; set; } = "Create New Item";
+    [Parameter] public string EditTitle { get; set; } = "Edit Item";
+    [Parameter] public string CreateIcon { get; set; } = "fas fa-plus";
+    [Parameter] public string EditIcon { get; set; } = "fas fa-edit";
+    [Parameter] public string CreateSubmitText { get; set; } = "Create";
+    [Parameter] public string EditSubmitText { get; set; } = "Update";
+    [Parameter] public string CreateHeaderColor { get; set; } = "primary";
+    [Parameter] public string EditHeaderColor { get; set; } = "warning";
+    [Parameter] public string CreateSubmitColor { get; set; } = "primary";
+    [Parameter] public string EditSubmitColor { get; set; } = "warning";
+
+    // Templates
+    [Parameter] public RenderFragment<TDto>? FormTemplate { get; set; }
+
+    // Event Callbacks
+    [Parameter] public EventCallback<TDto> OnSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    // Computed Properties
+    private string ModalTitle => IsEditing ? EditTitle : CreateTitle;
+    private string ModalIcon => IsEditing ? EditIcon : CreateIcon;
+    private string ModalHeaderColor => IsEditing ? EditHeaderColor : CreateHeaderColor;
+    private string SubmitButtonText => IsEditing ? EditSubmitText : CreateSubmitText;
+    private string SubmitButtonColor => IsEditing ? EditSubmitColor : CreateSubmitColor;
+    private string SubmitIcon => IsEditing ? EditIcon : CreateIcon;
+
+    public async Task ShowAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("bootstrap.Modal.getOrCreateInstance", $"#{ModalId}").AsTask();
+        await JsRuntime.InvokeVoidAsync("eval", $"bootstrap.Modal.getOrCreateInstance(document.getElementById('{ModalId}')).show()");
+    }
+
+    public async Task HideAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("eval", $"bootstrap.Modal.getOrCreateInstance(document.getElementById('{ModalId}')).hide()");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (CurrentModel != null)
+        {
+            await OnSubmit.InvokeAsync(CurrentModel);
+        }
+    }
+
+}

@@ -1,0 +1,59 @@
+@page "/staff"
+@inject CareSync.Web.Admin.Services.Contracts.IStaffService StaffService
+@inject CareSync.Web.Admin.Services.ICrudService<StaffDto, CreateStaffDto, UpdateStaffDto> StaffCrudService
+@using CareSync.Application.DTOs.Staff
+@using CareSync.Web.Admin.Components
+
+<BaseCrudPage TDto="StaffDto" TCreateDto="CreateStaffDto" TUpdateDto="UpdateStaffDto" TFormDto="StaffFormDto"
+    PageTitle="Staff Management" PageDescription="Manage non-physician staff and personnel" PageIcon="fas fa-users-cog"
+    EntityName="Staff" TableTitle="Staff Directory" TableIcon="fas fa-users-cog" CreateButtonText="Add Staff Member"
+    EmptyStateTitle="No staff members found" EmptyStateMessage="Start by adding your first staff member."
+    EmptyStateIcon="fas fa-user-plus" DeleteItemIcon="fas fa-user" CrudService="@StaffCrudService"
+    CreateNewModel="@CreateNewStaff" MapToUpdateModel="@MapStaffToUpdateModel" GetItemDisplayName="@GetStaffDisplayName"
+    ConvertToCreateDto="@ConvertToCreateDto" ConvertToUpdateDto="@ConvertToUpdateDto">
+
+    <HeaderTemplate>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Department</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Hire Date</th>
+        <th>Created</th>
+    </HeaderTemplate>
+
+    <RowTemplate Context="staff">
+        <td>
+            <div class="d-flex align-items-center">
+                <div class="avatar-circle bg-secondary text-white me-3">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div class="fw-bold">@staff.FirstName @staff.LastName</div>
+                    <small class="text-muted">@staff.EmployeeId</small>
+                </div>
+            </div>
+        </td>
+        <td><span class="cs-badge cs-badge-primary">@staff.Role</span></td>
+        <td><span class="cs-badge cs-badge-neutral">@staff.Department</span></td>
+        <td>@staff.Email</td>
+        <td>@staff.PhoneNumber</td>
+        <td>@staff.HireDate.ToString("MMM dd, yyyy")</td>
+        <td><small class="text-muted">@staff.CreatedAt.ToString("MMM dd, yyyy")</small></td>
+    </RowTemplate>
+
+    <FormTemplate Context="model">
+        @if (model is StaffFormDto formModel)
+        {
+            <StaffForm Model="@formModel" />
+        }
+    </FormTemplate>
+</BaseCrudPage>
+
+@code {
+    private StaffFormDto CreateNewStaff() => new();
+    private StaffFormDto MapStaffToUpdateModel(StaffDto staff) => StaffFormDto.FromDto(staff);
+    private string GetStaffDisplayName(StaffDto staff) => $"{staff.FirstName} {staff.LastName}";
+    private CreateStaffDto ConvertToCreateDto(StaffFormDto form) => form.ToCreateDto();
+    private UpdateStaffDto ConvertToUpdateDto(StaffFormDto form) => form.ToUpdateDto();
+}

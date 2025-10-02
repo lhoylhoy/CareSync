@@ -1,0 +1,232 @@
+﻿@page "/"
+@inject CareSync.Web.Admin.Services.Contracts.IAppointmentService AppointmentService
+@inject CareSync.Web.Admin.Services.Contracts.IBillingService BillingService
+@inject CareSync.Web.Admin.Services.Contracts.IPatientService PatientService
+@inject CareSync.Web.Admin.Services.Contracts.IDoctorService DoctorService
+
+<PageTitle>Dashboard - CareSync</PageTitle>
+
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-primary mb-0">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </h1>
+            <p class="text-muted mb-0">Welcome to CareSync Clinic Management System</p>
+        </div>
+        <div class="text-end">
+            <small class="text-muted">@DateTime.Now.ToString("MMMM dd, yyyy")</small>
+        </div>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="dashboard-card patients">
+                <i class="fas fa-users fa-3x mb-3"></i>
+                <h3>@_totalPatients</h3>
+                <p>Total Patients</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="dashboard-card doctors">
+                <i class="fas fa-user-md fa-3x mb-3"></i>
+                <h3>@_totalDoctors</h3>
+                <p>Active Doctors</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="dashboard-card appointments">
+                <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                <h3>@_todayAppointments</h3>
+                <p>Today's Appointments</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="dashboard-card billing">
+                <i class="fas fa-dollar-sign fa-3x mb-3"></i>
+                <h3>@_pendingBills</h3>
+                <p>Pending Bills</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="/patients"
+                                class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-user-plus fa-2x mb-2"></i>
+                                <span>Add New Patient</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="/appointments"
+                                class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-calendar-plus fa-2x mb-2"></i>
+                                <span>Schedule Appointment</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="/medical-records"
+                                class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3"
+                                style="border: 2px solid var(--info);">
+                                <i class="fas fa-file-medical-alt fa-2x mb-2"></i>
+                                <span>Create Medical Record</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="/billing"
+                                class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
+                                <span>Generate Bill</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-clock me-2"></i>Recent Appointments
+                </div>
+                <div class="card-body">
+                    @if (_recentAppointments == null)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner"></div>
+                            <p class="mt-2 text-muted">Loading appointments...</p>
+                        </div>
+                    }
+                    else if (_recentAppointments.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Doctor</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var appointment in _recentAppointments.Take(5))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <i class="fas fa-user me-2 text-primary"></i>
+                                                @appointment.PatientName
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-user-md me-2 text-success"></i>
+                                                @appointment.DoctorName
+                                            </td>
+                                            <td>@appointment.StartDateTime.ToString("MMM dd, yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="cs-badge status-@appointment.Status.ToString().ToLower()">
+                                                    @appointment.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent appointments found.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line me-2"></i>System Overview
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Appointments Today</span>
+                            <span class="cs-badge cs-badge-primary">@_todayAppointments</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Pending Bills</span>
+                            <span class="cs-badge cs-badge-warning">@_pendingBills</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Active Patients</span>
+                            <span class="cs-badge cs-badge-success">@_totalPatients</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Medical Staff</span>
+                            <span class="cs-badge cs-badge-primary">@_totalDoctors</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int _totalPatients;
+    private int _totalDoctors;
+    private int _todayAppointments;
+    private int _pendingBills;
+    private List<AppointmentDto>? _recentAppointments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Load dashboard data
+            var appointmentsTask = AppointmentService.GetAllAsync();
+            var doctorsTask = DoctorService.GetAllAsync();
+            var billsTask = BillingService.GetBillsAsync();
+            var patientsTask = PatientService.GetAllAsync();
+
+            await Task.WhenAll(appointmentsTask, doctorsTask, billsTask, patientsTask);
+
+            var appointmentsResponse = await appointmentsTask;
+            var doctorsResponse = await doctorsTask;
+            var bills = await billsTask;
+            var patientsResponse = await patientsTask;
+
+            _recentAppointments = appointmentsResponse.Data?.ToList();
+            _totalDoctors = doctorsResponse.Data?.Count() ?? 0;
+            _totalPatients = patientsResponse.Data?.Count() ?? 0;
+            _todayAppointments = _recentAppointments?.Count(a => a.StartDateTime.Date == DateTime.Today) ?? 0;
+            _pendingBills = bills.Count(b => b.Status.ToString().ToLower() == "pending");
+        }
+        catch
+        {
+            // Handle error gracefully
+            _recentAppointments = new List<AppointmentDto>();
+        }
+    }
+
+}

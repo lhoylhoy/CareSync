@@ -1,0 +1,57 @@
+@using CareSync.Shared.DTOs
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">First Name *</label>
+            <InputText @bind-Value="Model.FirstName" class="form-control" placeholder="Enter first name" />
+            <ValidationMessage For="@(() => Model.FirstName)" />
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Middle Name</label>
+            <InputText @bind-Value="Model.MiddleName" class="form-control" placeholder="Enter middle name" />
+            <ValidationMessage For="@(() => Model.MiddleName)" />
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Last Name *</label>
+            <InputText @bind-Value="Model.LastName" class="form-control" placeholder="Enter last name" />
+            <ValidationMessage For="@(() => Model.LastName)" />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Specialty *</label>
+            <InputText @bind-Value="Model.Specialty" class="form-control" placeholder="Enter specialty" />
+            <ValidationMessage For="@(() => Model.Specialty)" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label class="form-label">Phone Number *</label>
+            <InputText @bind-Value="Model.PhoneNumber" class="form-control" placeholder="Enter phone number" />
+            <ValidationMessage For="@(() => Model.PhoneNumber)" />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-label">Email *</label>
+            <InputText @bind-Value="Model.Email" class="form-control" placeholder="Enter email address" />
+            <ValidationMessage For="@(() => Model.Email)" />
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public DoctorFormDto Model { get; set; } = null!;
+}
