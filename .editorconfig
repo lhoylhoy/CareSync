@@ -1,3 +1,53 @@
+# EditorConfig for CareSync repository
+root = true
+
+[*.{cs,csx}]
+charset = utf-8-bom
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Indentation
+indent_style = space
+indent_size = 4
+
+# C# specific rules
+[*.cs]
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+
+# Naming: interfaces must start with I
+dotnet_naming_rule.interfaces_should_be_prefixed_with_i.severity = suggestion
+dotnet_naming_rule.interfaces_should_be_prefixed_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_should_be_prefixed_with_i.style = prefix_i
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+dotnet_naming_symbols.interfaces.required_modifiers = *
+
+dotnet_naming_style.prefix_i.required_prefix = I
+dotnet_naming_style.prefix_i.capitalization = PascalCase
+
+# Async methods should end with Async
+dotnet_naming_rule.async_methods_end_with_async.severity = suggestion
+dotnet_naming_rule.async_methods_end_with_async.symbols = async_methods
+dotnet_naming_rule.async_methods_end_with_async.style = end_with_async
+
+dotnet_naming_symbols.async_methods.applicable_kinds = method
+dotnet_naming_symbols.async_methods.required_modifiers = async
+
+dotnet_naming_style.end_with_async.required_suffix = Async
+dotnet_naming_style.end_with_async.capitalization = PascalCase
+
+# File and type layout: prefer types in files that match the type name
+# (Enforced by analyzers like StyleCop)
+
+# Code style: prefer expression-bodied members where concise
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+
+# Accessibility modifiers: prefer explicit accessibility
+dotnet_style_require_accessibility_modifiers = always:warning
 # EditorConfig is awesome: https://EditorConfig.org
 
 # top-most EditorConfig file

@@ -17,4 +17,6 @@
         <Folder Include="ValueObjects/"/>
     </ItemGroup>
 
+    <ItemGroup>
+</ItemGroup>
 </Project>
