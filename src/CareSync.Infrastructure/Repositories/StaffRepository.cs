@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using CareSync.Domain.Entities;
 using CareSync.Domain.Enums;
 using CareSync.Domain.Interfaces;
@@ -38,6 +41,65 @@ public class StaffRepository : IStaffRepository
     public async Task<List<Staff>> GetActiveStaffAsync()
     {
         return await _context.Staff.Where(s => s.IsActive).ToListAsync();
+    }
+
+    public async Task<(IReadOnlyList<Staff> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? searchTerm,
+        IReadOnlyDictionary<string, string?> filters,
+        CancellationToken cancellationToken = default)
+    {
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        var query = _context.Staff
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim();
+            var likeTerm = $"%{term}%";
+            query = query.Where(s =>
+                EF.Functions.Like(s.Name.FirstName, likeTerm) ||
+                EF.Functions.Like(s.Name.LastName, likeTerm) ||
+                (s.Name.MiddleName != null && EF.Functions.Like(s.Name.MiddleName, likeTerm)) ||
+                EF.Functions.Like(s.EmployeeId, likeTerm) ||
+                EF.Functions.Like(s.Email.Value, likeTerm));
+        }
+
+        if (filters != null)
+        {
+            if (filters.TryGetValue("Role", out var roleValue) && !string.IsNullOrWhiteSpace(roleValue) &&
+                Enum.TryParse<StaffRole>(roleValue, true, out var role))
+            {
+                query = query.Where(s => s.Role == role);
+            }
+
+            if (filters.TryGetValue("Department", out var departmentValue) && !string.IsNullOrWhiteSpace(departmentValue) &&
+                Enum.TryParse<Department>(departmentValue, true, out var department))
+            {
+                query = query.Where(s => s.Department == department);
+            }
+
+            if (filters.TryGetValue("IsActive", out var isActiveValue) && !string.IsNullOrWhiteSpace(isActiveValue) &&
+                bool.TryParse(isActiveValue, out var isActive))
+            {
+                query = query.Where(s => s.IsActive == isActive);
+            }
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderBy(s => s.Name.LastName)
+            .ThenBy(s => s.Name.FirstName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
     }
 
     public async Task<Staff?> GetByEmailAsync(string email)

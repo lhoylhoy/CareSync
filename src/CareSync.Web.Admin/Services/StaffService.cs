@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Net.Http.Json;
 using CareSync.Application.DTOs.Staff;
 using CareSync.Web.Admin.Services.Contracts;
@@ -82,17 +84,72 @@ public class StaffService : IStaffService, ICrudService<StaffDto, CreateStaffDto
         return new ApiResponse<bool> { Success = true, Data = true, Message = "Staff deleted" };
     }
 
-    public async Task<ApiResponse<PagedResult<StaffDto>>> GetPagedAsync(int page = 1, int pageSize = 10, string? searchTerm = null)
+    public async Task<ApiResponse<PagedResult<StaffDto>>> GetPagedAsync(int page = 1, int pageSize = 10, string? searchTerm = null, IReadOnlyDictionary<string, string?>? filters = null)
     {
-        var all = await GetStaffAsync();
-        if (!string.IsNullOrWhiteSpace(searchTerm))
+        try
         {
-            all = all.Where(s => ($"{s.FirstName} {s.LastName}".Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) || (s.EmployeeId?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var queryParams = new List<string>
+            {
+                $"page={page}",
+                $"pageSize={pageSize}"
+            };
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                queryParams.Add($"search={Uri.EscapeDataString(searchTerm)}");
+            }
+
+            if (filters != null)
+            {
+                foreach (var kvp in filters)
+                {
+                    if (string.IsNullOrWhiteSpace(kvp.Key) || string.IsNullOrWhiteSpace(kvp.Value)) continue;
+                    queryParams.Add($"filters[{Uri.EscapeDataString(kvp.Key)}]={Uri.EscapeDataString(kvp.Value!)}");
+                }
+            }
+
+            var url = $"{BaseEndpoint}?{string.Join("&", queryParams)}";
+            var response = await _httpClient.GetAsync(url);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<PagedResult<StaffDto>>();
+                if (result is not null)
+                {
+                    return new ApiResponse<PagedResult<StaffDto>> { Success = true, Data = result };
+                }
+
+                return new ApiResponse<PagedResult<StaffDto>>
+                {
+                    Success = true,
+                    Data = new PagedResult<StaffDto>
+                    {
+                        Items = Array.Empty<StaffDto>(),
+                        PageNumber = page,
+                        PageSize = pageSize,
+                        TotalCount = 0
+                    }
+                };
+            }
+
+            var errorPayload = await response.Content.ReadAsStringAsync();
+            return new ApiResponse<PagedResult<StaffDto>>
+            {
+                Success = false,
+                Message = $"Failed to retrieve staff: {response.StatusCode} {errorPayload}"
+            };
         }
-        var total = all.Count;
-        var items = all.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-        var paged = new PagedResult<StaffDto> { Items = items, PageNumber = page, PageSize = pageSize, TotalCount = total };
-        return new ApiResponse<PagedResult<StaffDto>> { Success = true, Data = paged };
+        catch (Exception ex)
+        {
+            return new ApiResponse<PagedResult<StaffDto>>
+            {
+                Success = false,
+                Message = $"Error retrieving staff: {ex.Message}"
+            };
+        }
     }
 
     public async Task<ApiResponse<IEnumerable<StaffDto>>> SearchAsync(string searchTerm)

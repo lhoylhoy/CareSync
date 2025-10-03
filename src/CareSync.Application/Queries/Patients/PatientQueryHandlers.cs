@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CareSync.Application.Common.Mapping;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Patients;
@@ -37,5 +38,37 @@ public class GetPatientByIdQueryHandler(IPatientRepository patientRepository, Pa
         var hasRelated = await patientRepository.HasRelatedDataAsync(patient.Id);
         dto = dto with { HasRelatedData = hasRelated };
         return Result<PatientDto>.Success(dto);
+    }
+}
+
+public class GetPatientsPagedQueryHandler(IPatientRepository patientRepository, PatientMapper mapper)
+    : IRequestHandler<GetPatientsPagedQuery, Result<CareSync.Application.Common.PagedResult<PatientDto>>>
+{
+    public async Task<Result<CareSync.Application.Common.PagedResult<PatientDto>>> Handle(GetPatientsPagedQuery request,
+        CancellationToken cancellationToken)
+    {
+        var filters = request.Filters ?? new Dictionary<string, string?>();
+        var (items, totalCount) = await patientRepository.GetPagedAsync(
+            request.Page,
+            request.PageSize,
+            request.SearchTerm,
+            filters,
+            cancellationToken);
+
+        var dtoList = new List<PatientDto>(items.Count);
+        foreach (var patient in items)
+        {
+            var dto = mapper.Map(patient);
+            bool hasRelated = await patientRepository.HasRelatedDataAsync(patient.Id);
+            dtoList.Add(dto with { HasRelatedData = hasRelated });
+        }
+
+        var pagedResult = new CareSync.Application.Common.PagedResult<PatientDto>(
+            dtoList,
+            totalCount,
+            request.Page,
+            request.PageSize);
+
+        return Result<CareSync.Application.Common.PagedResult<PatientDto>>.Success(pagedResult);
     }
 }

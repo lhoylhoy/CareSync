@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using CareSync.Domain.Entities;
+using CareSync.Domain.Enums;
 using CareSync.Domain.Interfaces;
 using CareSync.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +41,111 @@ public class BillRepository : IBillRepository
             .AsNoTracking()
             .OrderByDescending(b => b.BillDate)
             .ToListAsync();
+    }
+
+    public async Task<(IReadOnlyList<Bill> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? searchTerm,
+        IReadOnlyDictionary<string, string?> filters,
+        CancellationToken cancellationToken = default)
+    {
+        page = Math.Max(page, 1);
+        pageSize = Math.Max(pageSize, 1);
+
+        var query = _context.Bills
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim();
+            var likeTerm = $"%{term}%";
+
+            query = query.Where(b =>
+                EF.Functions.Like(b.BillNumber, likeTerm) ||
+                (b.Notes != null && EF.Functions.Like(b.Notes, likeTerm)) ||
+                _context.Patients.Any(p =>
+                    p.Id == b.PatientId &&
+                    (EF.Functions.Like(p.FullName.FirstName, likeTerm) ||
+                     EF.Functions.Like(p.FullName.LastName, likeTerm) ||
+                     (p.FullName.MiddleName != null && EF.Functions.Like(p.FullName.MiddleName, likeTerm)))) ||
+                _context.Payments.Any(p =>
+                    p.BillId == b.Id &&
+                    p.ReferenceNumber != null &&
+                    EF.Functions.Like(p.ReferenceNumber, likeTerm)) ||
+                _context.InsuranceClaims.Any(ic =>
+                    ic.BillId == b.Id &&
+                    EF.Functions.Like(ic.ClaimNumber, likeTerm)));
+        }
+
+        if (filters is { Count: > 0 })
+        {
+            if (filters.TryGetValue("Status", out var statusValue) &&
+                !string.IsNullOrWhiteSpace(statusValue) &&
+                Enum.TryParse<BillStatus>(statusValue, true, out var status))
+            {
+                query = query.Where(b => b.Status == status);
+            }
+
+            if (filters.TryGetValue("PatientId", out var patientValue) &&
+                Guid.TryParse(patientValue, out var patientId))
+            {
+                query = query.Where(b => b.PatientId == patientId);
+            }
+
+            if (filters.TryGetValue("BillDateFrom", out var billDateFromValue) &&
+                DateTime.TryParse(billDateFromValue, out var billDateFrom))
+            {
+                query = query.Where(b => b.BillDate >= billDateFrom);
+            }
+
+            if (filters.TryGetValue("BillDateTo", out var billDateToValue) &&
+                DateTime.TryParse(billDateToValue, out var billDateTo))
+            {
+                query = query.Where(b => b.BillDate <= billDateTo);
+            }
+
+            if (filters.TryGetValue("DueDateFrom", out var dueDateFromValue) &&
+                DateTime.TryParse(dueDateFromValue, out var dueDateFrom))
+            {
+                query = query.Where(b => b.DueDate >= dueDateFrom);
+            }
+
+            if (filters.TryGetValue("DueDateTo", out var dueDateToValue) &&
+                DateTime.TryParse(dueDateToValue, out var dueDateTo))
+            {
+                query = query.Where(b => b.DueDate <= dueDateTo);
+            }
+
+            if (filters.TryGetValue("HasBalance", out var hasBalanceValue) &&
+                bool.TryParse(hasBalanceValue, out var hasBalance))
+            {
+                query = hasBalance
+                    ? query.Where(b => b.BalanceAmount > 0)
+                    : query.Where(b => b.BalanceAmount <= 0);
+            }
+
+            if (filters.TryGetValue("IsOverdue", out var isOverdueValue) &&
+                bool.TryParse(isOverdueValue, out var isOverdue))
+            {
+                var today = DateTime.UtcNow.Date;
+                query = isOverdue
+                    ? query.Where(b => b.DueDate.Date < today && b.BalanceAmount > 0)
+                    : query.Where(b => b.DueDate.Date >= today || b.BalanceAmount <= 0);
+            }
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(b => b.BillDate)
+            .ThenBy(b => b.BillNumber)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
     }
 
     public async Task<int> GetTotalCountAsync()

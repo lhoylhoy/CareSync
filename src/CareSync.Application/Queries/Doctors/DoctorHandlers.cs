@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CareSync.Application.Common.Mapping;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Doctors;
@@ -54,5 +55,39 @@ public class GetAllDoctorsHandler : IRequestHandler<GetAllDoctorsQuery, Result<I
             list.Add(dto);
         }
         return Result<IEnumerable<DoctorDto>>.Success(list);
+    }
+}
+
+public class GetDoctorsPagedQueryHandler : IRequestHandler<GetDoctorsPagedQuery, Result<CareSync.Application.Common.PagedResult<DoctorDto>>>
+{
+    private readonly IDoctorRepository _doctorRepository;
+    private readonly DoctorMapper _mapper;
+
+    public GetDoctorsPagedQueryHandler(IDoctorRepository doctorRepository, DoctorMapper mapper)
+    {
+        _doctorRepository = doctorRepository;
+        _mapper = mapper;
+    }
+
+    public async Task<Result<CareSync.Application.Common.PagedResult<DoctorDto>>> Handle(GetDoctorsPagedQuery request, CancellationToken cancellationToken)
+    {
+        var filters = request.Filters ?? new Dictionary<string, string?>();
+        var (items, totalCount) = await _doctorRepository.GetPagedAsync(
+            request.Page,
+            request.PageSize,
+            request.SearchTerm,
+            filters,
+            cancellationToken);
+
+        var dtoList = new List<DoctorDto>(items.Count);
+        foreach (var doctor in items)
+        {
+            var dto = _mapper.Map(doctor);
+            var hasRelated = await _doctorRepository.HasRelatedDataAsync(doctor.Id);
+            dtoList.Add(dto with { HasRelatedData = hasRelated });
+        }
+
+        var pagedResult = new CareSync.Application.Common.PagedResult<DoctorDto>(dtoList, totalCount, request.Page, request.PageSize);
+        return Result<CareSync.Application.Common.PagedResult<DoctorDto>>.Success(pagedResult);
     }
 }

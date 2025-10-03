@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using CareSync.Application.Commands.Staff;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Staff;
@@ -19,10 +21,39 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
     ///     Get all staff members
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<StaffDto>>> GetAllStaff()
+    public async Task<IActionResult> GetAllStaff(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 0,
+        [FromQuery] string? search = null,
+        [FromQuery] Dictionary<string, string?>? filters = null)
     {
-        var result = await _mediator.Send(new GetAllStaffQuery());
-        return OkOrProblem(result);
+        var hasQueryOverrides = pageSize > 0 || !string.IsNullOrWhiteSpace(search) || (filters?.Count > 0);
+
+        if (!hasQueryOverrides)
+        {
+            var allResult = await _mediator.Send(new GetAllStaffQuery());
+            var response = OkOrProblem(allResult);
+            if (response.Result is IActionResult actionResult)
+            {
+                return actionResult;
+            }
+            return Ok(response.Value);
+        }
+
+        var effectivePageSize = pageSize > 0 ? pageSize : 25;
+        var pagedResult = await _mediator.Send(new GetStaffPagedQuery(
+            page <= 0 ? 1 : page,
+            effectivePageSize,
+            search,
+            filters ?? new Dictionary<string, string?>()));
+
+        var pagedResponse = OkOrProblem(pagedResult);
+        if (pagedResponse.Result is IActionResult failure)
+        {
+            return failure;
+        }
+
+        return Ok(pagedResponse.Value);
     }
 
     /// <summary>

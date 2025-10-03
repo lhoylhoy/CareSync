@@ -1,0 +1,151 @@
+@using CareSync.Web.Admin.Common.Filtering
+
+<div class="card mb-3 shadow-sm">
+    <div class="card-body py-3">
+        <div class="row g-3 align-items-end">
+            @if (ShowSearch)
+            {
+                <div class="col-md-4 col-sm-6">
+                    <label class="form-label text-muted">Search</label>
+                    <div class="input-group">
+                        <input class="form-control" placeholder="@SearchPlaceholder" value="@SearchText"
+                            @oninput="HandleSearchInput" @onkeydown="HandleSearchKeyDown" />
+                        <button class="btn btn-outline-primary" type="button" @onclick="TriggerSearch">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        @if (!string.IsNullOrWhiteSpace(SearchText))
+                        {
+                            <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (ShowPageSize)
+            {
+                <div class="col-md-2 col-sm-4">
+                    <label class="form-label text-muted">Page Size</label>
+                    <select class="form-select" value="@PageSize" @onchange="HandlePageSizeChanged">
+                        @foreach (var size in PageSizeOptions)
+                        {
+                            <option value="@size">@size</option>
+                        }
+                    </select>
+                </div>
+            }
+
+            @if (Filters?.Any() == true)
+            {
+                foreach (var filter in Filters)
+                {
+                    <div class="col-md-2 col-sm-4">
+                        <label class="form-label text-muted">@filter.Label</label>
+                        <select class="form-select" value="@GetSelectedValue(filter.Key)"
+                            @onchange="e => HandleFilterChanged(filter.Key, e.Value?.ToString())">
+                            <option value="">All</option>
+                            @foreach (var option in filter.Options)
+                            {
+                                <option value="@option.Value">@option.Label</option>
+                            }
+                        </select>
+                    </div>
+                }
+            }
+
+            @if (AdditionalContent != null)
+            {
+                <div class="col">
+                    @AdditionalContent
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool ShowSearch { get; set; } = true;
+    [Parameter] public string SearchPlaceholder { get; set; } = "Search...";
+    [Parameter] public string SearchText { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SearchTextChanged { get; set; }
+    [Parameter] public EventCallback OnSearch { get; set; }
+    [Parameter] public EventCallback OnClearSearch { get; set; }
+
+    [Parameter] public bool ShowPageSize { get; set; } = true;
+    [Parameter] public int PageSize { get; set; } = 10;
+    [Parameter] public IReadOnlyList<int> PageSizeOptions { get; set; } = new[] { 10, 25, 50 };
+    [Parameter] public EventCallback<int> PageSizeChanged { get; set; }
+
+    [Parameter] public IEnumerable<FilterDefinition>? Filters { get; set; }
+    [Parameter] public IReadOnlyDictionary<string, string?>? SelectedFilters { get; set; }
+    [Parameter] public EventCallback<FilterChangedEventArgs> OnFilterChanged { get; set; }
+
+    [Parameter] public RenderFragment? AdditionalContent { get; set; }
+
+    private string GetSelectedValue(string key)
+    {
+        if (SelectedFilters == null) return string.Empty;
+        return SelectedFilters.TryGetValue(key, out var value) ? value ?? string.Empty : string.Empty;
+    }
+
+    private async Task HandleSearchInput(ChangeEventArgs args)
+    {
+        SearchText = args.Value?.ToString() ?? string.Empty;
+        if (SearchTextChanged.HasDelegate)
+        {
+            await SearchTextChanged.InvokeAsync(SearchText);
+        }
+    }
+
+    private async Task HandleSearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter")
+        {
+            await TriggerSearch();
+        }
+    }
+
+    private async Task TriggerSearch()
+    {
+        if (OnSearch.HasDelegate)
+        {
+            await OnSearch.InvokeAsync();
+        }
+    }
+
+    private async Task ClearSearch()
+    {
+        SearchText = string.Empty;
+        if (SearchTextChanged.HasDelegate)
+        {
+            await SearchTextChanged.InvokeAsync(SearchText);
+        }
+
+        if (OnClearSearch.HasDelegate)
+        {
+            await OnClearSearch.InvokeAsync();
+        }
+    }
+
+    private async Task HandlePageSizeChanged(ChangeEventArgs args)
+    {
+        if (!int.TryParse(args.Value?.ToString(), out var size))
+        {
+            size = PageSize;
+        }
+
+        if (PageSizeChanged.HasDelegate)
+        {
+            await PageSizeChanged.InvokeAsync(size);
+        }
+    }
+
+    private async Task HandleFilterChanged(string key, string? value)
+    {
+        if (OnFilterChanged.HasDelegate)
+        {
+            await OnFilterChanged.InvokeAsync(new FilterChangedEventArgs(key, string.IsNullOrWhiteSpace(value) ? null : value));
+        }
+    }
+}

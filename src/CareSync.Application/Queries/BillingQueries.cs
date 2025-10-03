@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CareSync.Application.Common.Mapping;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Billing;
@@ -11,6 +12,12 @@ namespace CareSync.Application.Queries.Billing;
 public record GetBillQuery(Guid Id) : IRequest<Result<BillDto>>;
 
 public record GetAllBillsQuery : IRequest<Result<IEnumerable<BillDto>>>;
+
+public record GetBillsPagedQuery(
+    int Page,
+    int PageSize,
+    string? SearchTerm,
+    IReadOnlyDictionary<string, string?> Filters) : IRequest<Result<CareSync.Application.Common.PagedResult<BillDto>>>;
 
 public class GetBillHandler : IRequestHandler<GetBillQuery, Result<BillDto>>
 {
@@ -47,6 +54,46 @@ public class GetAllBillsHandler : IRequestHandler<GetAllBillsQuery, Result<IEnum
     {
         var bills = await _billRepository.GetAllAsync();
         return Result<IEnumerable<BillDto>>.Success(bills.Select(b => _mapper.Map(b)).ToList());
+    }
+}
+
+public class GetBillsPagedQueryHandler : IRequestHandler<GetBillsPagedQuery, Result<CareSync.Application.Common.PagedResult<BillDto>>>
+{
+    private readonly IBillRepository _billRepository;
+    private readonly BillMapper _mapper;
+
+    public GetBillsPagedQueryHandler(IBillRepository billRepository, BillMapper mapper)
+    {
+        _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+    }
+
+    public async Task<Result<CareSync.Application.Common.PagedResult<BillDto>>> Handle(GetBillsPagedQuery request,
+        CancellationToken cancellationToken)
+    {
+        var filters = request.Filters ?? new Dictionary<string, string?>();
+        var (items, totalCount) = await _billRepository.GetPagedAsync(
+            request.Page,
+            request.PageSize,
+            request.SearchTerm,
+            filters,
+            cancellationToken);
+
+        var dtoList = new List<BillDto>(items.Count);
+        foreach (var bill in items)
+        {
+            var dto = _mapper.Map(bill);
+            var hasRelated = await _billRepository.HasRelatedDataAsync(bill.Id);
+            dtoList.Add(dto with { HasRelatedData = hasRelated });
+        }
+
+        var pagedResult = new CareSync.Application.Common.PagedResult<BillDto>(
+            dtoList,
+            totalCount,
+            request.Page,
+            request.PageSize);
+
+        return Result<CareSync.Application.Common.PagedResult<BillDto>>.Success(pagedResult);
     }
 }
 

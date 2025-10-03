@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using CareSync.Domain.Entities;
 using CareSync.Domain.Enums;
 using CareSync.Domain.Interfaces;
@@ -31,6 +35,89 @@ public class AppointmentRepository : IAppointmentRepository
             .Include(a => a.Doctor)
             .OrderBy(a => a.ScheduledDate)
             .ToListAsync();
+    }
+
+    public async Task<(IReadOnlyList<Appointment> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? searchTerm,
+        IReadOnlyDictionary<string, string?> filters,
+        CancellationToken cancellationToken = default)
+    {
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        var query = _context.Appointments
+            .AsNoTracking()
+            .Include(a => a.Patient)
+            .Include(a => a.Doctor)
+            .AsSplitQuery()
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim();
+            var likeTerm = $"%{term}%";
+
+            query = query.Where(a =>
+                (a.Patient != null && (
+                    EF.Functions.Like(a.Patient.FullName.FirstName, likeTerm) ||
+                    EF.Functions.Like(a.Patient.FullName.LastName, likeTerm) ||
+                    (a.Patient.FullName.MiddleName != null && EF.Functions.Like(a.Patient.FullName.MiddleName, likeTerm))
+                )) ||
+                (a.Doctor != null && (
+                    EF.Functions.Like(a.Doctor.Name.FirstName, likeTerm) ||
+                    EF.Functions.Like(a.Doctor.Name.LastName, likeTerm) ||
+                    (a.Doctor.Name.MiddleName != null && EF.Functions.Like(a.Doctor.Name.MiddleName, likeTerm)) ||
+                    EF.Functions.Like(a.Doctor.Specialty, likeTerm)
+                )) ||
+                EF.Functions.Like(a.AppointmentType, likeTerm) ||
+                (a.Notes != null && EF.Functions.Like(a.Notes, likeTerm)) ||
+                (a.CancellationReason != null && EF.Functions.Like(a.CancellationReason, likeTerm)));
+        }
+
+        if (filters != null && filters.Count > 0)
+        {
+            if (filters.TryGetValue("Status", out var statusValue) && !string.IsNullOrWhiteSpace(statusValue) &&
+                Enum.TryParse<AppointmentStatus>(statusValue, true, out var status))
+            {
+                query = query.Where(a => a.Status == status);
+            }
+
+            if (filters.TryGetValue("DoctorId", out var doctorValue) && Guid.TryParse(doctorValue, out var doctorId))
+            {
+                query = query.Where(a => a.DoctorId == doctorId);
+            }
+
+            if (filters.TryGetValue("PatientId", out var patientValue) && Guid.TryParse(patientValue, out var patientId))
+            {
+                query = query.Where(a => a.PatientId == patientId);
+            }
+
+            if (filters.TryGetValue("ScheduledFrom", out var fromValue) &&
+                DateTime.TryParse(fromValue, out var fromDate))
+            {
+                query = query.Where(a => a.ScheduledDate >= fromDate);
+            }
+
+            if (filters.TryGetValue("ScheduledTo", out var toValue) &&
+                DateTime.TryParse(toValue, out var toDate))
+            {
+                query = query.Where(a => a.ScheduledDate <= toDate);
+            }
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(a => a.ScheduledDate)
+            .ThenBy(a => a.Patient != null ? a.Patient.FullName.LastName : string.Empty)
+            .ThenBy(a => a.Patient != null ? a.Patient.FullName.FirstName : string.Empty)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
     }
 
     public async Task<int> GetTotalCountAsync()

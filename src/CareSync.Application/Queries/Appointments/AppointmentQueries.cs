@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Appointments;
 using MediatR;
@@ -14,3 +15,9 @@ public record GetAppointmentsByDoctorQuery(Guid DoctorId) : IRequest<Result<IEnu
 
 public record GetAppointmentsByDateRangeQuery(DateTime StartDate, DateTime EndDate)
     : IRequest<Result<IEnumerable<AppointmentDto>>>;
+
+public record GetAppointmentsPagedQuery(
+    int Page,
+    int PageSize,
+    string? SearchTerm,
+    IReadOnlyDictionary<string, string?> Filters) : IRequest<Result<CareSync.Application.Common.PagedResult<AppointmentDto>>>;

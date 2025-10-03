@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CareSync.Application.Common.Mapping;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Appointments;
@@ -30,6 +31,46 @@ public class GetAllAppointmentsHandler : IRequestHandler<GetAllAppointmentsQuery
             list.Add(dto);
         }
         return Result<IEnumerable<AppointmentDto>>.Success(list);
+    }
+}
+
+public class GetAppointmentsPagedQueryHandler : IRequestHandler<GetAppointmentsPagedQuery, Result<CareSync.Application.Common.PagedResult<AppointmentDto>>>
+{
+    private readonly IAppointmentRepository _appointmentRepository;
+    private readonly AppointmentMapper _mapper;
+
+    public GetAppointmentsPagedQueryHandler(IAppointmentRepository appointmentRepository, AppointmentMapper mapper)
+    {
+        _appointmentRepository = appointmentRepository;
+        _mapper = mapper;
+    }
+
+    public async Task<Result<CareSync.Application.Common.PagedResult<AppointmentDto>>> Handle(GetAppointmentsPagedQuery request,
+        CancellationToken cancellationToken)
+    {
+        var filters = request.Filters ?? new Dictionary<string, string?>();
+        var (items, totalCount) = await _appointmentRepository.GetPagedAsync(
+            request.Page,
+            request.PageSize,
+            request.SearchTerm,
+            filters,
+            cancellationToken);
+
+        var dtoList = new List<AppointmentDto>(items.Count);
+        foreach (var appointment in items)
+        {
+            var dto = _mapper.Map(appointment);
+            var hasRelated = await _appointmentRepository.HasRelatedDataAsync(appointment.Id);
+            dtoList.Add(dto with { HasRelatedData = hasRelated });
+        }
+
+        var pagedResult = new CareSync.Application.Common.PagedResult<AppointmentDto>(
+            dtoList,
+            totalCount,
+            request.Page,
+            request.PageSize);
+
+        return Result<CareSync.Application.Common.PagedResult<AppointmentDto>>.Success(pagedResult);
     }
 }
 

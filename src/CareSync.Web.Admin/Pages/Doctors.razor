@@ -1,5 +1,6 @@
 @page "/doctors"
 @using CareSync.Web.Admin.Components
+@using CareSync.Web.Admin.Common.Filtering
 @inject CareSync.Web.Admin.Services.Contracts.IDoctorService DoctorService
 
 <BaseCrudPage TDto="DoctorDto" TCreateDto="CreateDoctorDto" TUpdateDto="UpdateDoctorDto" TFormDto="DoctorFormDto"
@@ -9,7 +10,9 @@
     EmptyStateMessage="Start by adding your first doctor." EmptyStateIcon="fas fa-user-plus"
     DeleteItemIcon="fas fa-user-md" CrudService="@DoctorService" CreateNewModel="@CreateNewDoctor"
     MapToUpdateModel="@MapDoctorToUpdateModel" GetItemDisplayName="@GetDoctorDisplayName"
-    ConvertToCreateDto="@ConvertToCreateDto" ConvertToUpdateDto="@ConvertToUpdateDto">
+    ConvertToCreateDto="@ConvertToCreateDto" ConvertToUpdateDto="@ConvertToUpdateDto" UseServerFiltering="true"
+    Filters="@_filters" PageSizeOptions="@_pageSizeOptions" DefaultPageSize="25"
+    SearchPlaceholder="Search doctors...">
 
     <HeaderTemplate>
         <th>Name</th>
@@ -53,10 +56,43 @@
 </BaseCrudPage>
 
 @code {
-    private DoctorFormDto CreateNewDoctor()
+    private static readonly IReadOnlyList<int> _pageSizeOptions = new[] { 10, 25, 50 };
+
+    private static readonly IReadOnlyList<FilterOption> _specialtyOptions = new[]
     {
-        return new DoctorFormDto();
-    }
+        new FilterOption("General Practice", "General Practice"),
+        new FilterOption("Cardiology", "Cardiology"),
+        new FilterOption("Dermatology", "Dermatology"),
+        new FilterOption("Pediatrics", "Pediatrics"),
+        new FilterOption("Neurology", "Neurology"),
+        new FilterOption("Orthopedics", "Orthopedics"),
+        new FilterOption("Oncology", "Oncology"),
+        new FilterOption("Gynecology", "Gynecology"),
+        new FilterOption("Psychiatry", "Psychiatry"),
+        new FilterOption("Radiology", "Radiology"),
+        new FilterOption("Emergency Medicine", "Emergency Medicine"),
+        new FilterOption("Internal Medicine", "Internal Medicine")
+    };
+
+    private static readonly IReadOnlyList<FilterDefinition> _filters = new[]
+    {
+        new FilterDefinition(
+            key: "Specialty",
+            label: "Specialty",
+            options: _specialtyOptions,
+            propertyName: nameof(DoctorDto.Specialty)),
+        new FilterDefinition(
+            key: "IsActive",
+            label: "Status",
+            options: new[]
+            {
+                new FilterOption("true", "Active"),
+                new FilterOption("false", "Inactive")
+            },
+            propertyName: nameof(DoctorDto.IsActive))
+    };
+
+    private DoctorFormDto CreateNewDoctor() => new();
 
     private DoctorFormDto MapDoctorToUpdateModel(DoctorDto doctor)
     {

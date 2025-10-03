@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading;
 using CareSync.Domain.Entities;
 using CareSync.Domain.Enums;
 
@@ -7,6 +9,12 @@ public interface IBillRepository
 {
     public Task<Bill?> GetByIdAsync(Guid id);
     public Task<List<Bill>> GetAllAsync();
+    public Task<(IReadOnlyList<Bill> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? searchTerm,
+        IReadOnlyDictionary<string, string?> filters,
+        CancellationToken cancellationToken = default);
     public Task<int> GetTotalCountAsync();
     public Task<List<Bill>> GetByPatientIdAsync(Guid patientId);
     public Task<List<Bill>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
@@ -59,6 +67,12 @@ public interface IStaffRepository
     // Returns true if the staff member has related domain data that should block hard deletion
     // (future relationships: treatment records, lab orders, authored notes, etc.)
     public Task<bool> HasRelatedDataAsync(Guid id);
+    public Task<(IReadOnlyList<Staff> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? searchTerm,
+        IReadOnlyDictionary<string, string?> filters,
+        CancellationToken cancellationToken = default);
     public Task AddAsync(Staff staff);
     public Task UpdateAsync(Staff staff);
     public Task DeleteAsync(Guid id);

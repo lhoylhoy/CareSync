@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CareSync.Application.Commands.Doctors;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Doctors;
@@ -20,10 +21,40 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
 
     [HttpGet]
     [OutputCache(PolicyName = "Doctors-All")]
-    public async Task<ActionResult<IEnumerable<DoctorDto>>> GetAllDoctors()
+    public async Task<IActionResult> GetAllDoctors(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 0,
+        [FromQuery] string? search = null,
+        [FromQuery] Dictionary<string, string?>? filters = null)
     {
-        var result = await _mediator.Send(new GetAllDoctorsQuery());
-        return OkOrProblem(result);
+        var hasQueryOverrides = pageSize > 0 || !string.IsNullOrWhiteSpace(search) || (filters?.Count > 0);
+
+        if (!hasQueryOverrides)
+        {
+            var allResult = await _mediator.Send(new GetAllDoctorsQuery());
+            var response = OkOrProblem(allResult);
+            if (response.Result is IActionResult actionResult)
+            {
+                return actionResult;
+            }
+
+            return Ok(response.Value);
+        }
+
+        var effectivePageSize = pageSize > 0 ? pageSize : 25;
+        var pagedResult = await _mediator.Send(new GetDoctorsPagedQuery(
+            page <= 0 ? 1 : page,
+            effectivePageSize,
+            search,
+            filters ?? new Dictionary<string, string?>()));
+
+        var pagedResponse = OkOrProblem(pagedResult);
+        if (pagedResponse.Result is IActionResult failure)
+        {
+            return failure;
+        }
+
+        return Ok(pagedResponse.Value);
     }
 
     [HttpGet("{id:guid}")]

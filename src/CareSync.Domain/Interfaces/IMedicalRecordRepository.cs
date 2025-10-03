@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading;
 using CareSync.Domain.Entities;
 
 namespace CareSync.Domain.Interfaces;
@@ -47,6 +49,13 @@ public interface IMedicalRecordRepository
     /// </summary>
     /// <returns>List of all medical records</returns>
     public Task<IEnumerable<MedicalRecord>> GetAllAsync();
+
+    public Task<(IReadOnlyList<MedicalRecord> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? searchTerm,
+        IReadOnlyDictionary<string, string?> filters,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Searches medical records based on various criteria

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace CareSync.Web.Admin.Services;
 
 public interface ICrudService<TDto, TCreateDto, TUpdateDto>
@@ -12,7 +14,7 @@ public interface ICrudService<TDto, TCreateDto, TUpdateDto>
     public Task<ApiResponse<bool>> DeleteAsync(Guid id);
 
     // Optional: Search and pagination
-    public Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(int page = 1, int pageSize = 10, string? searchTerm = null);
+    public Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(int page = 1, int pageSize = 10, string? searchTerm = null, IReadOnlyDictionary<string, string?>? filters = null);
     public Task<ApiResponse<IEnumerable<TDto>>> SearchAsync(string searchTerm);
 }
 

@@ -3,6 +3,7 @@
 @inject CareSync.Web.Admin.Services.ICrudService<StaffDto, CreateStaffDto, UpdateStaffDto> StaffCrudService
 @using CareSync.Application.DTOs.Staff
 @using CareSync.Web.Admin.Components
+@using CareSync.Domain.Enums
 
 <BaseCrudPage TDto="StaffDto" TCreateDto="CreateStaffDto" TUpdateDto="UpdateStaffDto" TFormDto="StaffFormDto"
     PageTitle="Staff Management" PageDescription="Manage non-physician staff and personnel" PageIcon="fas fa-users-cog"
@@ -10,7 +11,8 @@
     EmptyStateTitle="No staff members found" EmptyStateMessage="Start by adding your first staff member."
     EmptyStateIcon="fas fa-user-plus" DeleteItemIcon="fas fa-user" CrudService="@StaffCrudService"
     CreateNewModel="@CreateNewStaff" MapToUpdateModel="@MapStaffToUpdateModel" GetItemDisplayName="@GetStaffDisplayName"
-    ConvertToCreateDto="@ConvertToCreateDto" ConvertToUpdateDto="@ConvertToUpdateDto">
+    ConvertToCreateDto="@ConvertToCreateDto" ConvertToUpdateDto="@ConvertToUpdateDto" UseServerFiltering="true"
+    Filters="@_filters" PageSizeOptions="@_pageSizeOptions" DefaultPageSize="25" SearchPlaceholder="Search staff...">
 
     <HeaderTemplate>
         <th>Name</th>
@@ -51,6 +53,29 @@
 </BaseCrudPage>
 
 @code {
+    private static readonly IReadOnlyList<int> _pageSizeOptions = new[] { 10, 25, 50 };
+    private readonly IReadOnlyList<FilterDefinition> _filters = new[]
+    {
+new FilterDefinition(
+key: "Role",
+label: "Role",
+options: Enum.GetValues<StaffRole>()
+.Select(role => new FilterOption(role.ToString(), role.ToString()))),
+new FilterDefinition(
+key: "Department",
+label: "Department",
+options: Enum.GetValues<Department>()
+.Select(dept => new FilterOption(dept.ToString(), dept.ToString()))),
+new FilterDefinition(
+key: "IsActive",
+label: "Status",
+options: new[]
+{
+new FilterOption("true", "Active"),
+new FilterOption("false", "Inactive")
+})
+};
+
     private StaffFormDto CreateNewStaff() => new();
     private StaffFormDto MapStaffToUpdateModel(StaffDto staff) => StaffFormDto.FromDto(staff);
     private string GetStaffDisplayName(StaffDto staff) => $"{staff.FirstName} {staff.LastName}";

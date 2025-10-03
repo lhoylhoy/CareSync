@@ -2,6 +2,8 @@
 @typeparam TCreateDto where TCreateDto : class
 @typeparam TUpdateDto where TUpdateDto : class
 @typeparam TFormDto where TFormDto : class
+@using CareSync.Web.Admin.Common.Filtering
+@using System.Reflection
 @inject IToastService ToastService
 
 <div class="fade-in">
@@ -14,12 +16,21 @@
         </div>
     </div>
 
+    @if (ShouldRenderToolbar)
+    {
+        <CrudToolbar ShowSearch="@EnableSearch" SearchPlaceholder="@SearchPlaceholder" SearchText="@SearchTerm"
+            SearchTextChanged="@OnSearchTextChanged" OnSearch="@HandleSearchRequested" OnClearSearch="@HandleClearSearch"
+            ShowPageSize="@EnablePagination" PageSize="@PageSize" PageSizeOptions="@PageSizeOptions"
+            PageSizeChanged="@HandlePageSizeChanged" Filters="@_filterDefinitions" SelectedFilters="@SelectedFiltersView"
+            OnFilterChanged="@HandleFilterChanged" AdditionalContent="@ToolbarActions" />
+    }
+
     <!-- Main CRUD Table -->
-    <CrudTableComponent TDto="TDto" Items="@Items" IsLoading="@IsLoading" TableTitle="@TableTitle"
+    <CrudTableComponent TDto="TDto" Items="@VisibleItems" IsLoading="@IsLoading" TableTitle="@TableTitle"
         TableIcon="@TableIcon" LoadingMessage="@LoadingMessage" CreateButtonText="@CreateButtonText"
         EmptyStateTitle="@EmptyStateTitle" EmptyStateMessage="@EmptyStateMessage" EmptyStateIcon="@EmptyStateIcon"
         ShowActions="@ShowActions" AllowCreate="@AllowCreate" AllowEdit="@AllowEdit" AllowDelete="@AllowDelete"
-        AllowView="@AllowView" ShowPagination="@ShowPagination" CurrentPage="@CurrentPage" TotalPages="@TotalPages"
+        AllowView="@AllowView" ShowPagination="@EnablePagination" CurrentPage="@CurrentPage" TotalPages="@TotalPages"
         OnCreateClicked="@HandleCreate" OnEditClicked="@HandleEdit" OnDeleteClicked="@HandleDelete"
         OnViewClicked="@HandleView" OnPageChanged="@HandlePageChanged" HeaderTemplate="@HeaderTemplate"
         RowTemplate="@RowTemplate" />
@@ -62,8 +73,17 @@
     [Parameter] public bool AllowDelete { get; set; } = true;
     [Parameter] public bool AllowView { get; set; }
 
-    // Pagination
-    [Parameter] public bool ShowPagination { get; set; }
+    // Toolbar & Data Operations
+    [Parameter] public bool EnableToolbar { get; set; } = true;
+    [Parameter] public bool EnableSearch { get; set; } = true;
+    [Parameter] public string SearchPlaceholder { get; set; } = "Search...";
+    [Parameter] public Func<TDto, IEnumerable<string>>? SearchValueSelector { get; set; }
+    [Parameter] public bool EnablePagination { get; set; } = true;
+    [Parameter] public int DefaultPageSize { get; set; } = 10;
+    [Parameter] public IReadOnlyList<int> PageSizeOptions { get; set; } = new[] { 10, 25, 50 };
+    [Parameter] public IEnumerable<FilterDefinition>? Filters { get; set; }
+    [Parameter] public RenderFragment? ToolbarActions { get; set; }
+    [Parameter] public bool UseServerFiltering { get; set; }
 
     // Modal Configuration
     [Parameter] public string CreateIcon { get; set; } = "fas fa-plus";
@@ -93,6 +113,7 @@
 
     // State
     private List<TDto> Items = new();
+    private IReadOnlyList<TDto> VisibleItems = Array.Empty<TDto>();
     private bool IsLoading;
     private readonly bool IsModalLoading = false;
     private bool IsProcessing;
@@ -102,9 +123,19 @@
     private readonly List<string> ValidationMessages = new();
     private string ItemToDeleteName = string.Empty;
 
-    // Pagination
+    // Query State
     private int CurrentPage = 1;
-    private readonly int TotalPages = 1;
+    private int TotalPages = 1;
+    private int PageSize;
+    private string SearchTerm = string.Empty;
+    private int TotalCount;
+    private readonly Dictionary<string, string?> _selectedFilters = new(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyDictionary<string, string?> SelectedFiltersView => _selectedFilters;
+    private IReadOnlyList<FilterDefinition> _filterDefinitions = Array.Empty<FilterDefinition>();
+    private readonly Dictionary<string, PropertyInfo?> _filterPropertyCache = new(StringComparer.OrdinalIgnoreCase);
+
+    private bool ShouldRenderToolbar => EnableToolbar && (EnableSearch || EnablePagination || _filterDefinitions.Count > 0
+    || ToolbarActions != null);
 
     // Component References
     private CrudModalComponent<TFormDto>? CrudModal;
@@ -112,10 +143,56 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadItems();
+        PageSize = DetermineInitialPageSize();
+        CloneFilters();
+        await LoadItems(resetPagination: true);
     }
 
-    private async Task LoadItems()
+    protected override void OnParametersSet()
+    {
+        PageSizeOptions ??= Array.Empty<int>();
+        CloneFilters();
+    }
+
+    private void CloneFilters()
+    {
+        var cloned = Filters?.Select(f => f.Clone()).ToList();
+        _filterDefinitions = cloned is { Count: > 0 } ? cloned : Array.Empty<FilterDefinition>();
+        _filterPropertyCache.Clear();
+        TrimStaleFilters();
+    }
+
+    private void TrimStaleFilters()
+    {
+        if (_filterDefinitions.Count == 0)
+        {
+            _selectedFilters.Clear();
+            return;
+        }
+
+        if (_selectedFilters.Count == 0) return;
+
+        var validKeys = _filterDefinitions
+        .Select(f => f.Key)
+        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var key in _selectedFilters.Keys.ToList())
+        {
+            if (!validKeys.Contains(key))
+            {
+                _selectedFilters.Remove(key);
+            }
+        }
+    }
+
+    private int DetermineInitialPageSize()
+    {
+        if (DefaultPageSize > 0) return DefaultPageSize;
+        if (PageSizeOptions?.Count > 0) return PageSizeOptions[0];
+        return 10;
+    }
+
+    private async Task LoadItems(bool resetPagination = false)
     {
         if (CrudService == null) return;
 
@@ -124,14 +201,64 @@
 
         try
         {
-            var response = await CrudService.GetAllAsync();
-            if (response.Success && response.Data != null)
+            if (UseServerFiltering)
             {
-                Items = response.Data.ToList();
+                if (PageSize <= 0)
+                {
+                    PageSize = DetermineInitialPageSize();
+                }
+
+                if (resetPagination)
+                {
+                    CurrentPage = 1;
+                }
+
+                var response = await CrudService.GetPagedAsync(
+                CurrentPage,
+                PageSize,
+                EnableSearch ? SearchTerm : null,
+                _selectedFilters);
+
+                if (response.Success && response.Data != null)
+                {
+                    var payload = response.Data;
+                    TotalCount = payload.TotalCount;
+                    TotalPages = Math.Max(payload.TotalPages, 1);
+                    CurrentPage = Math.Clamp(payload.PageNumber > 0 ? payload.PageNumber : CurrentPage, 1, TotalPages);
+                    VisibleItems = (payload.Items ?? Array.Empty<TDto>()).ToList();
+                }
+                else
+                {
+                    VisibleItems = Array.Empty<TDto>();
+                    TotalCount = 0;
+                    TotalPages = 1;
+                    await ToastService.ShowErrorAsync(response.Message ?? "Failed to load items");
+                }
+
+                return;
+            }
+
+            var allResponse = await CrudService.GetAllAsync();
+            if (allResponse.Success && allResponse.Data != null)
+            {
+                Items = allResponse.Data.ToList();
+
+                if (PageSize <= 0)
+                {
+                    PageSize = DetermineInitialPageSize();
+                }
+
+                if (resetPagination)
+                {
+                    CurrentPage = 1;
+                }
+
+                PopulateAutoFilters();
+                ApplyDataTransformations(resetPagination);
             }
             else
             {
-                await ToastService.ShowErrorAsync(response.Message ?? "Failed to load items");
+                await ToastService.ShowErrorAsync(allResponse.Message ?? "Failed to load items");
             }
         }
         catch (Exception ex)
@@ -142,6 +269,244 @@
         {
             IsLoading = false;
             StateHasChanged();
+        }
+    }
+
+    private void PopulateAutoFilters()
+    {
+        if (UseServerFiltering || _filterDefinitions.Count == 0) return;
+
+        foreach (var filter in _filterDefinitions.Where(f => f.AutoPopulate))
+        {
+            var options = Items
+            .Select(item => GetPropertyStringValue(item, filter.PropertyName))
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(value => value)
+            .Select(value => new FilterOption(value!, value!))
+            .ToList();
+
+            filter.ReplaceOptions(options);
+
+            if (_selectedFilters.TryGetValue(filter.Key, out var selectedValue) && selectedValue != null)
+            {
+                var optionValues = options.Select(o => o.Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                if (!optionValues.Contains(selectedValue))
+                {
+                    _selectedFilters.Remove(filter.Key);
+                }
+            }
+        }
+    }
+
+    private void ApplyDataTransformations(bool resetPagination = false)
+    {
+        if (UseServerFiltering)
+        {
+            return;
+        }
+
+        IEnumerable<TDto> query = Items;
+
+        if (EnableSearch && !string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            var normalized = SearchTerm.Trim();
+            query = query.Where(item => MatchesSearch(item, normalized));
+        }
+
+        if (_selectedFilters.Count > 0)
+        {
+            foreach (var filter in _selectedFilters.Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value)))
+            {
+                var definition = _filterDefinitions.FirstOrDefault(f => f.Key.Equals(filter.Key, StringComparison.OrdinalIgnoreCase));
+                if (definition == null) continue;
+
+                query = query.Where(item => MatchesFilter(item, definition, filter.Value!));
+            }
+        }
+
+        var filteredItems = query.ToList();
+        TotalCount = filteredItems.Count;
+
+        if (!EnablePagination || PageSize <= 0)
+        {
+            TotalPages = 1;
+            CurrentPage = 1;
+            VisibleItems = filteredItems;
+            StateHasChanged();
+            return;
+        }
+
+        if (resetPagination)
+        {
+            CurrentPage = 1;
+        }
+
+        var totalPages = (int)Math.Ceiling(filteredItems.Count / (double)PageSize);
+        TotalPages = Math.Max(totalPages, 1);
+        CurrentPage = Math.Clamp(CurrentPage, 1, TotalPages);
+
+        var skip = (CurrentPage - 1) * PageSize;
+        VisibleItems = filteredItems.Skip(skip).Take(PageSize).ToList();
+        StateHasChanged();
+    }
+
+    private bool MatchesSearch(TDto item, string term)
+    {
+        if (SearchValueSelector != null)
+        {
+            foreach (var value in SearchValueSelector(item) ?? Array.Empty<string>())
+            {
+                if (string.IsNullOrWhiteSpace(value)) continue;
+                if (value.Contains(term, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        var candidate = item?.ToString();
+        return !string.IsNullOrWhiteSpace(candidate) && candidate.Contains(term, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool MatchesFilter(TDto item, FilterDefinition definition, string value)
+    {
+        var propertyValue = GetPropertyStringValue(item, definition.PropertyName);
+        if (propertyValue == null) return false;
+        return string.Equals(propertyValue, value, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string? GetPropertyStringValue(TDto item, string propertyName)
+    {
+        if (string.IsNullOrWhiteSpace(propertyName))
+        {
+            return item?.ToString();
+        }
+
+        if (!_filterPropertyCache.TryGetValue(propertyName, out var propertyInfo))
+        {
+            propertyInfo = typeof(TDto).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance |
+            BindingFlags.IgnoreCase);
+
+            _filterPropertyCache[propertyName] = propertyInfo;
+        }
+
+        var rawValue = propertyInfo?.GetValue(item);
+        if (rawValue == null) return null;
+
+        return rawValue switch
+        {
+            string str => str,
+            Enum @enum => @enum.ToString(),
+            _ => rawValue.ToString()
+        };
+    }
+
+    private async Task HandleSearchRequested()
+    {
+        if (UseServerFiltering)
+        {
+            await LoadItems(resetPagination: true);
+        }
+        else
+        {
+            ApplyDataTransformations(resetPagination: true);
+        }
+    }
+
+    private async Task HandleClearSearch()
+    {
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            return;
+        }
+
+        SearchTerm = string.Empty;
+
+        if (UseServerFiltering)
+        {
+            await LoadItems(resetPagination: true);
+        }
+        else
+        {
+            ApplyDataTransformations(resetPagination: true);
+        }
+    }
+
+    private Task OnSearchTextChanged(string value)
+    {
+        SearchTerm = value ?? string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private async Task HandlePageSizeChanged(int size)
+    {
+        if (size <= 0)
+        {
+            size = DetermineInitialPageSize();
+        }
+
+        if (size == PageSize)
+        {
+            return;
+        }
+
+        PageSize = size;
+
+        if (UseServerFiltering)
+        {
+            await LoadItems(resetPagination: true);
+        }
+        else
+        {
+            ApplyDataTransformations(resetPagination: true);
+        }
+    }
+
+    private async Task HandleFilterChanged(FilterChangedEventArgs args)
+    {
+        if (args == null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(args.Value))
+        {
+            _selectedFilters.Remove(args.Key);
+        }
+        else
+        {
+            _selectedFilters[args.Key] = args.Value;
+        }
+
+        if (UseServerFiltering)
+        {
+            await LoadItems(resetPagination: true);
+        }
+        else
+        {
+            ApplyDataTransformations(resetPagination: true);
+        }
+    }
+
+    private async Task HandlePageChanged(int page)
+    {
+        if (!EnablePagination)
+        {
+            return;
+        }
+
+        CurrentPage = Math.Max(1, page);
+
+        if (UseServerFiltering)
+        {
+            await LoadItems();
+        }
+        else
+        {
+            ApplyDataTransformations();
         }
     }
 
@@ -184,12 +549,6 @@
         await OnItemViewed.InvokeAsync(item);
     }
 
-    private async Task HandlePageChanged(int page)
-    {
-        CurrentPage = page;
-        await LoadItems();
-    }
-
     private async Task HandleSubmit(TFormDto model)
     {
         if (CrudService == null) return;
@@ -215,7 +574,7 @@
                         {
                             await ToastService.ShowSuccessAsync(response.Message ?? $"{EntityName} updated successfully");
                             await OnItemUpdated.InvokeAsync(response.Data);
-                            await LoadItems();
+                            await LoadItems(resetPagination: true);
 
                             if (CrudModal != null)
                                 await CrudModal.HideAsync();
@@ -237,7 +596,7 @@
                     {
                         await ToastService.ShowSuccessAsync(response.Message ?? $"{EntityName} created successfully");
                         await OnItemCreated.InvokeAsync(response.Data);
-                        await LoadItems();
+                        await LoadItems(resetPagination: true);
 
                         if (CrudModal != null)
                             await CrudModal.HideAsync();
@@ -283,7 +642,7 @@
                 {
                     await ToastService.ShowSuccessAsync(response.Message ?? $"{EntityName} deleted successfully");
                     await OnItemDeleted.InvokeAsync(CurrentItem);
-                    await LoadItems();
+                    await LoadItems(resetPagination: true);
                 }
                 else
                 {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -277,7 +278,7 @@ public abstract class BaseCrudService<TDto, TCreateDto, TUpdateDto> : ICrudServi
     }
 
     public virtual async Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(int page = 1, int pageSize = 10,
-        string? searchTerm = null)
+        string? searchTerm = null, IReadOnlyDictionary<string, string?>? filters = null)
     {
         try
         {
@@ -286,6 +287,17 @@ public abstract class BaseCrudService<TDto, TCreateDto, TUpdateDto> : ICrudServi
             queryParams.Add($"pageSize={pageSize}");
 
             if (!string.IsNullOrWhiteSpace(searchTerm)) queryParams.Add($"search={Uri.EscapeDataString(searchTerm)}");
+
+            if (filters != null)
+            {
+                foreach (var kvp in filters)
+                {
+                    if (string.IsNullOrWhiteSpace(kvp.Key) || string.IsNullOrWhiteSpace(kvp.Value)) continue;
+                    var key = Uri.EscapeDataString(kvp.Key);
+                    var value = Uri.EscapeDataString(kvp.Value!);
+                    queryParams.Add($"filters[{key}]={value}");
+                }
+            }
 
             var url = $"{BaseEndpoint}?{string.Join("&", queryParams)}";
             var response = await _httpClient.GetAsync(url);

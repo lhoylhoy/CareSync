@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading;
 using CareSync.Domain.Entities;
 
 namespace CareSync.Domain.Interfaces;
@@ -9,6 +11,13 @@ public interface IAppointmentRepository
     public Task<int> GetTotalCountAsync();
     public Task<IEnumerable<Appointment>> GetByPatientIdAsync(Guid patientId);
     public Task<IEnumerable<Appointment>> GetByDoctorIdAsync(Guid doctorId);
+
+    public Task<(IReadOnlyList<Appointment> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? searchTerm,
+        IReadOnlyDictionary<string, string?> filters,
+        CancellationToken cancellationToken = default);
 
     public Task<IEnumerable<Appointment>> GetAppointmentsByDoctorAndDateRangeAsync(Guid doctorId, DateTime startDateTime,
         DateTime endDateTime);

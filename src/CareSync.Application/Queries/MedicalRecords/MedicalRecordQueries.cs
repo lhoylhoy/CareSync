@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.MedicalRecords;
 using MediatR;
@@ -14,3 +15,9 @@ public record GetMedicalRecordsByDateRangeQuery(DateTime StartDate, DateTime End
     : IRequest<Result<IEnumerable<MedicalRecordDto>>>;
 
 public record GetAllMedicalRecordsQuery : IRequest<Result<IEnumerable<MedicalRecordDto>>>;
+
+public record GetMedicalRecordsPagedQuery(
+    int Page,
+    int PageSize,
+    string? SearchTerm,
+    IReadOnlyDictionary<string, string?> Filters) : IRequest<Result<CareSync.Application.Common.PagedResult<MedicalRecordDto>>>;

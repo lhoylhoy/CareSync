@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CareSync.Application.Common.Mapping;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Staff;
@@ -76,5 +77,31 @@ public class GetStaffByDepartmentQueryHandler(IStaffRepository staffRepository, 
             list.Add(dto);
         }
         return Result<IEnumerable<StaffDto>>.Success(list);
+    }
+}
+
+public class GetStaffPagedQueryHandler(IStaffRepository staffRepository, StaffMapper mapper)
+    : IRequestHandler<GetStaffPagedQuery, Result<CareSync.Application.Common.PagedResult<StaffDto>>>
+{
+    public async Task<Result<CareSync.Application.Common.PagedResult<StaffDto>>> Handle(GetStaffPagedQuery request, CancellationToken cancellationToken)
+    {
+        var filters = request.Filters ?? new Dictionary<string, string?>();
+        var (items, totalCount) = await staffRepository.GetPagedAsync(
+            request.Page,
+            request.PageSize,
+            request.SearchTerm,
+            filters,
+            cancellationToken);
+
+        var dtoList = new List<StaffDto>(items.Count);
+        foreach (var staff in items)
+        {
+            var dto = mapper.Map(staff);
+            bool hasRelated = await staffRepository.HasRelatedDataAsync(staff.Id);
+            dtoList.Add(dto with { HasRelatedData = hasRelated });
+        }
+
+        var pagedResult = new CareSync.Application.Common.PagedResult<StaffDto>(dtoList, totalCount, request.Page, request.PageSize);
+        return Result<CareSync.Application.Common.PagedResult<StaffDto>>.Success(pagedResult);
     }
 }
