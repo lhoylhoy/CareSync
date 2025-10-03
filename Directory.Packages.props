@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <!-- Application Layer -->
-  
+
   <!-- Static analyzers (staged adoption) -->
   <ItemGroup>
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
