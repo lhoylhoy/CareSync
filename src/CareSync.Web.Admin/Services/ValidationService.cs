@@ -4,17 +4,17 @@ namespace CareSync.Web.Admin.Services;
 
 public interface IValidationService
 {
-    string? ValidateRequired(string? value, string fieldName);
-    string? ValidateEmail(string? value);
-    string? ValidatePhilippinePhoneNumber(string? value);
-    string? ValidateDateOfBirth(DateTime? dateValue);
-    string? ValidatePhilHealthNumber(string? value);
-    string? ValidateSssNumber(string? value);
-    string? ValidateTinNumber(string? value);
-    string? ValidateLength(string? value, string fieldName, int? minLength = null, int? maxLength = null, int? exactLength = null);
-    string? ValidateNumber(decimal? value, string fieldName, decimal? minValue = null, decimal? maxValue = null);
-    bool IsValidEmail(string? email);
-    bool IsValidPhilippinePhoneNumber(string? phoneNumber);
+    public string? ValidateRequired(string? value, string fieldName);
+    public string? ValidateEmail(string? value);
+    public string? ValidatePhilippinePhoneNumber(string? value);
+    public string? ValidateDateOfBirth(DateTime? dateValue);
+    public string? ValidatePhilHealthNumber(string? value);
+    public string? ValidateSssNumber(string? value);
+    public string? ValidateTinNumber(string? value);
+    public string? ValidateLength(string? value, string fieldName, int? minLength = null, int? maxLength = null, int? exactLength = null);
+    public string? ValidateNumber(decimal? value, string fieldName, decimal? minValue = null, decimal? maxValue = null);
+    public bool IsValidEmail(string? email);
+    public bool IsValidPhilippinePhoneNumber(string? phoneNumber);
 }
 
 public class ValidationService : IValidationService

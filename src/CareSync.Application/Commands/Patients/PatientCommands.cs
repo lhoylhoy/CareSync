@@ -1,7 +1,7 @@
-using CareSync.Application.DTOs.Patients;
-using MediatR;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Patients;
 using FluentValidation;
+using MediatR;
 
 namespace CareSync.Application.Commands.Patients;
 

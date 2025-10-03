@@ -1,5 +1,5 @@
-using CareSync.Application.DTOs.MedicalRecords;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.MedicalRecords;
 using MediatR;
 
 namespace CareSync.Application.Queries.MedicalRecords;

@@ -1,8 +1,8 @@
 using System.Globalization;
 using CareSync.Application.Common.Geographics;
-using CareSync.Web.Admin.Services.Contracts;
 using CareSync.Web.Admin;
 using CareSync.Web.Admin.Services;
+using CareSync.Web.Admin.Services.Contracts;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;

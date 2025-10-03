@@ -1,5 +1,5 @@
-using CareSync.Application.DTOs.Staff;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Staff;
 using MediatR;
 
 namespace CareSync.Application.Commands.Staff;

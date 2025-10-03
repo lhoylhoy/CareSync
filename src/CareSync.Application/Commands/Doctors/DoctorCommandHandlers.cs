@@ -1,10 +1,10 @@
+using CareSync.Application.Common.Mapping;
+using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Doctors;
 using CareSync.Domain.Entities;
 using CareSync.Domain.Interfaces;
 using CareSync.Domain.ValueObjects;
-using CareSync.Application.DTOs.Doctors;
 using MediatR;
-using CareSync.Application.Common.Mapping;
-using CareSync.Application.Common.Results;
 
 namespace CareSync.Application.Commands.Doctors;
 

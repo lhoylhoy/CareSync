@@ -1,7 +1,7 @@
-using CareSync.Application.DTOs.Staff;
 using CareSync.Application.Common.Results;
-using MediatR;
+using CareSync.Application.DTOs.Staff;
 using CareSync.Domain.Enums;
+using MediatR;
 
 namespace CareSync.Application.Queries.Staff;
 

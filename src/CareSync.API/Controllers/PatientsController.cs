@@ -1,11 +1,11 @@
 using CareSync.Application.Commands.Patients;
-using CareSync.Application.Queries.Patients;
-using CareSync.Application.DTOs.Patients;
-using MediatR;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Patients;
+using CareSync.Application.Queries.Patients;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace CareSync.API.Controllers;
 

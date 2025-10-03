@@ -1,7 +1,7 @@
 using CareSync.Application.Common.Results;
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CareSync.API.Controllers;
 

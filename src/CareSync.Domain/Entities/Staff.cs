@@ -1,5 +1,5 @@
-using CareSync.Domain.ValueObjects;
 using CareSync.Domain.Enums;
+using CareSync.Domain.ValueObjects;
 
 namespace CareSync.Domain.Entities;
 

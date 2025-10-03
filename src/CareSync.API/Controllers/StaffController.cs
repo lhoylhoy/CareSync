@@ -1,7 +1,7 @@
 using CareSync.Application.Commands.Staff;
-using CareSync.Application.Queries.Staff;
-using CareSync.Application.DTOs.Staff;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Staff;
+using CareSync.Application.Queries.Staff;
 using CareSync.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

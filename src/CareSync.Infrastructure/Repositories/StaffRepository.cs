@@ -1,6 +1,6 @@
 using CareSync.Domain.Entities;
-using CareSync.Domain.Interfaces;
 using CareSync.Domain.Enums;
+using CareSync.Domain.Interfaces;
 using CareSync.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

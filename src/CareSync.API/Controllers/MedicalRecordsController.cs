@@ -1,8 +1,8 @@
 using CareSync.Application.Commands.MedicalRecords;
-using CareSync.Application.Queries.MedicalRecords;
-using CareSync.Application.DTOs.MedicalRecords;
-using MediatR;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.MedicalRecords;
+using CareSync.Application.Queries.MedicalRecords;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

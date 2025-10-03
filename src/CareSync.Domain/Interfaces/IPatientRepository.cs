@@ -4,11 +4,11 @@ namespace CareSync.Domain.Interfaces;
 
 public interface IPatientRepository
 {
-    Task<Patient?> GetByIdAsync(Guid id);
-    Task<Patient?> GetByEmailAsync(string email);
-    Task<IEnumerable<Patient>> GetAllAsync();
-    Task AddAsync(Patient patient);
-    Task UpdateAsync(Patient patient);
-    Task DeleteAsync(Guid id);
-    Task<bool> HasRelatedDataAsync(Guid id);
+    public Task<Patient?> GetByIdAsync(Guid id);
+    public Task<Patient?> GetByEmailAsync(string email);
+    public Task<IEnumerable<Patient>> GetAllAsync();
+    public Task AddAsync(Patient patient);
+    public Task UpdateAsync(Patient patient);
+    public Task DeleteAsync(Guid id);
+    public Task<bool> HasRelatedDataAsync(Guid id);
 }

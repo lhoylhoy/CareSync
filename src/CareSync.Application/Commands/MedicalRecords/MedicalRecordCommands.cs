@@ -1,6 +1,6 @@
+using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.MedicalRecords;
 using MediatR;
-using CareSync.Application.Common.Results;
 
 namespace CareSync.Application.Commands.MedicalRecords;
 

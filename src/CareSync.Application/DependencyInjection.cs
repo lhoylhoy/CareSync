@@ -1,8 +1,8 @@
 using System.Reflection;
-using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
-using MediatR;
 using CareSync.Application.Common.Behaviors;
+using FluentValidation;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CareSync.Application;
 

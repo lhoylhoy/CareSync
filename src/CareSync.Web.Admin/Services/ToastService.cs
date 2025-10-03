@@ -4,10 +4,10 @@ namespace CareSync.Web.Admin.Services;
 
 public interface IToastService
 {
-    Task ShowSuccessAsync(string message, string title = "Success");
-    Task ShowErrorAsync(string message, string title = "Error");
-    Task ShowWarningAsync(string message, string title = "Warning");
-    Task ShowInfoAsync(string message, string title = "Info");
+    public Task ShowSuccessAsync(string message, string title = "Success");
+    public Task ShowErrorAsync(string message, string title = "Error");
+    public Task ShowWarningAsync(string message, string title = "Warning");
+    public Task ShowInfoAsync(string message, string title = "Info");
 }
 
 public class ToastService : IToastService

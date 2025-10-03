@@ -4,6 +4,6 @@ namespace CareSync.Domain.Interfaces;
 
 public interface IHasDomainEvents
 {
-    IReadOnlyCollection<DomainEvent> DomainEvents { get; }
-    void ClearDomainEvents();
+    public IReadOnlyCollection<DomainEvent> DomainEvents { get; }
+    public void ClearDomainEvents();
 }

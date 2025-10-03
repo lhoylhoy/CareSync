@@ -1,8 +1,8 @@
-using CareSync.Domain.Interfaces;
-using CareSync.Application.DTOs.Patients;
 using CareSync.Application.Common.Mapping;
-using MediatR;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Patients;
+using CareSync.Domain.Interfaces;
+using MediatR;
 
 namespace CareSync.Application.Queries.Patients;
 

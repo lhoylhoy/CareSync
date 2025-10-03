@@ -1,7 +1,7 @@
-using CareSync.Domain.Interfaces;
-using CareSync.Application.DTOs.Appointments;
 using CareSync.Application.Common.Mapping;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Appointments;
+using CareSync.Domain.Interfaces;
 using MediatR;
 
 namespace CareSync.Application.Queries.Appointments;

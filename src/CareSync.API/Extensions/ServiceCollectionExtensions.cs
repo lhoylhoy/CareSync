@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Threading.RateLimiting;
 using CareSync.API.Attributes;
 using CareSync.API.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,7 +11,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using System.Threading.RateLimiting;
 
 namespace CareSync.API.Extensions;
 

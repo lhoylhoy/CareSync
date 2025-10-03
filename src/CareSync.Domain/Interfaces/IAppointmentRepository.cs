@@ -4,25 +4,25 @@ namespace CareSync.Domain.Interfaces;
 
 public interface IAppointmentRepository
 {
-    Task<Appointment?> GetByIdAsync(Guid id);
-    Task<IEnumerable<Appointment>> GetAllAsync();
-    Task<int> GetTotalCountAsync();
-    Task<IEnumerable<Appointment>> GetByPatientIdAsync(Guid patientId);
-    Task<IEnumerable<Appointment>> GetByDoctorIdAsync(Guid doctorId);
+    public Task<Appointment?> GetByIdAsync(Guid id);
+    public Task<IEnumerable<Appointment>> GetAllAsync();
+    public Task<int> GetTotalCountAsync();
+    public Task<IEnumerable<Appointment>> GetByPatientIdAsync(Guid patientId);
+    public Task<IEnumerable<Appointment>> GetByDoctorIdAsync(Guid doctorId);
 
-    Task<IEnumerable<Appointment>> GetAppointmentsByDoctorAndDateRangeAsync(Guid doctorId, DateTime startDateTime,
+    public Task<IEnumerable<Appointment>> GetAppointmentsByDoctorAndDateRangeAsync(Guid doctorId, DateTime startDateTime,
         DateTime endDateTime);
 
-    Task AddAsync(Appointment appointment);
-    Task UpdateAsync(Appointment appointment);
-    Task DeleteAsync(Guid id);
+    public Task AddAsync(Appointment appointment);
+    public Task UpdateAsync(Appointment appointment);
+    public Task DeleteAsync(Guid id);
 
     // Optimized methods with eager loading to avoid N+1 queries
-    Task<Appointment?> GetByIdWithDetailsAsync(Guid id);
-    Task<IEnumerable<Appointment>> GetAllWithDetailsAsync();
-    Task<IEnumerable<Appointment>> GetByPatientIdWithDetailsAsync(Guid patientId);
-    Task<IEnumerable<Appointment>> GetByDoctorIdWithDetailsAsync(Guid doctorId);
-    Task<bool> HasConflictingAppointmentAsync(Guid doctorId, DateTime startTime, DateTime endTime);
+    public Task<Appointment?> GetByIdWithDetailsAsync(Guid id);
+    public Task<IEnumerable<Appointment>> GetAllWithDetailsAsync();
+    public Task<IEnumerable<Appointment>> GetByPatientIdWithDetailsAsync(Guid patientId);
+    public Task<IEnumerable<Appointment>> GetByDoctorIdWithDetailsAsync(Guid doctorId);
+    public Task<bool> HasConflictingAppointmentAsync(Guid doctorId, DateTime startTime, DateTime endTime);
     // Returns true if appointment has downstream clinical/financial artifacts (medical record, bill, etc.)
-    Task<bool> HasRelatedDataAsync(Guid id);
+    public Task<bool> HasRelatedDataAsync(Guid id);
 }

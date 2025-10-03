@@ -1,7 +1,7 @@
 using CareSync.Application.Commands.Doctors;
-using CareSync.Application.Queries.Doctors;
-using CareSync.Application.DTOs.Doctors;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Doctors;
+using CareSync.Application.Queries.Doctors;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

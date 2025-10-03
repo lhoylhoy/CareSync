@@ -1,9 +1,9 @@
+using CareSync.Application.Common.Mapping;
+using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Billing;
 using CareSync.Domain.Entities;
 using CareSync.Domain.Interfaces;
-using CareSync.Application.DTOs.Billing;
-using CareSync.Application.Common.Mapping;
 using MediatR;
-using CareSync.Application.Common.Results;
 
 namespace CareSync.Application.Commands.Billing;
 

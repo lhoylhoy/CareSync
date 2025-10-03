@@ -87,7 +87,9 @@ public class AuthController : ControllerBase
 
         return Ok(new LoginResponse
         {
-            AccessToken = accessToken, RefreshToken = refreshToken, ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(60)
         });
     }
 
@@ -116,7 +118,9 @@ public class AuthController : ControllerBase
 
         return Ok(new LoginResponse
         {
-            AccessToken = newAccessToken, RefreshToken = newRefreshToken, ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(60)
         });
     }
 
@@ -210,7 +214,9 @@ public class AuthController : ControllerBase
 
             return Ok(new LoginResponse
             {
-                AccessToken = accessToken, RefreshToken = refreshToken, ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(60)
             });
         }
         catch (Exception ex)
@@ -265,7 +271,7 @@ public class AuthController : ControllerBase
 
 public record RegisterRequest
 {
-    [Required] [EmailAddress] public string Email { get; init; } = string.Empty;
+    [Required][EmailAddress] public string Email { get; init; } = string.Empty;
 
     [Required]
     [StringLength(100, MinimumLength = 6)]
@@ -278,7 +284,7 @@ public record RegisterRequest
 
 public record LoginRequest
 {
-    [Required] [EmailAddress] public string Email { get; init; } = string.Empty;
+    [Required][EmailAddress] public string Email { get; init; } = string.Empty;
 
     [Required] public string Password { get; init; } = string.Empty;
 }

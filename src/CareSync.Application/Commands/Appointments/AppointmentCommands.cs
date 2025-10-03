@@ -1,5 +1,5 @@
-using CareSync.Application.DTOs.Appointments;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Appointments;
 using MediatR;
 
 namespace CareSync.Application.Commands.Appointments;

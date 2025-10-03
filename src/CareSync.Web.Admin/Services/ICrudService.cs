@@ -5,15 +5,15 @@ public interface ICrudService<TDto, TCreateDto, TUpdateDto>
     where TCreateDto : class
     where TUpdateDto : class
 {
-    Task<ApiResponse<IEnumerable<TDto>>> GetAllAsync();
-    Task<ApiResponse<TDto>> GetByIdAsync(Guid id);
-    Task<ApiResponse<TDto>> CreateAsync(TCreateDto createDto);
-    Task<ApiResponse<TDto>> UpdateAsync(Guid id, TUpdateDto updateDto);
-    Task<ApiResponse<bool>> DeleteAsync(Guid id);
+    public Task<ApiResponse<IEnumerable<TDto>>> GetAllAsync();
+    public Task<ApiResponse<TDto>> GetByIdAsync(Guid id);
+    public Task<ApiResponse<TDto>> CreateAsync(TCreateDto createDto);
+    public Task<ApiResponse<TDto>> UpdateAsync(Guid id, TUpdateDto updateDto);
+    public Task<ApiResponse<bool>> DeleteAsync(Guid id);
 
     // Optional: Search and pagination
-    Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(int page = 1, int pageSize = 10, string? searchTerm = null);
-    Task<ApiResponse<IEnumerable<TDto>>> SearchAsync(string searchTerm);
+    public Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(int page = 1, int pageSize = 10, string? searchTerm = null);
+    public Task<ApiResponse<IEnumerable<TDto>>> SearchAsync(string searchTerm);
 }
 
 public class PagedResult<T>

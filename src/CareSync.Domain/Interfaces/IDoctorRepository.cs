@@ -4,11 +4,11 @@ namespace CareSync.Domain.Interfaces;
 
 public interface IDoctorRepository
 {
-    Task<Doctor?> GetByIdAsync(Guid id);
-    Task<Doctor?> GetByEmailAsync(string email);
-    Task<IEnumerable<Doctor>> GetAllAsync();
-    Task AddAsync(Doctor doctor);
-    Task UpdateAsync(Doctor doctor);
-    Task DeleteAsync(Guid id);
-    Task<bool> HasRelatedDataAsync(Guid id);
+    public Task<Doctor?> GetByIdAsync(Guid id);
+    public Task<Doctor?> GetByEmailAsync(string email);
+    public Task<IEnumerable<Doctor>> GetAllAsync();
+    public Task AddAsync(Doctor doctor);
+    public Task UpdateAsync(Doctor doctor);
+    public Task DeleteAsync(Guid id);
+    public Task<bool> HasRelatedDataAsync(Guid id);
 }

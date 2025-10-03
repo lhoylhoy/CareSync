@@ -1,9 +1,9 @@
-using CareSync.Domain.Entities;
-using CareSync.Domain.Interfaces;
-using CareSync.Application.DTOs.MedicalRecords;
-using MediatR;
 using CareSync.Application.Common.Mapping;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.MedicalRecords;
+using CareSync.Domain.Entities;
+using CareSync.Domain.Interfaces;
+using MediatR;
 
 namespace CareSync.Application.Commands.MedicalRecords;
 

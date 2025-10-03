@@ -5,170 +5,170 @@ namespace CareSync.Domain.Interfaces;
 
 public interface IBillRepository
 {
-    Task<Bill?> GetByIdAsync(Guid id);
-    Task<List<Bill>> GetAllAsync();
-    Task<int> GetTotalCountAsync();
-    Task<List<Bill>> GetByPatientIdAsync(Guid patientId);
-    Task<List<Bill>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
-    Task<List<Bill>> GetOutstandingBillsAsync();
-    Task<List<Bill>> GetOverdueBillsAsync();
-    Task<Bill?> GetByBillNumberAsync(string billNumber);
-    Task<bool> HasRelatedDataAsync(Guid id); // payments or claims
-    Task AddAsync(Bill bill);
-    Task UpdateAsync(Bill bill);
-    Task DeleteAsync(Guid id);
-    Task SaveChangesAsync();
+    public Task<Bill?> GetByIdAsync(Guid id);
+    public Task<List<Bill>> GetAllAsync();
+    public Task<int> GetTotalCountAsync();
+    public Task<List<Bill>> GetByPatientIdAsync(Guid patientId);
+    public Task<List<Bill>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+    public Task<List<Bill>> GetOutstandingBillsAsync();
+    public Task<List<Bill>> GetOverdueBillsAsync();
+    public Task<Bill?> GetByBillNumberAsync(string billNumber);
+    public Task<bool> HasRelatedDataAsync(Guid id); // payments or claims
+    public Task AddAsync(Bill bill);
+    public Task UpdateAsync(Bill bill);
+    public Task DeleteAsync(Guid id);
+    public Task SaveChangesAsync();
 }
 
 public interface IPaymentRepository
 {
-    Task<Payment?> GetByIdAsync(Guid id);
-    Task<List<Payment>> GetByBillIdAsync(Guid billId);
-    Task<List<Payment>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+    public Task<Payment?> GetByIdAsync(Guid id);
+    public Task<List<Payment>> GetByBillIdAsync(Guid billId);
+    public Task<List<Payment>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
 
-    Task<List<Payment>> GetByPaymentMethodAsync(PaymentMethod method, DateTime? startDate = null,
+    public Task<List<Payment>> GetByPaymentMethodAsync(PaymentMethod method, DateTime? startDate = null,
         DateTime? endDate = null);
 
-    Task AddAsync(Payment payment);
-    Task UpdateAsync(Payment payment);
-    Task DeleteAsync(Guid id);
+    public Task AddAsync(Payment payment);
+    public Task UpdateAsync(Payment payment);
+    public Task DeleteAsync(Guid id);
 }
 
 public interface IInsuranceClaimRepository
 {
-    Task<InsuranceClaim?> GetByIdAsync(Guid id);
-    Task<List<InsuranceClaim>> GetByBillIdAsync(Guid billId);
-    Task<List<InsuranceClaim>> GetByPatientInsuranceIdAsync(Guid patientInsuranceId);
-    Task<List<InsuranceClaim>> GetByStatusAsync(ClaimStatus status);
-    Task<List<InsuranceClaim>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
-    Task<InsuranceClaim?> GetByClaimNumberAsync(string claimNumber);
-    Task AddAsync(InsuranceClaim claim);
-    Task UpdateAsync(InsuranceClaim claim);
-    Task DeleteAsync(Guid id);
+    public Task<InsuranceClaim?> GetByIdAsync(Guid id);
+    public Task<List<InsuranceClaim>> GetByBillIdAsync(Guid billId);
+    public Task<List<InsuranceClaim>> GetByPatientInsuranceIdAsync(Guid patientInsuranceId);
+    public Task<List<InsuranceClaim>> GetByStatusAsync(ClaimStatus status);
+    public Task<List<InsuranceClaim>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+    public Task<InsuranceClaim?> GetByClaimNumberAsync(string claimNumber);
+    public Task AddAsync(InsuranceClaim claim);
+    public Task UpdateAsync(InsuranceClaim claim);
+    public Task DeleteAsync(Guid id);
 }
 
 public interface IStaffRepository
 {
-    Task<Staff?> GetByIdAsync(Guid id);
-    Task<List<Staff>> GetAllAsync();
-    Task<List<Staff>> GetByRoleAsync(StaffRole role);
-    Task<List<Staff>> GetByDepartmentAsync(Department department);
-    Task<List<Staff>> GetActiveStaffAsync();
-    Task<Staff?> GetByEmailAsync(string email);
-    Task<Staff?> GetByEmployeeNumberAsync(string employeeNumber);
+    public Task<Staff?> GetByIdAsync(Guid id);
+    public Task<List<Staff>> GetAllAsync();
+    public Task<List<Staff>> GetByRoleAsync(StaffRole role);
+    public Task<List<Staff>> GetByDepartmentAsync(Department department);
+    public Task<List<Staff>> GetActiveStaffAsync();
+    public Task<Staff?> GetByEmailAsync(string email);
+    public Task<Staff?> GetByEmployeeNumberAsync(string employeeNumber);
     // Returns true if the staff member has related domain data that should block hard deletion
     // (future relationships: treatment records, lab orders, authored notes, etc.)
-    Task<bool> HasRelatedDataAsync(Guid id);
-    Task AddAsync(Staff staff);
-    Task UpdateAsync(Staff staff);
-    Task DeleteAsync(Guid id);
-    Task SaveChangesAsync();
+    public Task<bool> HasRelatedDataAsync(Guid id);
+    public Task AddAsync(Staff staff);
+    public Task UpdateAsync(Staff staff);
+    public Task DeleteAsync(Guid id);
+    public Task SaveChangesAsync();
 }
 
 public interface ITreatmentRepository
 {
-    Task<Treatment?> GetByIdAsync(Guid id);
-    Task<List<Treatment>> GetAllAsync();
-    Task<List<Treatment>> GetByCategoryAsync(TreatmentCategory category);
-    Task<List<Treatment>> GetActiveAsync();
-    Task<Treatment?> GetByCodeAsync(string code);
-    Task<List<Treatment>> SearchAsync(string searchTerm);
-    Task AddAsync(Treatment treatment);
-    Task UpdateAsync(Treatment treatment);
-    Task DeleteAsync(Guid id);
+    public Task<Treatment?> GetByIdAsync(Guid id);
+    public Task<List<Treatment>> GetAllAsync();
+    public Task<List<Treatment>> GetByCategoryAsync(TreatmentCategory category);
+    public Task<List<Treatment>> GetActiveAsync();
+    public Task<Treatment?> GetByCodeAsync(string code);
+    public Task<List<Treatment>> SearchAsync(string searchTerm);
+    public Task AddAsync(Treatment treatment);
+    public Task UpdateAsync(Treatment treatment);
+    public Task DeleteAsync(Guid id);
 }
 
 public interface ITreatmentRecordRepository
 {
-    Task<TreatmentRecord?> GetByIdAsync(Guid id);
-    Task<List<TreatmentRecord>> GetByMedicalRecordIdAsync(Guid medicalRecordId);
-    Task<List<TreatmentRecord>> GetByPatientIdAsync(Guid patientId);
-    Task<List<TreatmentRecord>> GetByTreatmentIdAsync(Guid treatmentId);
-    Task<List<TreatmentRecord>> GetByProviderIdAsync(Guid providerId);
-    Task<List<TreatmentRecord>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
-    Task<List<TreatmentRecord>> GetByStatusAsync(TreatmentStatus status);
-    Task AddAsync(TreatmentRecord treatmentRecord);
-    Task UpdateAsync(TreatmentRecord treatmentRecord);
-    Task DeleteAsync(Guid id);
+    public Task<TreatmentRecord?> GetByIdAsync(Guid id);
+    public Task<List<TreatmentRecord>> GetByMedicalRecordIdAsync(Guid medicalRecordId);
+    public Task<List<TreatmentRecord>> GetByPatientIdAsync(Guid patientId);
+    public Task<List<TreatmentRecord>> GetByTreatmentIdAsync(Guid treatmentId);
+    public Task<List<TreatmentRecord>> GetByProviderIdAsync(Guid providerId);
+    public Task<List<TreatmentRecord>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+    public Task<List<TreatmentRecord>> GetByStatusAsync(TreatmentStatus status);
+    public Task AddAsync(TreatmentRecord treatmentRecord);
+    public Task UpdateAsync(TreatmentRecord treatmentRecord);
+    public Task DeleteAsync(Guid id);
 }
 
 public interface ILabRepository
 {
-    Task<Lab?> GetByIdAsync(Guid id);
-    Task<List<Lab>> GetAllAsync();
-    Task<List<Lab>> GetActiveAsync();
-    Task<Lab?> GetByCodeAsync(string code);
-    Task<List<Lab>> SearchAsync(string searchTerm);
-    Task AddAsync(Lab lab);
-    Task UpdateAsync(Lab lab);
-    Task DeleteAsync(Guid id);
+    public Task<Lab?> GetByIdAsync(Guid id);
+    public Task<List<Lab>> GetAllAsync();
+    public Task<List<Lab>> GetActiveAsync();
+    public Task<Lab?> GetByCodeAsync(string code);
+    public Task<List<Lab>> SearchAsync(string searchTerm);
+    public Task AddAsync(Lab lab);
+    public Task UpdateAsync(Lab lab);
+    public Task DeleteAsync(Guid id);
 }
 
 public interface ILabTestRepository
 {
-    Task<LabTest?> GetByIdAsync(Guid id);
-    Task<List<LabTest>> GetAllAsync();
-    Task<List<LabTest>> GetByCategoryAsync(string category);
-    Task<List<LabTest>> GetActiveAsync();
-    Task<LabTest?> GetByCodeAsync(string code);
-    Task<List<LabTest>> SearchAsync(string searchTerm);
-    Task AddAsync(LabTest labTest);
-    Task UpdateAsync(LabTest labTest);
-    Task DeleteAsync(Guid id);
+    public Task<LabTest?> GetByIdAsync(Guid id);
+    public Task<List<LabTest>> GetAllAsync();
+    public Task<List<LabTest>> GetByCategoryAsync(string category);
+    public Task<List<LabTest>> GetActiveAsync();
+    public Task<LabTest?> GetByCodeAsync(string code);
+    public Task<List<LabTest>> SearchAsync(string searchTerm);
+    public Task AddAsync(LabTest labTest);
+    public Task UpdateAsync(LabTest labTest);
+    public Task DeleteAsync(Guid id);
 }
 
 public interface ILabOrderRepository
 {
-    Task<LabOrder?> GetByIdAsync(Guid id);
-    Task<List<LabOrder>> GetByPatientIdAsync(Guid patientId);
-    Task<List<LabOrder>> GetByDoctorIdAsync(Guid doctorId);
-    Task<List<LabOrder>> GetByLabIdAsync(Guid labId);
-    Task<List<LabOrder>> GetByStatusAsync(LabOrderStatus status);
-    Task<List<LabOrder>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
-    Task<LabOrder?> GetByOrderNumberAsync(string orderNumber);
-    Task<List<LabOrder>> GetUrgentOrdersAsync();
-    Task AddAsync(LabOrder labOrder);
-    Task UpdateAsync(LabOrder labOrder);
-    Task DeleteAsync(Guid id);
+    public Task<LabOrder?> GetByIdAsync(Guid id);
+    public Task<List<LabOrder>> GetByPatientIdAsync(Guid patientId);
+    public Task<List<LabOrder>> GetByDoctorIdAsync(Guid doctorId);
+    public Task<List<LabOrder>> GetByLabIdAsync(Guid labId);
+    public Task<List<LabOrder>> GetByStatusAsync(LabOrderStatus status);
+    public Task<List<LabOrder>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+    public Task<LabOrder?> GetByOrderNumberAsync(string orderNumber);
+    public Task<List<LabOrder>> GetUrgentOrdersAsync();
+    public Task AddAsync(LabOrder labOrder);
+    public Task UpdateAsync(LabOrder labOrder);
+    public Task DeleteAsync(Guid id);
 }
 
 public interface ILabResultRepository
 {
-    Task<LabResult?> GetByIdAsync(Guid id);
-    Task<List<LabResult>> GetByLabOrderTestIdAsync(Guid labOrderTestId);
-    Task<List<LabResult>> GetByLabOrderIdAsync(Guid labOrderId);
-    Task<List<LabResult>> GetByPatientIdAsync(Guid patientId);
-    Task<List<LabResult>> GetByStatusAsync(LabResultStatus status);
-    Task<List<LabResult>> GetAbnormalResultsAsync();
-    Task<List<LabResult>> GetPendingReviewAsync();
-    Task<List<LabResult>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
-    Task AddAsync(LabResult labResult);
-    Task UpdateAsync(LabResult labResult);
-    Task DeleteAsync(Guid id);
+    public Task<LabResult?> GetByIdAsync(Guid id);
+    public Task<List<LabResult>> GetByLabOrderTestIdAsync(Guid labOrderTestId);
+    public Task<List<LabResult>> GetByLabOrderIdAsync(Guid labOrderId);
+    public Task<List<LabResult>> GetByPatientIdAsync(Guid patientId);
+    public Task<List<LabResult>> GetByStatusAsync(LabResultStatus status);
+    public Task<List<LabResult>> GetAbnormalResultsAsync();
+    public Task<List<LabResult>> GetPendingReviewAsync();
+    public Task<List<LabResult>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
+    public Task AddAsync(LabResult labResult);
+    public Task UpdateAsync(LabResult labResult);
+    public Task DeleteAsync(Guid id);
 }
 
 public interface IInsuranceProviderRepository
 {
-    Task<InsuranceProvider?> GetByIdAsync(Guid id);
-    Task<List<InsuranceProvider>> GetAllAsync();
-    Task<List<InsuranceProvider>> GetActiveAsync();
-    Task<InsuranceProvider?> GetByCodeAsync(string code);
-    Task<List<InsuranceProvider>> SearchAsync(string searchTerm);
-    Task AddAsync(InsuranceProvider provider);
-    Task UpdateAsync(InsuranceProvider provider);
-    Task DeleteAsync(Guid id);
+    public Task<InsuranceProvider?> GetByIdAsync(Guid id);
+    public Task<List<InsuranceProvider>> GetAllAsync();
+    public Task<List<InsuranceProvider>> GetActiveAsync();
+    public Task<InsuranceProvider?> GetByCodeAsync(string code);
+    public Task<List<InsuranceProvider>> SearchAsync(string searchTerm);
+    public Task AddAsync(InsuranceProvider provider);
+    public Task UpdateAsync(InsuranceProvider provider);
+    public Task DeleteAsync(Guid id);
 }
 
 public interface IPatientInsuranceRepository
 {
-    Task<PatientInsurance?> GetByIdAsync(Guid id);
-    Task<List<PatientInsurance>> GetByPatientIdAsync(Guid patientId);
-    Task<List<PatientInsurance>> GetByInsuranceProviderIdAsync(Guid providerId);
-    Task<PatientInsurance?> GetPrimaryInsuranceAsync(Guid patientId);
-    Task<PatientInsurance?> GetSecondaryInsuranceAsync(Guid patientId);
-    Task<List<PatientInsurance>> GetActiveInsuranceAsync(Guid patientId);
-    Task<PatientInsurance?> GetByPolicyNumberAsync(string policyNumber);
-    Task AddAsync(PatientInsurance patientInsurance);
-    Task UpdateAsync(PatientInsurance patientInsurance);
-    Task DeleteAsync(Guid id);
+    public Task<PatientInsurance?> GetByIdAsync(Guid id);
+    public Task<List<PatientInsurance>> GetByPatientIdAsync(Guid patientId);
+    public Task<List<PatientInsurance>> GetByInsuranceProviderIdAsync(Guid providerId);
+    public Task<PatientInsurance?> GetPrimaryInsuranceAsync(Guid patientId);
+    public Task<PatientInsurance?> GetSecondaryInsuranceAsync(Guid patientId);
+    public Task<List<PatientInsurance>> GetActiveInsuranceAsync(Guid patientId);
+    public Task<PatientInsurance?> GetByPolicyNumberAsync(string policyNumber);
+    public Task AddAsync(PatientInsurance patientInsurance);
+    public Task UpdateAsync(PatientInsurance patientInsurance);
+    public Task DeleteAsync(Guid id);
 }

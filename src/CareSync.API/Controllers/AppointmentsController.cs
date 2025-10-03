@@ -1,7 +1,7 @@
 using CareSync.Application.Commands.Appointments;
-using CareSync.Application.Queries.Appointments;
-using CareSync.Application.DTOs.Appointments;
 using CareSync.Application.Common.Results;
+using CareSync.Application.DTOs.Appointments;
+using CareSync.Application.Queries.Appointments;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
