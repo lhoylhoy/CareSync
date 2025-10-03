@@ -16,19 +16,19 @@ public class UpdateBillHandlerTests
 {
     private readonly Mock<IBillRepository> _billRepo = new();
     private readonly BillMapper _mapper = new();
+    private readonly Mock<IUnitOfWork> _uow = new();
 
     [Fact]
     public async Task Handle_InvalidDiscountGreaterThanSubtotal_ReturnsFailure()
     {
         // Arrange
         var bill = new Bill(Guid.NewGuid(), Guid.NewGuid(), "BILL-TEST", DateTime.UtcNow.AddDays(10), 0m, 0m, null);
-        // Add one item to establish subtotal
         var item = new BillItem(Guid.NewGuid(), bill.Id, "Service", 1, 50m, null, null);
         bill.AddItem(item);
         _billRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(bill);
 
-        var dto = new UpdateBillDto(bill.Id, bill.PatientId, bill.DueDate, 0m, 100m, null); // discount 100 > subtotal 50
-        var handler = new UpdateBillHandler(_billRepo.Object, _mapper);
+        var dto = new UpdateBillDto(bill.Id, bill.PatientId, bill.DueDate, 0m, 100m, null);
+        var handler = new UpdateBillHandler(_billRepo.Object, _mapper, _uow.Object);
 
         // Act
         var result = await handler.Handle(new UpdateBillCommand(dto), CancellationToken.None);
@@ -37,6 +37,7 @@ public class UpdateBillHandlerTests
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be("Invalid discount amount");
         _billRepo.Verify(r => r.UpdateAsync(It.IsAny<Bill>()), Times.Never);
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -44,12 +45,12 @@ public class UpdateBillHandlerTests
     {
         // Arrange
         var bill = new Bill(Guid.NewGuid(), Guid.NewGuid(), "BILL-TEST", DateTime.UtcNow.AddDays(10), 0m, 0m, null);
-        var item = new BillItem(Guid.NewGuid(), bill.Id, "Service", 2, 25m, null, null); // subtotal 50
+        var item = new BillItem(Guid.NewGuid(), bill.Id, "Service", 2, 25m, null, null);
         bill.AddItem(item);
         _billRepo.Setup(r => r.GetByIdAsync(bill.Id)).ReturnsAsync(bill);
 
         var dto = new UpdateBillDto(bill.Id, bill.PatientId, bill.DueDate, 0m, 10m, "promo");
-        var handler = new UpdateBillHandler(_billRepo.Object, _mapper);
+        var handler = new UpdateBillHandler(_billRepo.Object, _mapper, _uow.Object);
 
         // Act
         var result = await handler.Handle(new UpdateBillCommand(dto), CancellationToken.None);
@@ -58,19 +59,20 @@ public class UpdateBillHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value!.DiscountAmount.Should().Be(10m);
         _billRepo.Verify(r => r.UpdateAsync(bill), Times.Once);
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task Handle_TaxRateApplied_RecalculatesTaxAndTotals()
     {
-        // Arrange: subtotal 100 (4 items * 25)
+        // Arrange
         var bill = new Bill(Guid.NewGuid(), Guid.NewGuid(), "BILL-TEST", DateTime.UtcNow.AddDays(5), 0m, 0m, null);
         var item = new BillItem(Guid.NewGuid(), bill.Id, "Service", 4, 25m, null, null);
         bill.AddItem(item);
         _billRepo.Setup(r => r.GetByIdAsync(bill.Id)).ReturnsAsync(bill);
 
-        var dto = new UpdateBillDto(bill.Id, bill.PatientId, bill.DueDate, 0.12m, 0m, null); // 12% tax
-        var handler = new UpdateBillHandler(_billRepo.Object, _mapper);
+        var dto = new UpdateBillDto(bill.Id, bill.PatientId, bill.DueDate, 0.12m, 0m, null);
+        var handler = new UpdateBillHandler(_billRepo.Object, _mapper, _uow.Object);
 
         // Act
         var result = await handler.Handle(new UpdateBillCommand(dto), CancellationToken.None);
@@ -81,5 +83,7 @@ public class UpdateBillHandlerTests
         result.Value!.TaxRate.Should().Be(0.12m);
         result.Value!.TaxAmount.Should().Be(12m);
         result.Value!.TotalAmount.Should().Be(112m);
+        _billRepo.Verify(r => r.UpdateAsync(bill), Times.Once);
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

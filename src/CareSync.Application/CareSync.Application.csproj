@@ -15,7 +15,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\CareSync.Domain\CareSync.Domain.csproj"/>
-        <ProjectReference Include="..\CareSync.Shared\CareSync.Shared.csproj"/>
     </ItemGroup>
 
 </Project>

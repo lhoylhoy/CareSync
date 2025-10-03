@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using CareSync.Shared.Models;
 using CareSync.Application.DTOs.Staff;
 using CareSync.Web.Admin.Services.Contracts;
 

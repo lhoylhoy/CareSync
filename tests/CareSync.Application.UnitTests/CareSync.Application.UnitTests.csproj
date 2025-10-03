@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="../../src/CareSync.Application/CareSync.Application.csproj" />
     <ProjectReference Include="../../src/CareSync.Domain/CareSync.Domain.csproj" />
-    <ProjectReference Include="../../src/CareSync.Shared/CareSync.Shared.csproj" />
   </ItemGroup>
 
 </Project>

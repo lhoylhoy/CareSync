@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
-using CareSync.Shared.DTOs;
-using CareSync.Shared.Interfaces;
+using CareSync.Application.Common.Geographics;
 
 namespace CareSync.Web.Admin.Services
 {

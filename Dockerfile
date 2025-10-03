@@ -9,7 +9,6 @@ COPY ["src/CareSync.API/CareSync.API.csproj", "src/CareSync.API/"]
 COPY ["src/CareSync.Application/CareSync.Application.csproj", "src/CareSync.Application/"]
 COPY ["src/CareSync.Infrastructure/CareSync.Infrastructure.csproj", "src/CareSync.Infrastructure/"]
 COPY ["src/CareSync.Domain/CareSync.Domain.csproj", "src/CareSync.Domain/"]
-COPY ["src/CareSync.Shared/CareSync.Shared.csproj", "src/CareSync.Shared/"]
 
 # Restore dependencies
 RUN dotnet restore "src/CareSync.API/CareSync.API.csproj"

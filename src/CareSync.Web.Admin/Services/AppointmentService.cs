@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using CareSync.Application.DTOs.Appointments;
-using CareSync.Shared.Models;
 using CareSync.Web.Admin.Services.Contracts;
 
 namespace CareSync.Web.Admin.Services;

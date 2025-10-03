@@ -27,11 +27,11 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication"/>
         <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal"/>
         <PackageReference Include="Microsoft.Extensions.Caching.Memory"/>
+        <PackageReference Include="Microsoft.Extensions.Http"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\CareSync.Domain\CareSync.Domain.csproj"/>
-        <ProjectReference Include="..\CareSync.Shared\CareSync.Shared.csproj"/>
         <ProjectReference Include="..\CareSync.Application\CareSync.Application.csproj"/>
     </ItemGroup>
 

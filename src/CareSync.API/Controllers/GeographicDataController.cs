@@ -1,5 +1,4 @@
-using CareSync.Shared.DTOs;
-using CareSync.Shared.Interfaces;
+using CareSync.Application.Common.Geographics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

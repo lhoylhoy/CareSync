@@ -49,9 +49,9 @@ public class GetStaffByRoleQueryHandlerTests
     [Fact]
     public async Task Handle_EmptyList_ReturnsSuccessWithEmpty()
     {
-        _repo.Setup(r => r.GetByRoleAsync(StaffRole.Doctor)).ReturnsAsync(new List<Staff>());
+        _repo.Setup(r => r.GetByRoleAsync(StaffRole.Nurse)).ReturnsAsync(new List<Staff>());
         var handler = new GetStaffByRoleQueryHandler(_repo.Object, _mapper);
-        var result = await handler.Handle(new GetStaffByRoleQuery(StaffRole.Doctor), CancellationToken.None);
+        var result = await handler.Handle(new GetStaffByRoleQuery(StaffRole.Nurse), CancellationToken.None);
         result.IsSuccess.Should().BeTrue();
         result.Value!.Should().BeEmpty();
     }

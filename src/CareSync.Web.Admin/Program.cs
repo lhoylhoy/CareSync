@@ -1,7 +1,5 @@
 using System.Globalization;
-using CareSync.Shared.Interfaces;
-using CareSync.Shared.Services;
-using CareSync.Shared.Services.Contracts; // generic abstractions only
+using CareSync.Application.Common.Geographics;
 using CareSync.Web.Admin.Services.Contracts;
 using CareSync.Web.Admin;
 using CareSync.Web.Admin.Services;

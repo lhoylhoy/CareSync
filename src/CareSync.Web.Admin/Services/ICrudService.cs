@@ -1,5 +1,3 @@
-using CareSync.Shared.Models;
-
 namespace CareSync.Web.Admin.Services;
 
 public interface ICrudService<TDto, TCreateDto, TUpdateDto>

@@ -14,11 +14,12 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.Json"/>
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
+        <PackageReference Include="Microsoft.Extensions.Http"/>
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\CareSync.Application\CareSync.Application.csproj"/>
         <ProjectReference Include="..\CareSync.Domain\CareSync.Domain.csproj"/>
-        <ProjectReference Include="..\CareSync.Shared\CareSync.Shared.csproj"/>
     </ItemGroup>
 
 </Project>

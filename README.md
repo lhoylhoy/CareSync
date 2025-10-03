@@ -17,7 +17,6 @@ src/
 ├── CareSync.Application/     # Application Layer - Use cases and orchestration
 ├── CareSync.Infrastructure/  # Infrastructure Layer - Data persistence and external services
 ├── CareSync.API/             # Presentation Layer - RESTful API endpoints
-├── CareSync.Shared/          # Shared DTOs and common types
 └── CareSync.Web.Admin/       # Admin UI - Blazor WebAssembly interface
 
 tests/

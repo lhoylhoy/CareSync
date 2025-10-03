@@ -1,8 +1,8 @@
+using CareSync.Application.Common.Geographics;
 using CareSync.Domain.Interfaces;
 using CareSync.Infrastructure.Data;
 using CareSync.Infrastructure.Repositories;
-using CareSync.Shared.Interfaces;
-using CareSync.Shared.Services;
+using CareSync.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IInsuranceClaimRepository, InsuranceClaimRepository>();
         services.AddScoped<IStaffRepository, StaffRepository>();
 
-        // Register shared services with proper HTTP client configuration
+        // Register external data services with proper HTTP client configuration
         services.AddHttpClient<IPhilippineGeographicDataService, PhilippineGeographicDataService>(client =>
         {
             client.DefaultRequestHeaders.Add("Accept", "application/json");

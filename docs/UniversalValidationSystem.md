@@ -95,8 +95,7 @@ if (error != null)
 ### 1. Inject the ValidationService
 ```razor
 @inject IValidationService ValidationService
-@using CareSync.Shared.Services
-@using CareSync.Shared.Constants
+@using CareSync.Web.Admin.Services
 ```
 
 ### 2. Create Validation Methods

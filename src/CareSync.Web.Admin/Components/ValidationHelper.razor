@@ -1,5 +1,3 @@
-@using CareSync.Shared.Services
-@using CareSync.Shared.Constants
 @inject IValidationService ValidationService
 
 @*
@@ -38,29 +36,29 @@
 *@
 
 @code {
-    // Example implementation for a simple form field validation
-    public static string? ValidateFormField(IValidationService validationService,
-    string fieldType,
-    string? value,
-    string fieldName,
-    Dictionary<string, object>? options = null)
-    {
-        return fieldType.ToLower() switch
-        {
-            "required" => validationService.ValidateRequired(value, fieldName),
-            "email" => validationService.ValidateEmail(value),
-            "phone" => validationService.ValidatePhilippinePhoneNumber(value),
-            "philhealth" => validationService.ValidatePhilHealthNumber(value),
-            "sss" => validationService.ValidateSssNumber(value),
-            "tin" => validationService.ValidateTinNumber(value),
-            "length" when options != null => validationService.ValidateLength(
-            value,
-            fieldName,
-            options.ContainsKey("minLength") ? (int?)options["minLength"] : null,
-            options.ContainsKey("maxLength") ? (int?)options["maxLength"] : null,
-            options.ContainsKey("exactLength") ? (int?)options["exactLength"] : null
-            ),
-            _ => null
-        };
-    }
+   // Example implementation for a simple form field validation
+   public static string? ValidateFormField(IValidationService validationService,
+   string fieldType,
+   string? value,
+   string fieldName,
+   Dictionary<string, object>? options = null)
+   {
+      return fieldType.ToLower() switch
+      {
+         "required" => validationService.ValidateRequired(value, fieldName),
+         "email" => validationService.ValidateEmail(value),
+         "phone" => validationService.ValidatePhilippinePhoneNumber(value),
+         "philhealth" => validationService.ValidatePhilHealthNumber(value),
+         "sss" => validationService.ValidateSssNumber(value),
+         "tin" => validationService.ValidateTinNumber(value),
+         "length" when options != null => validationService.ValidateLength(
+         value,
+         fieldName,
+         options.ContainsKey("minLength") ? (int?)options["minLength"] : null,
+         options.ContainsKey("maxLength") ? (int?)options["maxLength"] : null,
+         options.ContainsKey("exactLength") ? (int?)options["exactLength"] : null
+         ),
+         _ => null
+      };
+   }
 }

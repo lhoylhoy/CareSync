@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CareSync.Shared.Models;
 
 namespace CareSync.Web.Admin.Services;
 
