@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.RateLimiting;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace CareSync.API.Extensions;
 
@@ -243,15 +245,47 @@ public static class ServiceCollectionExtensions
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
             {
-                var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-                return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                var userPartition = context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                var partitionKey = userPartition ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+
+                if (userPartition is not null)
                 {
-                    PermitLimit = 100,
-                    Window = TimeSpan.FromSeconds(10),
+                    return RateLimitPartition.GetTokenBucketLimiter(partitionKey, _ => new TokenBucketRateLimiterOptions
+                    {
+                        TokenLimit = 120,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0,
+                        ReplenishmentPeriod = TimeSpan.FromSeconds(5),
+                        TokensPerPeriod = 60,
+                        AutoReplenishment = true
+                    });
+                }
+
+                return RateLimitPartition.GetTokenBucketLimiter(partitionKey, _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 60,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                     QueueLimit = 0,
-                    QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst
+                    ReplenishmentPeriod = TimeSpan.FromSeconds(10),
+                    TokensPerPeriod = 30,
+                    AutoReplenishment = true
                 });
             });
+
+            options.OnRejected = static (context, _) =>
+            {
+                context.HttpContext.Response.Headers["Retry-After"] = "5";
+
+                if (context.HttpContext.RequestServices.GetService<ILoggerFactory>() is { } loggerFactory)
+                {
+                    var logger = loggerFactory.CreateLogger("RateLimiting");
+                    var user = context.HttpContext.User?.Identity?.Name ?? "anonymous";
+                    var ip = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    logger.LogWarning("Rate limit exceeded for user {User} with IP {IP}", user, ip);
+                }
+
+                return ValueTask.CompletedTask;
+            };
         });
         return services;
     }
@@ -261,20 +295,22 @@ public static class ServiceCollectionExtensions
         services.AddOutputCache(options =>
         {
             options.AddBasePolicy(builder => builder.Cache() // default: cache successful GET/HEAD
-                .Expire(TimeSpan.FromSeconds(30))
+                .Expire(TimeSpan.FromMinutes(2))
                 .SetVaryByQuery("page", "pageSize"));
-            options.AddPolicy("Patients-All", b => b.Cache().Expire(TimeSpan.FromSeconds(15)).Tag("patients-all"));
-            options.AddPolicy("Patients-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(1)).Tag("patients-byid"));
-            options.AddPolicy("Billing-All", b => b.Cache().Expire(TimeSpan.FromSeconds(15)).Tag("billing-all"));
-            options.AddPolicy("Billing-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(1)).Tag("billing-byid"));
-            options.AddPolicy("Appointments-All", b => b.Cache().Expire(TimeSpan.FromSeconds(10)).Tag("appointments-all"));
-            options.AddPolicy("Appointments-ById", b => b.Cache().Expire(TimeSpan.FromSeconds(30)).Tag("appointments-byid"));
+            options.AddPolicy("Patients-All", b => b.Cache().Expire(TimeSpan.FromMinutes(3)).Tag("patients-all"));
+            options.AddPolicy("Patients-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(5)).Tag("patients-byid"));
+            options.AddPolicy("Billing-All", b => b.Cache().Expire(TimeSpan.FromMinutes(2)).Tag("billing-all"));
+            options.AddPolicy("Billing-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(5)).Tag("billing-byid"));
+            options.AddPolicy("Doctors-All", b => b.Cache().Expire(TimeSpan.FromMinutes(3)).Tag("doctors-all"));
+            options.AddPolicy("Doctors-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(5)).Tag("doctors-byid"));
+            options.AddPolicy("Appointments-All", b => b.Cache().Expire(TimeSpan.FromMinutes(2)).Tag("appointments-all"));
+            options.AddPolicy("Appointments-ById", b => b.Cache().Expire(TimeSpan.FromMinutes(4)).Tag("appointments-byid"));
             options.AddPolicy("Appointments-ByPatient", b => b.Cache()
-                .Expire(TimeSpan.FromSeconds(10))
+                .Expire(TimeSpan.FromMinutes(2))
                 .SetVaryByRouteValue("patientId")
                 .Tag("appointments-bypatient"));
             options.AddPolicy("Appointments-ByDoctor", b => b.Cache()
-                .Expire(TimeSpan.FromSeconds(10))
+                .Expire(TimeSpan.FromMinutes(2))
                 .SetVaryByRouteValue("doctorId")
                 .Tag("appointments-bydoctor"));
         });

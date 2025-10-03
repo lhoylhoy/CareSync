@@ -25,6 +25,9 @@ bld/
 !.vscode/extensions.json
 *.code-workspace
 
+# JetBrains IDE project metadata
+.idea/
+
 # User-specific files
 *.rsuser
 *.suo

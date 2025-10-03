@@ -170,6 +170,10 @@ public class CareSyncDbContext(DbContextOptions<CareSyncDbContext> options) : Id
                 .HasColumnName("MiddleName")
                 .HasMaxLength(100)
                 .IsRequired(false);
+
+            // Index on FullName owned properties for faster name searches
+            fn.HasIndex(f => new { f.LastName, f.FirstName })
+                .HasDatabaseName("IX_Patients_Last_First");
         });
 
         // Configure Email and PhoneNumber value objects for Patient using converters (avoids optional owned warnings)
@@ -283,12 +287,18 @@ public class CareSyncDbContext(DbContextOptions<CareSyncDbContext> options) : Id
                 .HasColumnName("MiddleName")
                 .HasMaxLength(100)
                 .IsRequired(false);
+
+            // Index on Doctor name owned properties
+            fn.HasIndex(f => new { f.LastName, f.FirstName })
+                .HasDatabaseName("IX_Doctors_Last_First");
         });
 
         // Configure Email value object for Doctor
         modelBuilder.Entity<Doctor>().OwnsOne(d => d.Email, e =>
         {
             e.Property(em => em.Value).HasColumnName("Email").HasMaxLength(255);
+            // Index on doctor's email (owned value object)
+            e.HasIndex(em => em.Value).HasDatabaseName("IX_Doctors_Email");
         });
 
         // Configure PhoneNumber value object for Doctor
@@ -333,6 +343,8 @@ public class CareSyncDbContext(DbContextOptions<CareSyncDbContext> options) : Id
         modelBuilder.Entity<Staff>().OwnsOne(s => s.Email, e =>
         {
             e.Property(em => em.Value).HasColumnName("Email").HasMaxLength(255);
+            // Index on staff email
+            e.HasIndex(em => em.Value).HasDatabaseName("IX_Staff_Email");
         });
 
         modelBuilder.Entity<Staff>().OwnsOne(s => s.PhoneNumber, pn =>
@@ -532,6 +544,8 @@ public class CareSyncDbContext(DbContextOptions<CareSyncDbContext> options) : Id
             .HasIndex(p => p.Gender)
             .HasDatabaseName("IX_Patients_Gender");
 
+        // Note: indexes for FullName and Email owned properties are configured inside OwnsOne
+
         // Appointment indexes for scheduling queries
         modelBuilder.Entity<Appointment>()
             .HasIndex(a => a.PatientId)
@@ -584,6 +598,8 @@ public class CareSyncDbContext(DbContextOptions<CareSyncDbContext> options) : Id
             .HasIndex(p => p.PaymentDate)
             .HasDatabaseName("IX_Payments_PaymentDate");
 
+        // Note: Staff email index is configured inside OwnsOne
+
         // Doctor indexes
         modelBuilder.Entity<Doctor>()
             .HasIndex(d => d.Specialty)
@@ -593,6 +609,8 @@ public class CareSyncDbContext(DbContextOptions<CareSyncDbContext> options) : Id
             .HasIndex(d => d.IsActive)
             .HasDatabaseName("IX_Doctors_IsActive");
 
+        // Note: indexes for Doctor email and Name owned properties are configured inside OwnsOne
+
         // Medical record indexes
         modelBuilder.Entity<MedicalRecord>()
             .HasIndex(mr => mr.PatientId)
@@ -601,6 +619,11 @@ public class CareSyncDbContext(DbContextOptions<CareSyncDbContext> options) : Id
         modelBuilder.Entity<MedicalRecord>()
             .HasIndex(mr => mr.RecordDate)
             .HasDatabaseName("IX_MedicalRecords_RecordDate");
+
+        // Index on MedicalRecord.DoctorId for queries that retrieve records by doctor
+        modelBuilder.Entity<MedicalRecord>()
+            .HasIndex(mr => mr.DoctorId)
+            .HasDatabaseName("IX_MedicalRecords_DoctorId");
     }
 
     private void ConfigurePhilippineGeographicData(ModelBuilder modelBuilder)

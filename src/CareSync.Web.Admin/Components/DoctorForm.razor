@@ -27,16 +27,17 @@
 
 <div class="row">
     <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">Specialty *</label>
-                <InputSelect @bind-Value="Model.Specialization" class="form-select">
-                    @foreach (var spec in Enum.GetValues(typeof(CareSync.Domain.Enums.Specialization)).Cast<CareSync.Domain.Enums.Specialization>())
-                    {
-                        <option value="@spec">@spec.ToString().Replace("", " ")</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => Model.Specialization)" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Specialty *</label>
+            <InputSelect @bind-Value="Model.Specialization" class="form-select">
+                @foreach (var spec in
+                                Enum.GetValues(typeof(CareSync.Domain.Enums.Specialization)).Cast<CareSync.Domain.Enums.Specialization>())
+                {
+                    <option value="@spec">@GetDisplayLabel(spec)</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Model.Specialization)" />
+        </div>
     </div>
     <div class="col-md-6">
         <div class="mb-3">
@@ -59,4 +60,20 @@
 
 @code {
     [Parameter] public DoctorFormDto Model { get; set; } = null!;
+}
+
+@functions {
+    private static string GetDisplayLabel(CareSync.Domain.Enums.Specialization spec)
+    {
+        // Convert PascalCase enum names to friendly labels, e.g. FamilyMedicine -> Family Medicine
+        var name = spec.ToString();
+        var sb = new System.Text.StringBuilder();
+        foreach (var ch in name)
+        {
+            if (char.IsUpper(ch) && sb.Length > 0)
+                sb.Append(' ');
+            sb.Append(ch);
+        }
+        return sb.ToString();
+    }
 }

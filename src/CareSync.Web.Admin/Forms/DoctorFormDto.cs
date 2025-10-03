@@ -14,7 +14,7 @@ public class DoctorFormDto
     public string PhoneNumber { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
 
-    public CreateDoctorDto ToCreateDto() => new(FirstName, LastName, MiddleName, Specialization.ToString().Replace("", ""), PhoneNumber, Email);
+    public CreateDoctorDto ToCreateDto() => new(FirstName, LastName, MiddleName, Specialization.ToString(), PhoneNumber, Email);
     public UpdateDoctorDto ToUpdateDto() => new(Id!.Value, FirstName, LastName, MiddleName, Specialization.ToString(), PhoneNumber, Email);
     public UpsertDoctorDto ToUpsertDto() => new(Id, FirstName, LastName, MiddleName, Specialization.ToString(), PhoneNumber, Email);
 

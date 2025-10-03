@@ -5,7 +5,7 @@ using Serilog;
 
 // Bootstrap logger (will be replaced by full configuration later)
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
+    .WriteTo.Async(config => config.Console())
     .Enrich.FromLogContext()
     .CreateBootstrapLogger();
 

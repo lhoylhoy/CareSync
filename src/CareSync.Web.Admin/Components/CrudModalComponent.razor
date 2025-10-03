@@ -1,8 +1,11 @@
 @typeparam TDto
+@using Microsoft.JSInterop
 @inject IJSRuntime JsRuntime
+@implements IAsyncDisposable
 
 <!-- CRUD Modal -->
-<div class="modal fade" id="@ModalId" tabindex="-1" aria-labelledby="@($"{ModalId}Label")" aria-hidden="true">
+<div class="modal fade" id="@ModalId" @ref="ModalElement" tabindex="-1" aria-labelledby="@($"{ModalId}Label")"
+    aria-hidden="true">
     <div class="modal-dialog @ModalSize">
         <div class="modal-content">
             <div class="modal-header bg-@ModalHeaderColor">
@@ -10,7 +13,7 @@
                     <i class="@ModalIcon me-2"></i>@ModalTitle
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 @if (IsLoading)
@@ -25,7 +28,7 @@
                 else if (CurrentModel != null)
                 {
                     <EditForm Model="@CurrentModel" OnValidSubmit="@HandleValidSubmit">
-                        <DataAnnotationsValidator/>
+                        <DataAnnotationsValidator />
 
                         @if (ValidationMessages?.Any() == true)
                         {
@@ -51,7 +54,7 @@
                             </div>
                         }
 
-                        <ValidationSummary class="text-danger"/>
+                        <ValidationSummary class="text-danger" />
                     </EditForm>
                 }
                 else
@@ -67,7 +70,7 @@
                     <i class="fas fa-times me-2"></i>Cancel
                 </button>
                 <button type="button" class="btn btn-@SubmitButtonColor" @onclick="HandleValidSubmit"
-                        disabled="@(IsLoading || IsProcessing)">
+                    disabled="@(IsLoading || IsProcessing)">
                     @if (IsProcessing)
                     {
                         <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -119,15 +122,38 @@
     private string SubmitButtonColor => IsEditing ? EditSubmitColor : CreateSubmitColor;
     private string SubmitIcon => IsEditing ? EditIcon : CreateIcon;
 
+    private ElementReference ModalElement;
+    private IJSObjectReference? _modalModule;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _modalModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/careSync.modal.js");
+        }
+    }
+
+    private async ValueTask<IJSObjectReference> GetModuleAsync()
+    {
+        if (_modalModule is not null)
+        {
+            return _modalModule;
+        }
+
+        _modalModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/careSync.modal.js");
+        return _modalModule;
+    }
+
     public async Task ShowAsync()
     {
-        await JsRuntime.InvokeVoidAsync("bootstrap.Modal.getOrCreateInstance", $"#{ModalId}").AsTask();
-        await JsRuntime.InvokeVoidAsync("eval", $"bootstrap.Modal.getOrCreateInstance(document.getElementById('{ModalId}')).show()");
+        var module = await GetModuleAsync();
+        await module.InvokeVoidAsync("show", ModalElement);
     }
 
     public async Task HideAsync()
     {
-        await JsRuntime.InvokeVoidAsync("eval", $"bootstrap.Modal.getOrCreateInstance(document.getElementById('{ModalId}')).hide()");
+        var module = await GetModuleAsync();
+        await module.InvokeVoidAsync("hide", ModalElement);
     }
 
     private async Task HandleValidSubmit()
@@ -135,6 +161,14 @@
         if (CurrentModel != null)
         {
             await OnSubmit.InvokeAsync(CurrentModel);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_modalModule is not null)
+        {
+            await _modalModule.DisposeAsync();
         }
     }
 

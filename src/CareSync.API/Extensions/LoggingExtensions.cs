@@ -19,11 +19,11 @@ public static class LoggingExtensions
               .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
               .Enrich.FromLogContext()
               .Enrich.WithProperty("Application", "CareSync.API")
-              .WriteTo.Console();
+                            .WriteTo.Async(sink => sink.Console());
 
             if (!env.IsDevelopment())
             {
-                lc.WriteTo.File("logs/caresync-.txt", rollingInterval: RollingInterval.Day);
+                lc.WriteTo.Async(sink => sink.File("logs/caresync-.txt", rollingInterval: RollingInterval.Day));
             }
         });
     }

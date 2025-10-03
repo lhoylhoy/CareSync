@@ -47,10 +47,9 @@ public static class DependencyInjection
 
         // Unit of work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IDomainEventDispatcher, Services.DomainEventDispatcher>();
 
         // Domain events dispatcher (noop placeholder)
-        services.AddScoped<IDomainEventDispatcher, Infrastructure.Services.DomainEventDispatcher>();
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         return services;
     }
