@@ -11,6 +11,11 @@
   </ItemGroup>
 
   <!-- Application Layer -->
+  
+  <!-- Static analyzers (staged adoption) -->
+  <ItemGroup>
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
+  </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="MediatR" Version="12.4.1" />
     <PackageVersion Include="FluentValidation" Version="11.10.0" />

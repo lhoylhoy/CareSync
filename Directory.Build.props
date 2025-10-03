@@ -12,6 +12,8 @@
         <AnalysisLevel>latest</AnalysisLevel>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+        <!-- Feature flag: enable StyleCop analyzers across the repo when true -->
+        <EnableStyleCopAnalyzers>false</EnableStyleCopAnalyzers>
         <OptimizationPreference>speed</OptimizationPreference>
     </PropertyGroup>
 

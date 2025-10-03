@@ -1,0 +1,16 @@
+<Project>
+  <!-- This file adds StyleCop.Analyzers to all projects as an Analyzer when enabled.
+       It's intentionally disabled by default. To enable across the repo set
+       <EnableStyleCopAnalyzers>true</EnableStyleCopAnalyzers> in Directory.Build.props
+       (or on a branch/CI for staged adoption). -->
+
+  <PropertyGroup>
+    <_EnableStyleCop Condition="'$(EnableStyleCopAnalyzers)' == 'true'">true</_EnableStyleCop>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(EnableStyleCopAnalyzers)' == 'true'">
+    <!-- referenced via central PackageVersion -->
+    <PackageReference Include="StyleCop.Analyzers" />
+  </ItemGroup>
+
+</Project>
