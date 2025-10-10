@@ -63,7 +63,31 @@ public static class ApplicationBuilderExtensions
     public static WebApplication MapCareSyncEndpoints(this WebApplication app)
     {
         app.MapControllers();
-        app.MapHealthChecks("/health");
+        
+        // QUICK WIN #7: Enhanced health check endpoint with detailed JSON response
+        app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+        {
+            ResponseWriter = async (context, report) =>
+            {
+                context.Response.ContentType = "application/json";
+                var result = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    status = report.Status.ToString(),
+                    timestamp = DateTime.UtcNow,
+                    checks = report.Entries.Select(e => new
+                    {
+                        name = e.Key,
+                        status = e.Value.Status.ToString(),
+                        description = e.Value.Description,
+                        duration = e.Value.Duration.ToString(),
+                        error = e.Value.Exception?.Message
+                    }),
+                    totalDuration = report.TotalDuration.ToString()
+                });
+                await context.Response.WriteAsync(result);
+            }
+        });
+        
         return app;
     }
 }

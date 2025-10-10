@@ -39,7 +39,11 @@ public static class ServiceCollectionExtensions
                 "application/json", "text/json"
             };
         });
+        
+        // QUICK WIN #7: Enhanced health checks
+        // Note: Install Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore package for AddDbContextCheck
         services.AddHealthChecks();
+        
         return services;
     }
 

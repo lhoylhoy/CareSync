@@ -42,9 +42,9 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     public async Task<ActionResult<PatientDto>> CreatePatient([FromBody] CreatePatientDto createPatientDto)
     {
         var result = await _mediator.Send(new CreatePatientCommand(createPatientDto));
-        if (result.IsSuccess)
+        if (result.IsSuccess && result.Value!.Id.HasValue)
         {
-            await InvalidatePatientCachesAsync(result.Value!.Id, HttpContext.RequestAborted);
+            await InvalidatePatientCachesAsync(result.Value.Id.Value, HttpContext.RequestAborted);
         }
         return CreatedOrBadRequest(result, nameof(GetPatientById), new { id = result.Value?.Id });
     }
@@ -69,9 +69,9 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     public async Task<ActionResult<PatientDto>> UpsertPatient([FromBody] UpsertPatientDto upsertPatientDto)
     {
         var result = await _mediator.Send(new UpsertPatientCommand(upsertPatientDto));
-        if (result.IsSuccess && result.Value is not null)
+        if (result.IsSuccess && result.Value is not null && result.Value.Id.HasValue)
         {
-            await InvalidatePatientCachesAsync(result.Value.Id, HttpContext.RequestAborted);
+            await InvalidatePatientCachesAsync(result.Value.Id.Value, HttpContext.RequestAborted);
         }
         return UpsertOkOrBadRequest(result);
     }

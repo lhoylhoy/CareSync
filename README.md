@@ -7,6 +7,19 @@
 
 A modern, clean healthcare management system built with .NET 9 and Clean Architecture principles. This system is specifically designed for healthcare facilities in the Philippines with integrated geographic data support.
 
+## 🎯 Strategic Overhaul Initiative
+
+> **October 2025**: We're overhauling CareSync to make everything intentional and simplified for its core purpose.
+
+**📖 Start Here:**
+- **[GETTING_STARTED.md](./GETTING_STARTED.md)** - Your entry point to the overhaul initiative
+- **[VISUAL_ROADMAP.md](./VISUAL_ROADMAP.md)** - Quick visual overview of the transformation
+- **[STRATEGIC_OVERHAUL_PLAN.md](./STRATEGIC_OVERHAUL_PLAN.md)** - Complete vision and strategy
+- **[REFACTORING_TASKS.md](./REFACTORING_TASKS.md)** - Detailed implementation tasks
+- **[QUICK_WINS.md](./QUICK_WINS.md)** - Start improving today (1-2 days)
+
+**Goal:** Transform from a complex, over-engineered system to an intentionally simple, user-focused healthcare management platform.
+
 ## 🏗️ Architecture
 
 This solution follows **Clean Architecture** principles with clear separation of concerns:
