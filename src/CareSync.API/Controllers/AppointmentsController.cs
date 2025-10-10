@@ -18,7 +18,7 @@ namespace CareSync.API.Controllers;
 [Route("api/[controller]")]
 public class AppointmentsController(IMediator mediator, ILogger<AppointmentsController> logger, IOutputCacheStore cacheStore) : BaseApiController(mediator)
 {
-    private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+    // Note: _mediator is inherited from BaseApiController
     private readonly ILogger<AppointmentsController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IOutputCacheStore _cacheStore = cacheStore ?? throw new ArgumentNullException(nameof(cacheStore));
 

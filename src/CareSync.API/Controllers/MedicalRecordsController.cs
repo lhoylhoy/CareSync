@@ -12,7 +12,7 @@ namespace CareSync.API.Controllers;
 [Route("api/[controller]")]
 public class MedicalRecordsController(IMediator mediator) : BaseApiController(mediator)
 {
-    private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+    // Note: _mediator is inherited from BaseApiController
 
     /// <summary>
     ///     Get all medical records

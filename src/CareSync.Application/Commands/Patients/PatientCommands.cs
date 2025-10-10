@@ -15,7 +15,7 @@ public class CreatePatientCommandValidator : AbstractValidator<CreatePatientComm
         RuleFor(c => c.Patient.Id)
             .Must(id => id == null || id == Guid.Empty)
             .WithMessage("Id must be null or empty for create operations");
-            
+
         RuleFor(c => c.Patient.FirstName).NotEmpty();
         RuleFor(c => c.Patient.LastName).NotEmpty();
         RuleFor(c => c.Patient.Gender).NotEmpty();
@@ -44,7 +44,7 @@ public class UpdatePatientCommandValidator : AbstractValidator<UpdatePatientComm
             .NotNull()
             .NotEqual(Guid.Empty)
             .WithMessage("Id is required for update operations");
-            
+
         RuleFor(c => c.Patient.FirstName).NotEmpty();
         RuleFor(c => c.Patient.LastName).NotEmpty();
         RuleFor(c => c.Patient.Gender).NotEmpty();

@@ -16,7 +16,7 @@ public class UpdatePatientCommandHandler(IPatientRepository patientRepository, I
     {
         if (!request.Patient.Id.HasValue || request.Patient.Id.Value == Guid.Empty)
             return Result<PatientDto>.Failure("Patient Id is required for update operations.");
-            
+
         var existingPatient = await patientRepository.GetByIdAsync(request.Patient.Id.Value);
         if (existingPatient == null)
             return Result<PatientDto>.Failure($"Patient with ID {request.Patient.Id.Value} not found.");
