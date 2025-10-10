@@ -28,7 +28,7 @@
                 </div>
                 <div>
                     <strong>@patient.FirstName @patient.LastName</strong>
-                    <div class="text-muted small">ID: @patient.Id.ToString()[..8]...</div>
+                    <div class="text-muted small">ID: @(patient.Id?.ToString()[..8] ?? "N/A")...</div>
                 </div>
             </div>
         </td>
@@ -78,7 +78,7 @@
             <span class="cs-badge cs-badge-primary">@patient.Age years</span>
         </td>
         <td>
-            <small class="text-muted">@patient.CreatedAt.ToString("MMM dd, yyyy")</small>
+            <small class="text-muted">@(patient.CreatedAt?.ToString("MMM dd, yyyy") ?? "N/A")</small>
         </td>
     </RowTemplate>
 

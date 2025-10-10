@@ -39,12 +39,12 @@ public record PatientDto(
     public int? Age => DateOfBirth.HasValue
         ? DateTime.Today.Year - DateOfBirth.Value.Year - (DateTime.Today.DayOfYear < DateOfBirth.Value.DayOfYear ? 1 : 0)
         : null;
-    
+
     /// <summary>Full display name with proper formatting</summary>
     public string DisplayName => string.IsNullOrEmpty(MiddleName)
         ? $"{FirstName} {LastName}"
         : $"{FirstName} {MiddleName} {LastName}";
-    
+
     /// <summary>Full address in Philippine format</summary>
     public string FullAddress
     {
@@ -59,10 +59,10 @@ public record PatientDto(
             return string.Join(", ", parts);
         }
     }
-    
+
     /// <summary>Check if patient is a minor (under 18)</summary>
     public bool IsMinor => Age.HasValue && Age.Value < 18;
-    
+
     /// <summary>Check if this is a new patient (not yet saved)</summary>
     public bool IsNew => Id == null || Id == Guid.Empty;
 };

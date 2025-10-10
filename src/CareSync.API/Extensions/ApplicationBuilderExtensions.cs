@@ -63,7 +63,7 @@ public static class ApplicationBuilderExtensions
     public static WebApplication MapCareSyncEndpoints(this WebApplication app)
     {
         app.MapControllers();
-        
+
         // QUICK WIN #7: Enhanced health check endpoint with detailed JSON response
         app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
         {
@@ -87,7 +87,7 @@ public static class ApplicationBuilderExtensions
                 await context.Response.WriteAsync(result);
             }
         });
-        
+
         return app;
     }
 }

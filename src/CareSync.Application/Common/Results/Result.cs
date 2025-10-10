@@ -36,7 +36,7 @@ public class Result<T> : Result
 
     public static Result<T> Success(T value) => new(true, value, null);
     public static new Result<T> Failure(string error) => new(false, default, error);
-    
+
     /// <summary>
     /// Try to get the value, returns true if successful
     /// </summary>
@@ -61,7 +61,7 @@ public static class ResultExtensions
             ? Result<TOut>.Success(mapper(result.Value))
             : Result<TOut>.Failure(result.Error ?? "Mapping failed");
     }
-    
+
     /// <summary>
     /// Execute an action if result is successful
     /// </summary>
@@ -71,7 +71,7 @@ public static class ResultExtensions
             action(result.Value);
         return result;
     }
-    
+
     /// <summary>
     /// Execute an action if result is a failure
     /// </summary>
@@ -81,7 +81,7 @@ public static class ResultExtensions
             action(result.Error);
         return result;
     }
-    
+
     /// <summary>
     /// Match pattern - execute different actions based on success/failure
     /// </summary>
