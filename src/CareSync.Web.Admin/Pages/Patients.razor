@@ -1,7 +1,7 @@
 @page "/patients"
 @inject CareSync.Web.Admin.Services.Contracts.IPatientService PatientService
 
-<BaseCrudPage TDto="PatientDto" TCreateDto="CreatePatientDto" TUpdateDto="UpdatePatientDto" TFormDto="PatientFormDto"
+<BaseCrudPage TDto="PatientDto" TCreateDto="PatientDto" TUpdateDto="PatientDto" TFormDto="PatientFormDto"
     PageTitle="Patient Management" PageDescription="Manage patient records and information" PageIcon="fas fa-users"
     EntityName="Patient" TableTitle="Patient Directory" TableIcon="fas fa-users" CreateButtonText="Add Patient"
     EmptyStateTitle="No patients found" EmptyStateMessage="Start by adding your first patient."
@@ -108,14 +108,14 @@
         return $"{patient.FirstName} {patient.LastName}";
     }
 
-    private CreatePatientDto ConvertToCreateDto(PatientFormDto form)
+    private PatientDto ConvertToCreateDto(PatientFormDto form)
     {
-        return form.ToCreateDto();
+        return form.ToDto(); // Converts to PatientDto with Id = null for create
     }
 
-    private UpdatePatientDto ConvertToUpdateDto(PatientFormDto form)
+    private PatientDto ConvertToUpdateDto(PatientFormDto form)
     {
-        return form.ToUpdateDto();
+        return form.ToDto(); // Converts to PatientDto with Id value for update
     }
 
 }

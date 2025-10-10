@@ -27,14 +27,42 @@ public class PatientFormDto
     public string? BarangayName { get; set; }
     [Required] public string? CityZipCode { get; set; }
 
+    // New consolidated method - uses PatientDto with nullable Id
+    public PatientDto ToDto() => new(
+        Id, // null for create, value for update
+        FirstName,
+        MiddleName,
+        LastName,
+        Street,
+        ProvinceCode,
+        ProvinceName ?? string.Empty,
+        CityCode,
+        CityName ?? string.Empty,
+        BarangayCode,
+        BarangayName ?? string.Empty,
+        CityZipCode ?? string.Empty,
+        DateOfBirth,
+        Gender,
+        PhoneNumber,
+        Email,
+        EmergencyContactName,
+        EmergencyContactNumber,
+        PhilHealthNumber,
+        SssNumber,
+        Tin
+    );
+
+    [Obsolete("Use ToDto() instead. This will be removed in the next major version.")]
     public CreatePatientDto ToCreateDto() => new(FirstName, MiddleName, LastName, Street, ProvinceCode, CityCode, BarangayCode,
         CityZipCode, DateOfBirth, Gender, PhoneNumber, Email, EmergencyContactName, EmergencyContactNumber,
         PhilHealthNumber, SssNumber, Tin);
 
+    [Obsolete("Use ToDto() instead. This will be removed in the next major version.")]
     public UpdatePatientDto ToUpdateDto() => new(Id ?? Guid.Empty, FirstName, MiddleName, LastName, Street, ProvinceCode, CityCode,
         BarangayCode, CityZipCode, DateOfBirth, Gender, PhoneNumber, Email, EmergencyContactName,
         EmergencyContactNumber, PhilHealthNumber, SssNumber, Tin);
 
+    [Obsolete("Use ToDto() instead. This will be removed in the next major version.")]
     public UpsertPatientDto ToUpsertDto() => new(null, FirstName, MiddleName, LastName, Street, ProvinceCode, CityCode, BarangayCode,
         CityZipCode, DateOfBirth, Gender, PhoneNumber, Email, EmergencyContactName, EmergencyContactNumber,
         PhilHealthNumber, SssNumber, Tin);

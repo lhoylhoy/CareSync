@@ -18,13 +18,14 @@ public interface IDoctorService : ICrudService<DoctorDto, CreateDoctorDto, Updat
     public Task DeleteDoctorAsync(Guid id);
 }
 
-public interface IPatientService : ICrudService<PatientDto, CreatePatientDto, UpdatePatientDto>
+// Updated to use consolidated PatientDto for create/update operations
+public interface IPatientService : ICrudService<PatientDto, PatientDto, PatientDto>
 {
     public Task<List<PatientDto>> GetPatientsAsync();
     public Task<PatientDto> GetPatientByIdAsync(Guid id);
-    public Task<PatientDto> CreatePatientAsync(CreatePatientDto patient);
-    public Task UpdatePatientAsync(UpdatePatientDto patient);
-    public Task<PatientDto> UpsertPatientAsync(UpsertPatientDto patient);
+    public Task<PatientDto> CreatePatientAsync(PatientDto patient);
+    public Task UpdatePatientAsync(PatientDto patient);
+    public Task<PatientDto> UpsertPatientAsync(PatientDto patient);
     public Task DeletePatientAsync(Guid id);
 }
 

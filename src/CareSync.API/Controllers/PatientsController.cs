@@ -39,9 +39,9 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     [HttpPost]
     [ProducesResponseType(typeof(PatientDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PatientDto>> CreatePatient([FromBody] CreatePatientDto createPatientDto)
+    public async Task<ActionResult<PatientDto>> CreatePatient([FromBody] PatientDto patientDto)
     {
-        var result = await _mediator.Send(new CreatePatientCommand(createPatientDto));
+        var result = await _mediator.Send(new CreatePatientCommand(patientDto));
         if (result.IsSuccess && result.Value!.Id.HasValue)
         {
             await InvalidatePatientCachesAsync(result.Value.Id.Value, HttpContext.RequestAborted);
@@ -52,10 +52,10 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(PatientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PatientDto>> UpdatePatient(Guid id, [FromBody] UpdatePatientDto updatePatientDto)
+    public async Task<ActionResult<PatientDto>> UpdatePatient(Guid id, [FromBody] PatientDto patientDto)
     {
-        if (id != updatePatientDto.Id) return BadRequest("ID mismatch between route and body");
-        var result = await _mediator.Send(new UpdatePatientCommand(updatePatientDto));
+        if (id != patientDto.Id) return BadRequest("ID mismatch between route and body");
+        var result = await _mediator.Send(new UpdatePatientCommand(patientDto));
         if (result.IsSuccess)
         {
             await InvalidatePatientCachesAsync(id, HttpContext.RequestAborted);
@@ -66,9 +66,9 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     [HttpPut("upsert")]
     [ProducesResponseType(typeof(PatientDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PatientDto>> UpsertPatient([FromBody] UpsertPatientDto upsertPatientDto)
+    public async Task<ActionResult<PatientDto>> UpsertPatient([FromBody] PatientDto patientDto)
     {
-        var result = await _mediator.Send(new UpsertPatientCommand(upsertPatientDto));
+        var result = await _mediator.Send(new UpsertPatientCommand(patientDto));
         if (result.IsSuccess && result.Value is not null && result.Value.Id.HasValue)
         {
             await InvalidatePatientCachesAsync(result.Value.Id.Value, HttpContext.RequestAborted);

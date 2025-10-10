@@ -5,12 +5,17 @@ using MediatR;
 
 namespace CareSync.Application.Commands.Patients;
 
-public record CreatePatientCommand(CreatePatientDto Patient) : IRequest<Result<PatientDto>>;
+// Updated to use consolidated PatientDto - Id is null for create, has value for update
+public record CreatePatientCommand(PatientDto Patient) : IRequest<Result<PatientDto>>;
 
 public class CreatePatientCommandValidator : AbstractValidator<CreatePatientCommand>
 {
     public CreatePatientCommandValidator()
     {
+        RuleFor(c => c.Patient.Id)
+            .Must(id => id == null || id == Guid.Empty)
+            .WithMessage("Id must be null or empty for create operations");
+            
         RuleFor(c => c.Patient.FirstName).NotEmpty();
         RuleFor(c => c.Patient.LastName).NotEmpty();
         RuleFor(c => c.Patient.Gender).NotEmpty();
@@ -25,15 +30,21 @@ public class CreatePatientCommandValidator : AbstractValidator<CreatePatientComm
     }
 }
 
-public record UpdatePatientCommand(UpdatePatientDto Patient) : IRequest<Result<PatientDto>>;
+// Updated to use consolidated PatientDto - Id must have value for update
+public record UpdatePatientCommand(PatientDto Patient) : IRequest<Result<PatientDto>>;
 
-public record UpsertPatientCommand(UpsertPatientDto Patient) : IRequest<Result<PatientDto>>;
+// Upsert uses PatientDto - decides based on whether Id is null or has value
+public record UpsertPatientCommand(PatientDto Patient) : IRequest<Result<PatientDto>>;
 
 public class UpdatePatientCommandValidator : AbstractValidator<UpdatePatientCommand>
 {
     public UpdatePatientCommandValidator()
     {
-        RuleFor(c => c.Patient.Id).NotEmpty();
+        RuleFor(c => c.Patient.Id)
+            .NotNull()
+            .NotEqual(Guid.Empty)
+            .WithMessage("Id is required for update operations");
+            
         RuleFor(c => c.Patient.FirstName).NotEmpty();
         RuleFor(c => c.Patient.LastName).NotEmpty();
         RuleFor(c => c.Patient.Gender).NotEmpty();

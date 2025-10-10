@@ -4,7 +4,8 @@ using CareSync.Web.Admin.Services.Contracts;
 
 namespace CareSync.Web.Admin.Services;
 
-public class PatientService : BaseCrudService<PatientDto, CreatePatientDto, UpdatePatientDto>, IPatientService
+// Updated to use consolidated PatientDto for all operations
+public class PatientService : BaseCrudService<PatientDto, PatientDto, PatientDto>, IPatientService
 {
     public PatientService(HttpClient httpClient) : base(httpClient)
     {
@@ -25,20 +26,21 @@ public class PatientService : BaseCrudService<PatientDto, CreatePatientDto, Upda
         return result.Data;
     }
 
-    public async Task<PatientDto> CreatePatientAsync(CreatePatientDto patient)
+    public async Task<PatientDto> CreatePatientAsync(PatientDto patient)
     {
         var result = await CreateAsync(patient);
         if (!result.Success || result.Data is null) throw new Exception(result.Message ?? "Failed to create patient");
         return result.Data;
     }
 
-    public async Task UpdatePatientAsync(UpdatePatientDto patient)
+    public async Task UpdatePatientAsync(PatientDto patient)
     {
-        var update = await UpdateAsync(patient.Id, patient);
+        if (!patient.Id.HasValue) throw new ArgumentException("Patient Id is required for update");
+        var update = await UpdateAsync(patient.Id.Value, patient);
         if (!update.Success) throw new Exception(update.Message ?? "Failed to update patient");
     }
 
-    public async Task<PatientDto> UpsertPatientAsync(UpsertPatientDto patient)
+    public async Task<PatientDto> UpsertPatientAsync(PatientDto patient)
     {
         var response = await _httpClient.PutAsJsonAsync($"{BaseEndpoint}/upsert", patient);
         response.EnsureSuccessStatusCode();
