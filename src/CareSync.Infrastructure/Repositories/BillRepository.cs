@@ -50,8 +50,9 @@ public class BillRepository : IBillRepository
         IReadOnlyDictionary<string, string?> filters,
         CancellationToken cancellationToken = default)
     {
-        page = Math.Max(page, 1);
-        pageSize = Math.Max(pageSize, 1);
+        if (page <= 0) page = CareSync.Application.Common.PagingDefaults.DefaultPage;
+        if (pageSize <= 0) pageSize = CareSync.Application.Common.PagingDefaults.DefaultPageSize;
+        pageSize = Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize);
 
         var query = _context.Bills
             .AsNoTracking()

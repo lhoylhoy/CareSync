@@ -39,44 +39,51 @@
                     @foreach (var item in Items)
                     {
                         <tr>
-                            @RowTemplate?.Invoke(item)
-                            @if (ShowActions)
-                            {
-                                <td class="text-center">
-                                    <div class="btn-group" role="group">
-                                        @if (AllowEdit)
-                                        {
-                                            <button class="btn btn-outline-primary btn-sm"
-                                                    @onclick="() => OnEditClicked.InvokeAsync(item)"
-                                                    title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        }
-                                        @if (AllowDelete)
-                                        {
-                                            var hasRelatedProp = item?.GetType().GetProperty("HasRelatedData");
-                                            bool disableDelete = hasRelatedProp != null && (hasRelatedProp.GetValue(item) as bool? == true);
-                                            var deleteTitle = disableDelete
-                                                ? "Cannot delete: related appointments, records, or bills exist"
-                                                : "Delete";
-                                            <button class="btn btn-outline-danger btn-sm"
-                                                    disabled="@disableDelete"
-                                                    @onclick="() => { if(!disableDelete) OnDeleteClicked.InvokeAsync(item); }"
-                                                    title="@deleteTitle">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        }
-                                        @if (AllowView)
-                                        {
-                                            <button class="btn btn-outline-info btn-sm"
-                                                    @onclick="() => OnViewClicked.InvokeAsync(item)"
-                                                    title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                        }
-                                    </div>
-                                </td>
-                            }
+                                            @RowTemplate?.Invoke(item)
+                                            @if (ShowActions)
+                                            {
+                                                <td class="text-center">
+                                                    @if (ActionsTemplate != null)
+                                                    {
+                                                        @ActionsTemplate.Invoke(item)
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="btn-group" role="group">
+                                                            @if (AllowEdit)
+                                                            {
+                                                                <button class="btn btn-outline-primary btn-sm"
+                                                                        @onclick="() => OnEditClicked.InvokeAsync(item)"
+                                                                        title="Edit">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                            }
+                                                            @if (AllowDelete)
+                                                            {
+                                                                var hasRelatedProp = item?.GetType().GetProperty("HasRelatedData");
+                                                                bool disableDelete = hasRelatedProp != null && (hasRelatedProp.GetValue(item) as bool? == true);
+                                                                var deleteTitle = disableDelete
+                                                                    ? "Cannot delete: related appointments, records, or bills exist"
+                                                                    : "Delete";
+                                                                <button class="btn btn-outline-danger btn-sm"
+                                                                        disabled="@disableDelete"
+                                                                        @onclick="() => { if(!disableDelete) OnDeleteClicked.InvokeAsync(item); }"
+                                                                        title="@deleteTitle">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            }
+                                                            @if (AllowView)
+                                                            {
+                                                                <button class="btn btn-outline-info btn-sm"
+                                                                        @onclick="() => OnViewClicked.InvokeAsync(item)"
+                                                                        title="View Details">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </td>
+                                            }
                         </tr>
                     }
                     </tbody>
@@ -85,27 +92,7 @@
 
             @if (ShowPagination && TotalPages > 1)
             {
-                <nav aria-label="Table pagination">
-                    <ul class="pagination justify-content-center mb-0">
-                        <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
-                            <button class="page-link" @onclick="() => OnPageChanged.InvokeAsync(CurrentPage - 1)">
-                                Previous
-                            </button>
-                        </li>
-                        @for (var i = 1; i <= TotalPages; i++)
-                        {
-                            var pageNum = i;
-                            <li class="page-item @(CurrentPage == pageNum ? "active" : "")">
-                                <button class="page-link"
-                                        @onclick="() => OnPageChanged.InvokeAsync(pageNum)">@pageNum</button>
-                            </li>
-                        }
-                        <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
-                            <button class="page-link" @onclick="() => OnPageChanged.InvokeAsync(CurrentPage + 1)">Next
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
+                <Pagination CurrentPage="@CurrentPage" TotalPages="@TotalPages" OnPageChanged="@OnPageChanged" />
             }
         }
         else
@@ -153,6 +140,7 @@
     // Templates
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
     [Parameter] public RenderFragment<TDto>? RowTemplate { get; set; }
+    [Parameter] public RenderFragment<TDto>? ActionsTemplate { get; set; }
 
     // Event Callbacks
     [Parameter] public EventCallback OnCreateClicked { get; set; }

@@ -1,6 +1,7 @@
 @using CareSync.Application.DTOs.Staff
 @using Microsoft.AspNetCore.Components.Forms
 @using CareSync.Domain.Enums
+@using CareSync.Domain.Extensions
 @inherits ComponentBase
 @using System.Text.RegularExpressions
 
@@ -40,9 +41,9 @@ else
         <div class="col-md-4">
             <label class="form-label">Role</label>
             <InputSelect class="form-select" @bind-Value="Model.Role">
-                @foreach (var r in Enum.GetValues<StaffRole>())
+                @foreach (var opt in CareSync.Web.Admin.Common.Filtering.EnumOptionHelper.GetOptions<StaffRole>())
                 {
-                    <option value="@r">@r</option>
+                    <option value="@opt.Value">@opt.Label</option>
                 }
             </InputSelect>
         </div>
@@ -50,9 +51,9 @@ else
             <label class="form-label">Department <span class="text-danger">*</span></label>
             <InputSelect class='@GetInputClass("Department")' @bind-Value="Model.Department"
                 @onblur='@(() => ValidateRequiredField("Department", Model!.Department.ToString(), "Department"))'>
-                @foreach (var d in Enum.GetValues<Department>())
+                @foreach (var opt in CareSync.Web.Admin.Common.Filtering.EnumOptionHelper.GetOptions<Department>())
                 {
-                    <option value="@d">@d</option>
+                    <option value="@opt.Value">@opt.Label</option>
                 }
             </InputSelect>
             @FieldError("Department")

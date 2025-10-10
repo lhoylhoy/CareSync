@@ -14,7 +14,7 @@ public interface ICrudService<TDto, TCreateDto, TUpdateDto>
     public Task<ApiResponse<bool>> DeleteAsync(Guid id);
 
     // Optional: Search and pagination
-    public Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(int page = 1, int pageSize = 10, string? searchTerm = null, IReadOnlyDictionary<string, string?>? filters = null);
+    public Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(int page = CareSync.Application.Common.PagingDefaults.DefaultPage, int pageSize = CareSync.Application.Common.PagingDefaults.DefaultPageSize, string? searchTerm = null, IReadOnlyDictionary<string, string?>? filters = null);
     public Task<ApiResponse<IEnumerable<TDto>>> SearchAsync(string searchTerm);
 }
 

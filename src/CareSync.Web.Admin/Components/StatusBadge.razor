@@ -1,3 +1,4 @@
+@using CareSync.Domain.Extensions
 @typeparam TStatus
 @* Reusable status badge component *@
 @if (Value is null)
@@ -19,7 +20,12 @@ else
     private string CssClass => $"cs-badge {MapClass(Value)} {AdditionalClasses}".Trim();
 
     private static string Format(object? value)
-        => value?.ToString()?.Replace("_", " ") ?? string.Empty;
+    => value switch
+    {
+        null => string.Empty,
+        Enum enumValue => enumValue.GetDisplayName(),
+        _ => value.ToString()?.Replace("_", " ") ?? string.Empty
+    };
 
     private static string MapClass(object? value)
     {

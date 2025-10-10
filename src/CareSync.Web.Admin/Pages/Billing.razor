@@ -50,7 +50,7 @@
         </td>
         <td>
             <div class="d-flex align-items-center">
-                <div class="avatar-circle me-3">
+                <div class="avatar-circle bg-light me-3">
                     @GetInitials(GetPatientName(bill.PatientId))
                 </div>
                 <div>
@@ -213,21 +213,6 @@
         </div>
     </div>
 }
-
-<style>
-    .avatar-circle {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: var(--bs-primary-bg-subtle, #e7f1ff);
-        color: var(--bs-primary, #0d6efd);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-</style>
 
 @code {
     private BaseCrudPage<BillDto, UpsertBillDto, UpsertBillDto, BillFormDto>? _crudPage;

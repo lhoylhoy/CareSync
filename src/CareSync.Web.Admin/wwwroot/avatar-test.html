@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Consistency Test - CareSync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../wwwroot/css/caresync.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .test-section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section h2 {
+            margin-top: 0;
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 0.5rem;
+        }
+
+        .avatar-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .avatar-label {
+            min-width: 200px;
+            font-weight: 600;
+        }
+
+        .resize-container {
+            border: 2px dashed #0d6efd;
+            padding: 1rem;
+            margin: 1rem 0;
+            resize: both;
+            overflow: auto;
+            min-width: 200px;
+            min-height: 100px;
+        }
+
+        .flex-test {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #e7f1ff;
+            border-radius: 4px;
+        }
+
+        .long-text {
+            flex: 1;
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎯 Avatar Consistency Test Suite</h1>
+    <p>Resize your browser window to test responsiveness. All avatars should maintain perfect circular shapes.</p>
+
+    <!-- Size Variants Test -->
+    <div class="test-section">
+        <h2>1. Size Variants</h2>
+        <div class="avatar-row">
+            <span class="avatar-label">Small (32px):</span>
+            <div class="avatar-circle avatar-sm bg-light">AB</div>
+            <div class="avatar-circle avatar-sm bg-primary"><i class="fas fa-user"></i></div>
+            <code>.avatar-circle .avatar-sm</code>
+        </div>
+        <div class="avatar-row">
+            <span class="avatar-label">Default/Medium (40px):</span>
+            <div class="avatar-circle bg-light">CD</div>
+            <div class="avatar-circle bg-primary"><i class="fas fa-user-md"></i></div>
+            <code>.avatar-circle</code>
+        </div>
+        <div class="avatar-row">
+            <span class="avatar-label">Large (48px):</span>
+            <div class="avatar-circle avatar-lg bg-light">EF</div>
+            <div class="avatar-circle avatar-lg bg-secondary"><i class="fas fa-user-nurse"></i></div>
+            <code>.avatar-circle .avatar-lg</code>
+        </div>
+    </div>
+
+    <!-- Color Variants Test -->
+    <div class="test-section">
+        <h2>2. Color Variants</h2>
+        <div class="avatar-row">
+            <span class="avatar-label">Default Gray:</span>
+            <div class="avatar-circle">GH</div>
+            <code>.avatar-circle</code>
+        </div>
+        <div class="avatar-row">
+            <span class="avatar-label">Light (Patients):</span>
+            <div class="avatar-circle bg-light">IJ</div>
+            <code>.avatar-circle .bg-light</code>
+        </div>
+        <div class="avatar-row">
+            <span class="avatar-label">Primary (Doctors):</span>
+            <div class="avatar-circle bg-primary"><i class="fas fa-user-md"></i></div>
+            <code>.avatar-circle .bg-primary</code>
+        </div>
+        <div class="avatar-row">
+            <span class="avatar-label">Secondary (Staff):</span>
+            <div class="avatar-circle bg-secondary"><i class="fas fa-user"></i></div>
+            <code>.avatar-circle .bg-secondary</code>
+        </div>
+        <div class="avatar-row">
+            <span class="avatar-label">Success:</span>
+            <div class="avatar-circle bg-success">✓</div>
+            <code>.avatar-circle .bg-success</code>
+        </div>
+        <div class="avatar-row">
+            <span class="avatar-label">Warning:</span>
+            <div class="avatar-circle bg-warning">!</div>
+            <code>.avatar-circle .bg-warning</code>
+        </div>
+        <div class="avatar-row">
+            <span class="avatar-label">Info:</span>
+            <div class="avatar-circle bg-info">i</div>
+            <code>.avatar-circle .bg-info</code>
+        </div>
+    </div>
+
+    <!-- Flex Container Test -->
+    <div class="test-section">
+        <h2>3. Flex Container Test (No Squishing)</h2>
+        <p>Avatars should maintain their shape even in compressed flex containers.</p>
+        <div class="flex-test">
+            <div class="avatar-circle bg-light">KL</div>
+            <div class="long-text">
+                This is a very long text that should cause the container to compress. The avatar to the left should
+                maintain its perfect circular shape and not get squished. Lorem ipsum dolor sit amet, consectetur
+                adipiscing elit.
+            </div>
+            <div class="avatar-circle bg-primary"><i class="fas fa-check"></i></div>
+        </div>
+    </div>
+
+    <!-- Resize Test -->
+    <div class="test-section">
+        <h2>4. Resize Container Test</h2>
+        <p>Drag the bottom-right corner to resize. Avatars should stay circular.</p>
+        <div class="resize-container">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div class="avatar-circle bg-light">MN</div>
+                <div class="avatar-circle bg-primary"><i class="fas fa-user-md"></i></div>
+                <div class="avatar-circle bg-secondary"><i class="fas fa-user"></i></div>
+                <div class="avatar-circle bg-success">OP</div>
+                <div class="avatar-circle bg-warning">QR</div>
+                <div class="avatar-circle bg-info">ST</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Context Test -->
+    <div class="test-section">
+        <h2>5. Table Context (Real-World Usage)</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid #dee2e6;">
+                    <th style="padding: 0.75rem; text-align: left;">Patient</th>
+                    <th style="padding: 0.75rem; text-align: left;">Doctor</th>
+                    <th style="padding: 0.75rem; text-align: left;">Staff</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #dee2e6;">
+                    <td style="padding: 0.75rem;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar-circle bg-light me-3">JD</div>
+                            <div>
+                                <div style="font-weight: 600;">John Doe</div>
+                                <small style="color: #6c757d;">Patient ID: 12345</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 0.75rem;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar-circle bg-primary me-3">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Dr. Smith</div>
+                                <small style="color: #6c757d;">Cardiology</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 0.75rem;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="avatar-circle bg-secondary me-3">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Jane Wilson</div>
+                                <small style="color: #6c757d;">Nurse</small>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mobile Simulation -->
+    <div class="test-section">
+        <h2>6. Responsive Breakpoint Test</h2>
+        <p>On screens ≤ 768px, avatars automatically scale down appropriately.</p>
+        <div style="border: 2px solid #dee2e6; padding: 1rem; max-width: 375px; margin: 0 auto;">
+            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <div class="avatar-circle bg-light me-3">AB</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600;">John Patient</div>
+                    <small style="color: #6c757d;">Mobile view simulation</small>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <div class="avatar-circle bg-primary me-3">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600;">Dr. Mobile</div>
+                    <small style="color: #6c757d;">Cardiology</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Test Checklist</h2>
+        <ul style="list-style: none; padding: 0;">
+            <li>☑️ All avatars are perfect circles</li>
+            <li>☑️ Avatars don't distort when resizing browser</li>
+            <li>☑️ Avatars maintain shape in flex containers</li>
+            <li>☑️ All size variants work correctly</li>
+            <li>☑️ All color variants display properly</li>
+            <li>☑️ Icons are centered within avatars</li>
+            <li>☑️ Text/initials are centered within avatars</li>
+            <li>☑️ No squishing or stretching in tables</li>
+            <li>☑️ Responsive breakpoints work smoothly</li>
+        </ul>
+    </div>
+
+    <script>
+        // Add current viewport width indicator
+        const updateViewport = () => {
+            const width = window.innerWidth;
+            const indicator = document.getElementById('viewport-indicator') || document.createElement('div');
+            indicator.id = 'viewport-indicator';
+            indicator.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #0d6efd; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000;';
+            indicator.textContent = `Viewport: ${width}px ${width <= 768 ? '📱 Mobile' : '🖥️ Desktop'}`;
+            if (!document.getElementById('viewport-indicator')) {
+                document.body.appendChild(indicator);
+            }
+        };
+
+        updateViewport();
+        window.addEventListener('resize', updateViewport);
+    </script>
+</body>
+
+</html>

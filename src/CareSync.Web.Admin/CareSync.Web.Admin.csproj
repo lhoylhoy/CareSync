@@ -4,21 +4,16 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
         <InvariantGlobalization>false</InvariantGlobalization>
-        <!-- Enable linking even in Debug mode -->
-        <RunAOTCompilation>false</RunAOTCompilation>
         <WasmEnableSIMD>true</WasmEnableSIMD>
     </PropertyGroup>
 
-    <!-- Additional PropertyGroup for Release optimizations -->
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <BlazorWebAssemblyEnableLinking>true</BlazorWebAssemblyEnableLinking>
         <PublishTrimmed>true</PublishTrimmed>
         <TrimMode>link</TrimMode>
         <BlazorEnableCompression>true</BlazorEnableCompression>
-        <RunAOTCompilation>false</RunAOTCompilation>
     </PropertyGroup>
 
     <ItemGroup>
@@ -34,7 +29,5 @@
         <ProjectReference Include="..\CareSync.Domain\CareSync.Domain.csproj"/>
         <ProjectReference Include="..\CareSync.Application\CareSync.Application.csproj"/>
     </ItemGroup>
-
-        <!-- Removed experimental BlazorWebAssemblyLazyLoad for pdbs to avoid BLAZORSDK1001 -->
 
 </Project>

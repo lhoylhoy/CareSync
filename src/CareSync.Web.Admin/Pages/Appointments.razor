@@ -3,6 +3,7 @@
 @using CareSync.Application.DTOs.Patients
 @using CareSync.Application.DTOs.Doctors
 @using CareSync.Domain.Enums
+@using CareSync.Domain.Extensions
 @using CareSync.Web.Admin.Components
 @using CareSync.Web.Admin.Forms
 @inject IAppointmentService AppointmentService
@@ -16,9 +17,9 @@
     TableTitle="All Appointments" TableIcon="fas fa-calendar-check" CreateButtonText="Schedule Appointment"
     EmptyStateTitle="No appointments found" EmptyStateMessage="Start by scheduling your first appointment."
     EmptyStateIcon="fas fa-calendar-plus" DeleteItemIcon="fas fa-calendar-minus" CrudService="@AppointmentService"
-    CreateNewModel="@CreateNewAppointment" MapToUpdateModel="@MapAppointmentToModel"
-    GetItemDisplayName="@GetAppointmentDisplayName" ConvertToCreateDto="@ConvertToUpsertDto"
-    ConvertToUpdateDto="@ConvertToUpsertDto">
+    UseServerFiltering="true" Filters="@_filters" CreateNewModel="@CreateNewAppointment"
+    MapToUpdateModel="@MapAppointmentToModel" GetItemDisplayName="@GetAppointmentDisplayName"
+    ConvertToCreateDto="@ConvertToUpsertDto" ConvertToUpdateDto="@ConvertToUpsertDto">
 
     <HeaderTemplate>
         <th>Patient</th>
@@ -27,13 +28,12 @@
         <th>Duration</th>
         <th>Status</th>
         <th>Notes</th>
-        <th class="text-center">Quick Actions</th>
     </HeaderTemplate>
 
     <RowTemplate Context="appointment">
         <td>
             <div class="d-flex align-items-center">
-                <div class="avatar-circle me-3">
+                <div class="avatar-circle bg-light me-3">
                     <i class="fas fa-user"></i>
                 </div>
                 <div>
@@ -78,30 +78,32 @@
                 <small class="text-muted">No notes</small>
             }
         </td>
-        <td class="text-center">
-            <div class="btn-group btn-group-sm" role="group">
-                @if (appointment.Status is AppointmentStatus.Scheduled or AppointmentStatus.InProgress)
-                {
-                    <button class="btn btn-outline-success" title="Mark as Completed"
-                        @onclick="() => CompleteAppointmentAsync(appointment)">
-                        <i class="fas fa-check"></i>
-                    </button>
-                }
-                @if (appointment.Status == AppointmentStatus.Scheduled)
-                {
-                    <button class="btn btn-outline-warning" title="Cancel Appointment"
-                        @onclick="() => PromptCancelAsync(appointment)">
-                        <i class="fas fa-ban"></i>
-                    </button>
-                }
-            </div>
-        </td>
     </RowTemplate>
+
+    <ActionsTemplate Context="appointment">
+        <div class="btn-group btn-group-sm" role="group">
+            @if (appointment.Status is AppointmentStatus.Scheduled or AppointmentStatus.InProgress)
+            {
+                <button class="btn btn-outline-success" title="Mark as Completed"
+                    @onclick="() => CompleteAppointmentAsync(appointment)">
+                    <i class="fas fa-check"></i>
+                </button>
+            }
+            @if (appointment.Status == AppointmentStatus.Scheduled)
+            {
+                <button class="btn btn-outline-warning" title="Cancel Appointment"
+                    @onclick="() => PromptCancelAsync(appointment)">
+                    <i class="fas fa-ban"></i>
+                </button>
+            }
+        </div>
+    </ActionsTemplate>
 
     <FormTemplate Context="model">
         @if (model is AppointmentFormDto formModel)
         {
-            <AppointmentForm Model="@formModel" Patients="@_patients" Doctors="@_doctors" />
+            <AppointmentForm Model="@formModel" Patients="@_patients" Doctors="@_doctors"
+                AppointmentTypes="@_appointmentTypes" />
         }
     </FormTemplate>
 
@@ -120,9 +122,13 @@
     private BaseCrudPage<AppointmentDto, UpsertAppointmentDto, UpsertAppointmentDto, AppointmentFormDto>? _crudPage;
     private List<PatientDto> _patients = new();
     private List<DoctorDto> _doctors = new();
+    private IReadOnlyList<string> _appointmentTypes = new[] { "Consultation", "Follow-up", "Teleconsult", "Physical Exam",
+"Procedure", "Vaccination" };
     private AppointmentDto? _pendingCancellation;
     private ConfirmationDialog? _cancelDialog;
     private InputDialog? _cancellationReasonDialog;
+    private IReadOnlyList<CareSync.Web.Admin.Common.Filtering.FilterDefinition> _filters =
+    Array.Empty<CareSync.Web.Admin.Common.Filtering.FilterDefinition>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -138,6 +144,39 @@
             await Task.WhenAll(patientTask, doctorTask);
             _patients = patientTask.Result ?? new List<PatientDto>();
             _doctors = doctorTask.Result ?? new List<DoctorDto>();
+            // Build filters after lookups are loaded so doctor and patient lists are available
+            _filters = new[]
+            {
+new CareSync.Web.Admin.Common.Filtering.FilterDefinition(
+key: "Status",
+label: "Status",
+options: CareSync.Web.Admin.Common.Filtering.EnumOptionHelper.GetOptions<AppointmentStatus>()),
+new CareSync.Web.Admin.Common.Filtering.FilterDefinition(
+key: "DoctorId",
+label: "Doctor",
+options: _doctors.Select(d => new CareSync.Web.Admin.Common.Filtering.FilterOption(d.Id.ToString(), d.DisplayName)),
+propertyName: "DoctorId"),
+new CareSync.Web.Admin.Common.Filtering.FilterDefinition(
+key: "PatientId",
+label: "Patient",
+options: _patients.Select(p => new CareSync.Web.Admin.Common.Filtering.FilterOption(p.Id.ToString(), p.DisplayName ??
+p.Id.ToString())),
+propertyName: "PatientId"),
+new CareSync.Web.Admin.Common.Filtering.FilterDefinition(
+key: "ScheduledFrom",
+label: "From",
+options: Array.Empty<CareSync.Web.Admin.Common.Filtering.FilterOption>(),
+propertyName: "StartDateTime",
+autoPopulate: false,
+kind: CareSync.Web.Admin.Common.Filtering.FilterDefinition.FilterKind.Date),
+new CareSync.Web.Admin.Common.Filtering.FilterDefinition(
+key: "ScheduledTo",
+label: "To",
+options: Array.Empty<CareSync.Web.Admin.Common.Filtering.FilterOption>(),
+propertyName: "StartDateTime",
+autoPopulate: false,
+kind: CareSync.Web.Admin.Common.Filtering.FilterDefinition.FilterKind.Date),
+};
         }
         catch (Exception ex)
         {

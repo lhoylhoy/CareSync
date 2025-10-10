@@ -33,7 +33,7 @@
         AllowView="@AllowView" ShowPagination="@EnablePagination" CurrentPage="@CurrentPage" TotalPages="@TotalPages"
         OnCreateClicked="@HandleCreate" OnEditClicked="@HandleEdit" OnDeleteClicked="@HandleDelete"
         OnViewClicked="@HandleView" OnPageChanged="@HandlePageChanged" HeaderTemplate="@HeaderTemplate"
-        RowTemplate="@RowTemplate" />
+        RowTemplate="@RowTemplate" ActionsTemplate="@ActionsTemplate" />
 
     <!-- CRUD Modal -->
     <CrudModalComponent TDto="TFormDto" @ref="CrudModal" ModalId="@($"{EntityName.ToLower()}CrudModal")"
@@ -79,7 +79,7 @@
     [Parameter] public string SearchPlaceholder { get; set; } = "Search...";
     [Parameter] public Func<TDto, IEnumerable<string>>? SearchValueSelector { get; set; }
     [Parameter] public bool EnablePagination { get; set; } = true;
-    [Parameter] public int DefaultPageSize { get; set; } = 10;
+    [Parameter] public int DefaultPageSize { get; set; } = CareSync.Application.Common.PagingDefaults.DefaultPageSize;
     [Parameter] public IReadOnlyList<int> PageSizeOptions { get; set; } = new[] { 10, 25, 50 };
     [Parameter] public IEnumerable<FilterDefinition>? Filters { get; set; }
     [Parameter] public RenderFragment? ToolbarActions { get; set; }
@@ -96,6 +96,7 @@
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
     [Parameter] public RenderFragment<TDto>? RowTemplate { get; set; }
     [Parameter] public RenderFragment<TFormDto>? FormTemplate { get; set; }
+    [Parameter] public RenderFragment<TDto>? ActionsTemplate { get; set; }
 
     // Service
     [Parameter] public ICrudService<TDto, TCreateDto, TUpdateDto>? CrudService { get; set; }
@@ -143,7 +144,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        PageSize = DetermineInitialPageSize();
+        PageSize = Math.Min(DetermineInitialPageSize(), CareSync.Application.Common.PagingDefaults.MaxPageSize);
         CloneFilters();
         await LoadItems(resetPagination: true);
     }
@@ -189,7 +190,7 @@
     {
         if (DefaultPageSize > 0) return DefaultPageSize;
         if (PageSizeOptions?.Count > 0) return PageSizeOptions[0];
-        return 10;
+        return CareSync.Application.Common.PagingDefaults.DefaultPageSize;
     }
 
     private async Task LoadItems(bool resetPagination = false)
@@ -205,7 +206,7 @@
             {
                 if (PageSize <= 0)
                 {
-                    PageSize = DetermineInitialPageSize();
+                    PageSize = Math.Min(DetermineInitialPageSize(), CareSync.Application.Common.PagingDefaults.MaxPageSize);
                 }
 
                 if (resetPagination)
@@ -453,7 +454,7 @@
             return;
         }
 
-        PageSize = size;
+        PageSize = Math.Min(size, CareSync.Application.Common.PagingDefaults.MaxPageSize);
 
         if (UseServerFiltering)
         {

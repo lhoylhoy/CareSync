@@ -42,13 +42,12 @@
         <th>Record Date</th>
         <th>Chief Complaint</th>
         <th>Status</th>
-        <th class="text-center">Quick Actions</th>
     </HeaderTemplate>
 
     <RowTemplate Context="record">
         <td>
             <div class="d-flex align-items-center">
-                <div class="avatar-circle me-3">
+                <div class="avatar-circle bg-light me-3">
                     <i class="fas fa-user"></i>
                 </div>
                 <div>
@@ -78,26 +77,27 @@
         <td>
             <StatusBadge Value="@GetStatusText(record)" />
         </td>
-        <td class="text-center">
-            <div class="btn-group btn-group-sm" role="group">
-                <button class="btn btn-outline-primary" title="View Details" @onclick="() => HandleRecordViewed(record)">
-                    <i class="fas fa-eye"></i>
-                </button>
-                @if (!record.IsFinalized)
-                {
-                    <button class="btn btn-outline-success" title="Finalize Record" @onclick="() => PromptFinalizeAsync(record)">
-                        <i class="fas fa-lock"></i>
-                    </button>
-                }
-                else
-                {
-                    <button class="btn btn-outline-warning" title="Reopen Record" @onclick="() => PromptReopenAsync(record)">
-                        <i class="fas fa-unlock"></i>
-                    </button>
-                }
-            </div>
-        </td>
     </RowTemplate>
+
+    <ActionsTemplate Context="record">
+        <div class="btn-group btn-group-sm" role="group">
+            <button class="btn btn-outline-primary" title="View Details" @onclick="() => HandleRecordViewed(record)">
+                <i class="fas fa-eye"></i>
+            </button>
+            @if (!record.IsFinalized)
+            {
+                <button class="btn btn-outline-success" title="Finalize Record" @onclick="() => PromptFinalizeAsync(record)">
+                    <i class="fas fa-lock"></i>
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-outline-warning" title="Reopen Record" @onclick="() => PromptReopenAsync(record)">
+                    <i class="fas fa-unlock"></i>
+                </button>
+            }
+        </div>
+    </ActionsTemplate>
 
     <FormTemplate Context="model">
         @if (model is MedicalRecordFormDto formModel)
@@ -294,18 +294,6 @@
 }
 
 <style>
-    .avatar-circle {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: var(--bs-primary-bg-subtle, #e7f1ff);
-        color: var(--bs-primary, #0d6efd);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.9rem;
-    }
-
     .record-section + .record-section {
         border-top: 1px solid var(--bs-border-color, #e5e7eb);
         padding-top: 1rem;

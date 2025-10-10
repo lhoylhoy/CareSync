@@ -1,8 +1,22 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
+<div class="page @(sidebarOpen ? "sidebar-open" : "")">
+    <!-- Topbar: visible on small screens to toggle sidebar -->
+    <header class="topbar">
+        <div class="topbar-inner d-flex align-items-center justify-content-between w-100">
+            <button class="btn btn-link mobile-sidebar-toggle d-lg-none" @onclick="ToggleSidebar"
+                aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="topbar-right ms-auto d-flex align-items-center">
+                <LoginDisplay />
+            </div>
+        </div>
+    </header>
+
     <div class="sidebar">
-        <NavMenu/>
+        <NavMenu OnRequestClose="CloseSidebar" />
     </div>
 
     <main>
@@ -10,4 +24,23 @@
             @Body
         </article>
     </main>
+
+    @if (sidebarOpen)
+    {
+        <div class="mobile-overlay" @onclick="CloseSidebar"></div>
+    }
 </div>
+
+@code {
+    private bool sidebarOpen = false;
+
+    private void ToggleSidebar()
+    {
+        sidebarOpen = !sidebarOpen;
+    }
+
+    private void CloseSidebar()
+    {
+        sidebarOpen = false;
+    }
+}

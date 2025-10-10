@@ -4,6 +4,7 @@
 @using CareSync.Application.DTOs.Staff
 @using CareSync.Web.Admin.Components
 @using CareSync.Domain.Enums
+@using CareSync.Domain.Extensions
 
 <BaseCrudPage TDto="StaffDto" TCreateDto="CreateStaffDto" TUpdateDto="UpdateStaffDto" TFormDto="StaffFormDto"
     PageTitle="Staff Management" PageDescription="Manage non-physician staff and personnel" PageIcon="fas fa-users-cog"
@@ -12,7 +13,8 @@
     EmptyStateIcon="fas fa-user-plus" DeleteItemIcon="fas fa-user" CrudService="@StaffCrudService"
     CreateNewModel="@CreateNewStaff" MapToUpdateModel="@MapStaffToUpdateModel" GetItemDisplayName="@GetStaffDisplayName"
     ConvertToCreateDto="@ConvertToCreateDto" ConvertToUpdateDto="@ConvertToUpdateDto" UseServerFiltering="true"
-    Filters="@_filters" PageSizeOptions="@_pageSizeOptions" DefaultPageSize="25" SearchPlaceholder="Search staff...">
+    Filters="@_filters" PageSizeOptions="@_pageSizeOptions"
+    DefaultPageSize="@CareSync.Application.Common.PagingDefaults.DefaultPageSize" SearchPlaceholder="Search staff...">
 
     <HeaderTemplate>
         <th>Name</th>
@@ -36,7 +38,7 @@
                 </div>
             </div>
         </td>
-        <td><span class="cs-badge cs-badge-primary">@staff.Role</span></td>
+        <td><span class="cs-badge cs-badge-primary">@staff.Role.GetDisplayName()</span></td>
         <td><span class="cs-badge cs-badge-neutral">@staff.Department</span></td>
         <td>@staff.Email</td>
         <td>@staff.PhoneNumber</td>
@@ -59,13 +61,11 @@
 new FilterDefinition(
 key: "Role",
 label: "Role",
-options: Enum.GetValues<StaffRole>()
-.Select(role => new FilterOption(role.ToString(), role.ToString()))),
+options: EnumOptionHelper.GetOptions<StaffRole>()),
 new FilterDefinition(
 key: "Department",
 label: "Department",
-options: Enum.GetValues<Department>()
-.Select(dept => new FilterOption(dept.ToString(), dept.ToString()))),
+options: EnumOptionHelper.GetOptions<Department>()),
 new FilterDefinition(
 key: "IsActive",
 label: "Status",

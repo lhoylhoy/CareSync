@@ -11,7 +11,7 @@
     DeleteItemIcon="fas fa-user-md" CrudService="@DoctorService" CreateNewModel="@CreateNewDoctor"
     MapToUpdateModel="@MapDoctorToUpdateModel" GetItemDisplayName="@GetDoctorDisplayName"
     ConvertToCreateDto="@ConvertToCreateDto" ConvertToUpdateDto="@ConvertToUpdateDto" UseServerFiltering="true"
-    Filters="@_filters" PageSizeOptions="@_pageSizeOptions" DefaultPageSize="25"
+    Filters="@_filters" PageSizeOptions="@_pageSizeOptions" DefaultPageSize="@CareSync.Application.Common.PagingDefaults.DefaultPageSize"
     SearchPlaceholder="Search doctors...">
 
     <HeaderTemplate>

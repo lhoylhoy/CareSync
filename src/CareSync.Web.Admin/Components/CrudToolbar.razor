@@ -42,14 +42,22 @@
                 {
                     <div class="col-md-2 col-sm-4">
                         <label class="form-label text-muted">@filter.Label</label>
-                        <select class="form-select" value="@GetSelectedValue(filter.Key)"
-                            @onchange="e => HandleFilterChanged(filter.Key, e.Value?.ToString())">
-                            <option value="">All</option>
-                            @foreach (var option in filter.Options)
-                            {
-                                <option value="@option.Value">@option.Label</option>
-                            }
-                        </select>
+                        @if (filter.Kind == CareSync.Web.Admin.Common.Filtering.FilterDefinition.FilterKind.Date)
+                        {
+                            <input class="form-control" type="date" value="@GetSelectedValue(filter.Key)"
+                                @onchange="e => HandleFilterChanged(filter.Key, e.Value?.ToString())" />
+                        }
+                        else
+                        {
+                            <select class="form-select" value="@GetSelectedValue(filter.Key)"
+                                @onchange="e => HandleFilterChanged(filter.Key, e.Value?.ToString())">
+                                <option value="">All</option>
+                                @foreach (var option in filter.Options)
+                                {
+                                    <option value="@option.Value">@option.Label</option>
+                                }
+                            </select>
+                        }
                     </div>
                 }
             }

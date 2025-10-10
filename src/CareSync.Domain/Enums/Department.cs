@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CareSync.Domain.Enums;
 
 public enum Department
@@ -13,7 +15,7 @@ public enum Department
     Oncology = 9,
     Surgery = 10,
     Billing = 11,
-    It = 12,
+    IT = 12,
     Maintenance = 13,
     Security = 14,
     Other = 99

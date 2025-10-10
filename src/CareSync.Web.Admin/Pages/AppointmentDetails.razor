@@ -1,0 +1,112 @@
+@page "/appointments/{id:guid}"
+@using CareSync.Application.DTOs.Appointments
+@inject CareSync.Web.Admin.Services.Contracts.IAppointmentService AppointmentService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Appointment Details</PageTitle>
+
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Appointment Details</h2>
+            <small class="text-muted">View details for the selected appointment</small>
+        </div>
+        <div>
+            <button class="btn btn-outline-secondary" @onclick="BackToAppointments">
+                <i class="fas fa-arrow-left me-2"></i>Back to Appointments
+            </button>
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="text-center py-4">
+            <div class="spinner"></div>
+            <p class="mt-2 text-muted">Loading appointment...</p>
+        </div>
+    }
+    else if (_appointment is null)
+    {
+        <div class="text-center py-4">
+            <i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Appointment not found.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Patient</h5>
+                        <p class="mb-2"><strong>@_appointment.PatientName</strong></p>
+                        <small class="text-muted">Patient ID: @_appointment.PatientId</small>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Doctor</h5>
+                        <p class="mb-2"><strong>@_appointment.DoctorName</strong></p>
+                        <small class="text-muted">Doctor ID: @_appointment.DoctorId</small>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Scheduled</h6>
+                        <p class="mb-0">@_appointment.StartDateTime.ToString("MMM dd, yyyy")</p>
+                        <small class="text-muted">@_appointment.StartDateTime.ToString("HH:mm")</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Duration</h6>
+                        <p>@(string.Format("{0:0} min", _appointment.Duration.TotalMinutes))</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Status</h6>
+                        <p><span class="cs-badge">@_appointment.Status</span></p>
+                    </div>
+                </div>
+
+                <hr />
+
+                <h6>Notes</h6>
+                @if (!string.IsNullOrWhiteSpace(_appointment.Notes))
+                {
+                    <p>@_appointment.Notes</p>
+                }
+                else
+                {
+                    <p class="text-muted">No notes provided.</p>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private AppointmentDto? _appointment;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        try
+        {
+            _appointment = await AppointmentService.GetAppointmentByIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            _appointment = null;
+            Console.Error.WriteLine($"Error fetching appointment: {ex.Message}");
+        }
+        finally { _loading = false; }
+    }
+
+    private void BackToAppointments()
+    {
+        NavigationManager.NavigateTo("/appointments");
+    }
+}

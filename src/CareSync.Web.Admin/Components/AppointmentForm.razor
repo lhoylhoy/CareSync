@@ -57,11 +57,30 @@
 
 <div class="row">
     <div class="col-md-6">
-        <div class="mb-3">
-            <label class="form-label">Appointment Type *</label>
-            <InputText @bind-Value="Model.AppointmentType" class="form-control" placeholder="e.g., Consultation" />
-            <ValidationMessage For="@(() => Model.AppointmentType)" />
-        </div>
+            <div class="mb-3">
+                <label class="form-label">Appointment Type *</label>
+                <InputSelect @bind-Value="Model.AppointmentType" class="form-select">
+                    @if (AppointmentTypes != null)
+                    {
+                        <option value="">Select appointment type</option>
+                        @foreach (var t in AppointmentTypes)
+                        {
+                            <option value="@t">@t</option>
+                        }
+                    }
+                    else
+                    {
+                        <!-- fallback options -->
+                        <option value="Consultation">Consultation</option>
+                        <option value="Follow-up">Follow-up</option>
+                        <option value="Teleconsult">Teleconsult</option>
+                        <option value="Physical Exam">Physical Exam</option>
+                        <option value="Procedure">Procedure</option>
+                        <option value="Vaccination">Vaccination</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Model.AppointmentType)" />
+            </div>
     </div>
     <div class="col-md-6">
         <div class="mb-3">
@@ -86,4 +105,5 @@
     [Parameter] public AppointmentFormDto Model { get; set; } = null!;
     [Parameter] public IEnumerable<PatientDto>? Patients { get; set; }
     [Parameter] public IEnumerable<DoctorDto>? Doctors { get; set; }
+    [Parameter] public IEnumerable<string>? AppointmentTypes { get; set; }
 }

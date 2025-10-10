@@ -17,6 +17,8 @@ public class MedicalRecordRepository(CareSyncDbContext context) : IMedicalRecord
     public async Task<MedicalRecord?> GetByIdAsync(Guid id)
     {
         return await context.MedicalRecords
+            .Include(mr => mr.Patient)
+            .Include(mr => mr.Doctor)
             .FirstOrDefaultAsync(mr => mr.Id == id);
     }
 
@@ -32,6 +34,8 @@ public class MedicalRecordRepository(CareSyncDbContext context) : IMedicalRecord
     {
         return await context.MedicalRecords
             .AsNoTracking()
+            .Include(mr => mr.Patient)
+            .Include(mr => mr.Doctor)
             .ToListAsync();
     }
 
@@ -42,8 +46,9 @@ public class MedicalRecordRepository(CareSyncDbContext context) : IMedicalRecord
         IReadOnlyDictionary<string, string?> filters,
         CancellationToken cancellationToken = default)
     {
-        page = Math.Max(page, 1);
-        pageSize = Math.Max(pageSize, 1);
+        if (page <= 0) page = CareSync.Application.Common.PagingDefaults.DefaultPage;
+        if (pageSize <= 0) pageSize = CareSync.Application.Common.PagingDefaults.DefaultPageSize;
+        pageSize = Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize);
 
         var query = context.MedicalRecords
             .AsNoTracking()
@@ -144,6 +149,8 @@ public class MedicalRecordRepository(CareSyncDbContext context) : IMedicalRecord
             .Where(mr => mr.PatientId == patientId)
             .OrderByDescending(mr => mr.RecordDate)
             .AsNoTracking()
+            .Include(mr => mr.Patient)
+            .Include(mr => mr.Doctor)
             .ToListAsync();
     }
 
@@ -153,6 +160,8 @@ public class MedicalRecordRepository(CareSyncDbContext context) : IMedicalRecord
             .Where(mr => mr.DoctorId == doctorId)
             .OrderByDescending(mr => mr.RecordDate)
             .AsNoTracking()
+            .Include(mr => mr.Patient)
+            .Include(mr => mr.Doctor)
             .ToListAsync();
     }
 
@@ -162,6 +171,8 @@ public class MedicalRecordRepository(CareSyncDbContext context) : IMedicalRecord
             .Where(mr => mr.AppointmentId == appointmentId)
             .OrderByDescending(mr => mr.RecordDate)
             .AsNoTracking()
+            .Include(mr => mr.Patient)
+            .Include(mr => mr.Doctor)
             .ToListAsync();
     }
 
@@ -173,6 +184,7 @@ public class MedicalRecordRepository(CareSyncDbContext context) : IMedicalRecord
         bool? isFinalized = null)
     {
         var query = context.MedicalRecords.AsQueryable();
+        query = query.Include(mr => mr.Patient).Include(mr => mr.Doctor);
 
         if (patientId.HasValue)
             query = query.Where(mr => mr.PatientId == patientId.Value);

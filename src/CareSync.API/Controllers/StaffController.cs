@@ -22,7 +22,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAllStaff(
-        [FromQuery] int page = 1,
+        [FromQuery] int page = CareSync.Application.Common.PagingDefaults.DefaultPage,
         [FromQuery] int pageSize = 0,
         [FromQuery] string? search = null,
         [FromQuery] Dictionary<string, string?>? filters = null)
@@ -40,7 +40,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
             return Ok(response.Value);
         }
 
-        var effectivePageSize = pageSize > 0 ? pageSize : 25;
+        var effectivePageSize = pageSize > 0 ? Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize) : CareSync.Application.Common.PagingDefaults.DefaultPageSize;
         var pagedResult = await _mediator.Send(new GetStaffPagedQuery(
             page <= 0 ? 1 : page,
             effectivePageSize,

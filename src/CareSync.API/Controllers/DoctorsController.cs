@@ -22,7 +22,7 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
     [HttpGet]
     [OutputCache(PolicyName = "Doctors-All")]
     public async Task<IActionResult> GetAllDoctors(
-        [FromQuery] int page = 1,
+        [FromQuery] int page = CareSync.Application.Common.PagingDefaults.DefaultPage,
         [FromQuery] int pageSize = 0,
         [FromQuery] string? search = null,
         [FromQuery] Dictionary<string, string?>? filters = null)
@@ -41,7 +41,7 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
             return Ok(response.Value);
         }
 
-        var effectivePageSize = pageSize > 0 ? pageSize : 25;
+        var effectivePageSize = pageSize > 0 ? Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize) : CareSync.Application.Common.PagingDefaults.DefaultPageSize;
         var pagedResult = await _mediator.Send(new GetDoctorsPagedQuery(
             page <= 0 ? 1 : page,
             effectivePageSize,

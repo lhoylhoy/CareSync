@@ -84,12 +84,13 @@ public class StaffService : IStaffService, ICrudService<StaffDto, CreateStaffDto
         return new ApiResponse<bool> { Success = true, Data = true, Message = "Staff deleted" };
     }
 
-    public async Task<ApiResponse<PagedResult<StaffDto>>> GetPagedAsync(int page = 1, int pageSize = 10, string? searchTerm = null, IReadOnlyDictionary<string, string?>? filters = null)
+    public async Task<ApiResponse<PagedResult<StaffDto>>> GetPagedAsync(int page = CareSync.Application.Common.PagingDefaults.DefaultPage, int pageSize = CareSync.Application.Common.PagingDefaults.DefaultPageSize, string? searchTerm = null, IReadOnlyDictionary<string, string?>? filters = null)
     {
         try
         {
-            if (page <= 0) page = 1;
-            if (pageSize <= 0) pageSize = 10;
+            if (page <= 0) page = CareSync.Application.Common.PagingDefaults.DefaultPage;
+            if (pageSize <= 0) pageSize = CareSync.Application.Common.PagingDefaults.DefaultPageSize;
+            pageSize = Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize);
 
             var queryParams = new List<string>
             {

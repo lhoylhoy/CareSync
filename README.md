@@ -27,6 +27,7 @@ tests/
 
 ## 🚀 Features
 
+### Core Functionality
 - **Patient Management**: Full CRUD operations for patient records with Philippine address format
 - **Philippine Identification**: Support for PhilHealth, SSS, and TIN numbers
 - **Philippine Geographic Data**: Official province, city/municipality, and barangay data
@@ -37,6 +38,19 @@ tests/
 - **Domain-Driven Design**: Rich domain models with business logic
 - **CQRS Pattern**: Separate command and query operations
 - **Azure Integration**: Cloud-based data persistence and authentication
+
+### 🎨 Modern UI/UX (v2.0 - October 2025)
+- **Consistent Design System**: Healthcare-focused color palette with design tokens
+- **Smooth Animations**: Polished transitions and micro-interactions
+- **Responsive Layout**: Mobile-first design for all devices
+- **Enhanced Components**: Gradient buttons, cards, and status badges
+- **Accessibility**: WCAG AA compliant with keyboard navigation
+- **Professional Dashboard**: Color-coded metrics with hover effects
+- **Style Guide**: Comprehensive component showcase (`/style-guide`)
+- **Loading States**: Skeleton screens and animated spinners
+- **Empty States**: Helpful placeholders with call-to-actions
+
+📚 **See full UI/UX improvements:** [ENHANCEMENT_SUMMARY.md](./ENHANCEMENT_SUMMARY.md) | [VISUAL_GUIDE.md](./VISUAL_GUIDE.md)
 
 ## 🛠️ Technology Stack
 

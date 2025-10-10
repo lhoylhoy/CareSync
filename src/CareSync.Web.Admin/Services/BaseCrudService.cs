@@ -277,14 +277,20 @@ public abstract class BaseCrudService<TDto, TCreateDto, TUpdateDto> : ICrudServi
         return new string(chars.ToArray());
     }
 
-    public virtual async Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(int page = 1, int pageSize = 10,
+    public virtual async Task<ApiResponse<PagedResult<TDto>>> GetPagedAsync(int page = CareSync.Application.Common.PagingDefaults.DefaultPage, int pageSize = CareSync.Application.Common.PagingDefaults.DefaultPageSize,
         string? searchTerm = null, IReadOnlyDictionary<string, string?>? filters = null)
     {
         try
         {
-            var queryParams = new List<string>();
-            queryParams.Add($"page={page}");
-            queryParams.Add($"pageSize={pageSize}");
+            if (page <= 0) page = CareSync.Application.Common.PagingDefaults.DefaultPage;
+            if (pageSize <= 0) pageSize = CareSync.Application.Common.PagingDefaults.DefaultPageSize;
+            pageSize = Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize);
+
+            var queryParams = new List<string>
+            {
+                $"page={page}",
+                $"pageSize={pageSize}"
+            };
 
             if (!string.IsNullOrWhiteSpace(searchTerm)) queryParams.Add($"search={Uri.EscapeDataString(searchTerm)}");
 

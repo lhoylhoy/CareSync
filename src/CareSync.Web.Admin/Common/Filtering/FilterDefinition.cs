@@ -5,13 +5,19 @@ namespace CareSync.Web.Admin.Common.Filtering;
 public sealed class FilterDefinition
 {
     private readonly List<FilterOption> _options;
+    public enum FilterKind
+    {
+        Select,
+        Date
+    }
 
     public FilterDefinition(
         string key,
         string label,
         IEnumerable<FilterOption> options,
         string? propertyName = null,
-        bool autoPopulate = false)
+        bool autoPopulate = false,
+        FilterKind kind = FilterKind.Select)
     {
         if (string.IsNullOrWhiteSpace(key))
             throw new ArgumentException("Filter key cannot be null or whitespace.", nameof(key));
@@ -20,6 +26,7 @@ public sealed class FilterDefinition
         Label = string.IsNullOrWhiteSpace(label) ? key : label;
         PropertyName = string.IsNullOrWhiteSpace(propertyName) ? key : propertyName;
         AutoPopulate = autoPopulate;
+        Kind = kind;
         _options = options?.ToList() ?? new List<FilterOption>();
     }
 
@@ -27,6 +34,7 @@ public sealed class FilterDefinition
     public string Label { get; }
     public string PropertyName { get; }
     public bool AutoPopulate { get; }
+    public FilterKind Kind { get; }
 
     public IReadOnlyList<FilterOption> Options => _options;
 

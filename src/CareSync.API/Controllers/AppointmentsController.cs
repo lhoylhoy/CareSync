@@ -24,10 +24,39 @@ public class AppointmentsController(IMediator mediator, ILogger<AppointmentsCont
 
     [HttpGet]
     [OutputCache(PolicyName = "Appointments-All")]
-    public async Task<ActionResult<IEnumerable<AppointmentDto>>> GetAllAppointments()
+    public async Task<IActionResult> GetAllAppointments(
+        [FromQuery] int page = CareSync.Application.Common.PagingDefaults.DefaultPage,
+        [FromQuery] int pageSize = 0,
+        [FromQuery] string? search = null,
+        [FromQuery] Dictionary<string, string?>? filters = null)
     {
-        var result = await _mediator.Send(new GetAllAppointmentsQuery());
-        return OkOrProblem(result);
+        var hasQueryOverrides = pageSize > 0 || !string.IsNullOrWhiteSpace(search) || (filters?.Count > 0);
+
+        if (!hasQueryOverrides)
+        {
+            var result = await _mediator.Send(new GetAllAppointmentsQuery());
+            var response = OkOrProblem(result);
+            if (response.Result is IActionResult actionResult)
+            {
+                return actionResult;
+            }
+            return Ok(response.Value);
+        }
+
+        var effectivePageSize = pageSize > 0 ? Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize) : CareSync.Application.Common.PagingDefaults.DefaultPageSize;
+        var pagedResult = await _mediator.Send(new GetAppointmentsPagedQuery(
+            page <= 0 ? 1 : page,
+            effectivePageSize,
+            search,
+            filters ?? new Dictionary<string, string?>()));
+
+        var pagedResponse = OkOrProblem(pagedResult);
+        if (pagedResponse.Result is IActionResult failure)
+        {
+            return failure;
+        }
+
+        return Ok(pagedResponse.Value);
     }
 
     [HttpGet("{id}")]

@@ -50,8 +50,9 @@ public class StaffRepository : IStaffRepository
         IReadOnlyDictionary<string, string?> filters,
         CancellationToken cancellationToken = default)
     {
-        if (page <= 0) page = 1;
-        if (pageSize <= 0) pageSize = 10;
+        if (page <= 0) page = CareSync.Application.Common.PagingDefaults.DefaultPage;
+        if (pageSize <= 0) pageSize = CareSync.Application.Common.PagingDefaults.DefaultPageSize;
+        pageSize = Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize);
 
         var query = _context.Staff
             .AsNoTracking()

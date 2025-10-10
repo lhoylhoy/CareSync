@@ -1,5 +1,9 @@
 ﻿@page "/"
+@using System.Timers
+@using System
+@using CareSync.Domain.Enums
 @inject CareSync.Web.Admin.Services.Contracts.IAppointmentService AppointmentService
+@inject NavigationManager NavigationManager
 @inject CareSync.Web.Admin.Services.Contracts.IBillingService BillingService
 @inject CareSync.Web.Admin.Services.Contracts.IPatientService PatientService
 @inject CareSync.Web.Admin.Services.Contracts.IDoctorService DoctorService
@@ -7,16 +11,12 @@
 <PageTitle>Dashboard - CareSync</PageTitle>
 
 <div class="fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="text-primary mb-0">
-                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-            </h1>
-            <p class="text-muted mb-0">Welcome to CareSync Clinic Management System</p>
-        </div>
-        <div class="text-end">
-            <small class="text-muted">@DateTime.Now.ToString("MMMM dd, yyyy")</small>
-        </div>
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-tachometer-alt"></i>
+            Dashboard
+        </h1>
+        <p>Welcome to CareSync Clinic Management System</p>
     </div>
 
     <!-- Dashboard Cards -->
@@ -125,7 +125,10 @@
                                 <tbody>
                                     @foreach (var appointment in _recentAppointments.Take(5))
                                     {
-                                        <tr>
+                                        <tr class="clickable-row" tabindex="0" role="link"
+                                            aria-label="@($"Open appointment {appointment.PatientName} on {appointment.StartDateTime:G}")"
+                                            @onclick="() => OpenAppointment(appointment.Id)"
+                                            @onkeydown="(e) => HandleRowKeyDown(e, appointment.Id)">
                                             <td>
                                                 <i class="fas fa-user me-2 text-primary"></i>
                                                 @appointment.PatientName
@@ -136,9 +139,7 @@
                                             </td>
                                             <td>@appointment.StartDateTime.ToString("MMM dd, yyyy HH:mm")</td>
                                             <td>
-                                                <span class="cs-badge status-@appointment.Status.ToString().ToLower()">
-                                                    @appointment.Status
-                                                </span>
+                                                <StatusBadge TStatus="AppointmentStatus" Value="appointment.Status" />
                                             </td>
                                         </tr>
                                     }
@@ -201,6 +202,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Initialize clock values and start the timer
+
+
         try
         {
             // Load dashboard data
@@ -220,13 +224,28 @@
             _totalDoctors = doctorsResponse.Data?.Count() ?? 0;
             _totalPatients = patientsResponse.Data?.Count() ?? 0;
             _todayAppointments = _recentAppointments?.Count(a => a.StartDateTime.Date == DateTime.Today) ?? 0;
-            _pendingBills = bills.Count(b => b.Status.ToString().ToLower() == "pending");
+            _pendingBills = bills.Count(b => b.Status == BillStatus.Pending);
         }
         catch
         {
             // Handle error gracefully
             _recentAppointments = new List<AppointmentDto>();
         }
+
     }
 
+    // Clock module removed
+
+    private void OpenAppointment(Guid id)
+    {
+        NavigationManager.NavigateTo($"/appointments/{id}");
+    }
+
+    private void HandleRowKeyDown(KeyboardEventArgs e, Guid id)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            OpenAppointment(id);
+        }
+    }
 }

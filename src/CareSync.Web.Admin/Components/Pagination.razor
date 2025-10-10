@@ -1,0 +1,113 @@
+@using Microsoft.AspNetCore.Components
+
+<nav aria-label="Pagination" class="cs-pagination-wrapper">
+    @if (TotalPages <= 1)
+    {
+        <div class="cs-pagination-compact">Page @CurrentPage of @TotalPages</div>
+    }
+    else
+    {
+        <ul class="pagination cs-pagination">
+            <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(1)" aria-label="First" disabled="@(CurrentPage == 1)">
+                    «
+                </button>
+            </li>
+            <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(CurrentPage - 1)" aria-label="Previous"
+                    disabled="@(CurrentPage == 1)">
+                    ‹
+                </button>
+            </li>
+
+            @foreach (var p in PagesToRender)
+            {
+                if (p == -1)
+                {
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                }
+                else
+                {
+                    <li class="page-item @(p == CurrentPage ? "active" : "")">
+                        <button class="page-link" @onclick="() => ChangePage(p)"
+                            aria-current="@(p == CurrentPage ? "page" : null)">@p</button>
+                    </li>
+                }
+            }
+
+            <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(CurrentPage + 1)" aria-label="Next"
+                    disabled="@(CurrentPage == TotalPages)">
+                    ›
+                </button>
+            </li>
+            <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                <button class="page-link" @onclick="() => ChangePage(TotalPages)" aria-label="Last"
+                    disabled="@(CurrentPage == TotalPages)">
+                    »
+                </button>
+            </li>
+        </ul>
+    }
+</nav>
+
+@code {
+    [Parameter, EditorRequired]
+    public int CurrentPage { get; set; } = 1;
+
+    [Parameter, EditorRequired]
+    public int TotalPages { get; set; } = 1;
+
+    [Parameter]
+    public int MaxPagesToShow { get; set; } = 7; // odd number
+
+    [Parameter]
+    public EventCallback<int> OnPageChanged { get; set; }
+
+    private IEnumerable<int> PagesToRender => BuildPageList();
+
+    private async Task ChangePage(int page)
+    {
+        if (page < 1) page = 1;
+        if (page > TotalPages) page = TotalPages;
+        if (page == CurrentPage) return;
+        if (OnPageChanged.HasDelegate)
+        {
+            await OnPageChanged.InvokeAsync(page);
+        }
+    }
+
+    private IEnumerable<int> BuildPageList()
+    {
+        var pages = new List<int>();
+        if (TotalPages <= MaxPagesToShow)
+        {
+            for (int i = 1; i <= TotalPages; i++) pages.Add(i);
+            return pages;
+        }
+
+        int sidePages = (MaxPagesToShow - 3) / 2; // leave room for first, last and two ellipses
+        int start = Math.Max(2, CurrentPage - sidePages);
+        int end = Math.Min(TotalPages - 1, CurrentPage + sidePages);
+
+        // adjust when near edges
+        if (CurrentPage - 1 <= sidePages)
+        {
+            start = 2;
+            end = MaxPagesToShow - 2;
+        }
+        if (TotalPages - CurrentPage <= sidePages)
+        {
+            end = TotalPages - 1;
+            start = TotalPages - (MaxPagesToShow - 3);
+        }
+
+        pages.Add(1);
+        if (start > 2) pages.Add(-1); // ellipsis marker
+        for (int i = start; i <= end; i++) pages.Add(i);
+        if (end < TotalPages - 1) pages.Add(-1);
+        pages.Add(TotalPages);
+
+        return pages;
+    }
+}

@@ -41,27 +41,16 @@ public class ToastService : IToastService
 
     private async Task ShowToastAsync(string message, string title, string type, string icon)
     {
-        var toastScript = $@"
-            const toast = document.createElement('div');
-            toast.className = 'toast position-fixed top-0 end-0 m-3';
-            toast.setAttribute('role', 'alert');
-            toast.style.zIndex = '9999';
-            toast.innerHTML = `
-                <div class='toast-header bg-{type} text-white'>
-                    <i class='{icon} me-2'></i>
-                    <strong class='me-auto'>{title}</strong>
-                    <button type='button' class='btn-close btn-close-white' data-bs-dismiss='toast'></button>
-                </div>
-                <div class='toast-body'>
-                    {message}
-                </div>
-            `;
-            document.body.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-            setTimeout(() => toast.remove(), 5000);
-        ";
-
-        await _jsRuntime.InvokeVoidAsync("eval", toastScript);
+        // Use a small, safe JS helper instead of `eval` to avoid runtime parsing issues and CSP problems.
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync("careSync.toast.show", message ?? string.Empty, title ?? string.Empty, type ?? "info", icon ?? "");
+        }
+        catch (JSException jsEx)
+        {
+            // Avoid crashing the rendering pipeline if the JS helper is not available yet.
+            // Log to console/server output for diagnostics and continue gracefully.
+            Console.WriteLine($"Toast JS interop failed: {jsEx.Message}");
+        }
     }
 }

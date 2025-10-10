@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CareSync.Domain.Enums;
 
 public enum BillStatus
@@ -5,7 +7,10 @@ public enum BillStatus
     Draft = 1,
     Pending = 2,
     Paid = 3,
+
+    [Display(Name = "Partially Paid")]
     PartiallyPaid = 4,
+
     Overdue = 5,
     Cancelled = 6
 }
@@ -16,9 +21,14 @@ public enum PaymentMethod
     CreditCard = 2,
     DebitCard = 3,
     Check = 4,
+
+    [Display(Name = "Bank Transfer")]
     BankTransfer = 5,
+
     Insurance = 6,
     Online = 7,
+
+    [Display(Name = "Online Payment")]
     OnlinePayment = 8
 }
 
