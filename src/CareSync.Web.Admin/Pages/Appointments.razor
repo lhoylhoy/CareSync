@@ -154,13 +154,14 @@ options: CareSync.Web.Admin.Common.Filtering.EnumOptionHelper.GetOptions<Appoint
 new CareSync.Web.Admin.Common.Filtering.FilterDefinition(
 key: "DoctorId",
 label: "Doctor",
-options: _doctors.Select(d => new CareSync.Web.Admin.Common.Filtering.FilterOption(d.Id.ToString(), d.DisplayName)),
+options: _doctors.Select(d => new CareSync.Web.Admin.Common.Filtering.FilterOption(d.Id.ToString(), d.DisplayName ??
+"Unknown")),
 propertyName: "DoctorId"),
 new CareSync.Web.Admin.Common.Filtering.FilterDefinition(
 key: "PatientId",
 label: "Patient",
-options: _patients.Select(p => new CareSync.Web.Admin.Common.Filtering.FilterOption(p.Id.ToString(), p.DisplayName ??
-p.Id.ToString())),
+options: _patients.Select(p => new CareSync.Web.Admin.Common.Filtering.FilterOption(p.Id?.ToString() ?? string.Empty,
+p.DisplayName ?? (p.Id?.ToString() ?? string.Empty))),
 propertyName: "PatientId"),
 new CareSync.Web.Admin.Common.Filtering.FilterDefinition(
 key: "ScheduledFrom",
