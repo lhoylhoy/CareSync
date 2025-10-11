@@ -44,7 +44,7 @@
         </td>
         <td>
             <div class="d-flex align-items-center">
-                <i class="fas fa-user-md me-2 text-success"></i>
+                <i class="fas fa-user-md me-2"></i>
                 <div>
                     <div class="fw-bold">@appointment.DoctorName</div>
                     <small class="text-muted">Attending Physician</small>
@@ -84,14 +84,14 @@
         <div class="btn-group btn-group-sm" role="group">
             @if (appointment.Status is AppointmentStatus.Scheduled or AppointmentStatus.InProgress)
             {
-                <button class="btn btn-outline-success" title="Mark as Completed"
+                <button class="btn btn-outline-secondary btn-sm" title="Mark as Completed"
                     @onclick="() => CompleteAppointmentAsync(appointment)">
                     <i class="fas fa-check"></i>
                 </button>
             }
             @if (appointment.Status == AppointmentStatus.Scheduled)
             {
-                <button class="btn btn-outline-warning" title="Cancel Appointment"
+                <button class="btn btn-outline-secondary btn-sm" title="Cancel Appointment"
                     @onclick="() => PromptCancelAsync(appointment)">
                     <i class="fas fa-ban"></i>
                 </button>

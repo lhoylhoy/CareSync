@@ -98,14 +98,14 @@
     [Parameter] public EventCallback OnConfirm { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 
-    // Computed Properties based on DialogType
+    // Computed Properties based on DialogType - Monochromatic
     private string HeaderClass => DialogType switch
     {
-        ConfirmationDialogType.Danger => "bg-danger text-white",
-        ConfirmationDialogType.Warning => "bg-warning text-dark",
-        ConfirmationDialogType.Info => "bg-info text-white",
-        ConfirmationDialogType.Success => "bg-success text-white",
-        _ => "bg-danger text-white"
+        ConfirmationDialogType.Danger => "",
+        ConfirmationDialogType.Warning => "",
+        ConfirmationDialogType.Info => "",
+        ConfirmationDialogType.Success => "",
+        _ => ""
     };
 
     private string IconClass => DialogType switch
@@ -173,20 +173,20 @@
 
     private string AlertBgClass => DialogType switch
     {
-        ConfirmationDialogType.Danger => "bg-danger bg-opacity-10",
-        ConfirmationDialogType.Warning => "bg-warning bg-opacity-10",
-        ConfirmationDialogType.Info => "bg-info bg-opacity-10",
-        ConfirmationDialogType.Success => "bg-success bg-opacity-10",
-        _ => "bg-warning bg-opacity-10"
+        ConfirmationDialogType.Danger => "bg-light",
+        ConfirmationDialogType.Warning => "bg-light",
+        ConfirmationDialogType.Info => "bg-light",
+        ConfirmationDialogType.Success => "bg-light",
+        _ => "bg-light"
     };
 
     private string AlertIcon => DialogType switch
     {
-        ConfirmationDialogType.Danger => "fas fa-exclamation-triangle text-danger",
-        ConfirmationDialogType.Warning => "fas fa-info-circle text-warning",
-        ConfirmationDialogType.Info => "fas fa-info-circle text-info",
-        ConfirmationDialogType.Success => "fas fa-check-circle text-success",
-        _ => "fas fa-info-circle text-warning"
+        ConfirmationDialogType.Danger => "fas fa-exclamation-triangle",
+        ConfirmationDialogType.Warning => "fas fa-info-circle",
+        ConfirmationDialogType.Info => "fas fa-info-circle",
+        ConfirmationDialogType.Success => "fas fa-check-circle",
+        _ => "fas fa-info-circle"
     };
 
     public async Task ShowAsync()
@@ -220,9 +220,11 @@
         0% {
             transform: scale(1);
         }
+
         50% {
             transform: scale(1.05);
         }
+
         100% {
             transform: scale(1);
         }
@@ -243,7 +245,10 @@
         transition: all 0.3s ease;
     }
 
-    .btn-danger:hover, .btn-warning:hover, .btn-info:hover, .btn-success:hover {
+    .btn-danger:hover,
+    .btn-warning:hover,
+    .btn-info:hover,
+    .btn-success:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }

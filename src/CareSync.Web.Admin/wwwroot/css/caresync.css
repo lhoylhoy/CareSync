@@ -22,181 +22,70 @@ a:hover {
      CARESYNC HEALTHCARE COLOR PALETTE v2.0
      =========================================== */
 
-  /* PRIMARY BRAND COLORS - Healthcare Trust & Professionalism */
+  /* PRIMARY BRAND COLORS - Professional Monochromatic Slate */
   --primary-50: #f8fafc;
-  /* Very light slate */
   --primary-100: #f1f5f9;
-  /* Light slate */
   --primary-200: #e2e8f0;
-  /* Lighter slate */
   --primary-300: #cbd5e1;
-  /* Light blue-gray */
   --primary-400: #94a3b8;
-  /* Medium blue-gray */
   --primary-500: #64748b;
-  /* Professional slate */
   --primary-600: #475569;
-  /* Deep slate */
   --primary-700: #334155;
-  /* Dark slate */
   --primary-800: #1e293b;
-  /* Very dark slate */
   --primary-900: #0f172a;
-  /* Deep navy */
-
-  /* SECONDARY COLORS - Healthcare Support */
-  --secondary-50: #f8fafc;
-  /* Very light gray-blue */
-  --secondary-100: #f1f5f9;
-  /* Light gray-blue */
-  --secondary-200: #e2e8f0;
-  /* Light gray */
-  --secondary-300: #cbd5e1;
-  /* Medium light gray */
-  --secondary-400: #94a3b8;
-  /* Medium gray */
-  --secondary-500: #64748b;
-  /* Standard gray */
-  --secondary-600: #475569;
-  /* Dark gray */
-  --secondary-700: #334155;
-  /* Darker gray */
-  --secondary-800: #1e293b;
-  /* Very dark gray */
-  --secondary-900: #0f172a;
-  /* Almost black */
-
-  /* HEALTHCARE STATUS COLORS - Medical Conditions & States */
-  --health-critical: #dc2626;
-  /* Critical red */
-  --health-emergency: #b91c1c;
-  /* Emergency red */
-  --health-stable: #059669;
-  /* Stable green */
-  --health-improving: #0d9488;
-  /* Improving teal */
-  --health-monitoring: #d97706;
-  /* Monitoring amber */
-  --health-caution: #ea580c;
-  /* Caution orange */
-  --health-recovered: #16a34a;
-  /* Recovered green */
-  --health-discharged: #15803d;
-  /* Discharged green */
-
-  /* SYSTEM STATUS COLORS - Application States */
-  --success-50: #f0fdf4;
-  /* Very light green */
-  --success-100: #dcfce7;
-  /* Light green */
-  --success-500: #22c55e;
-  /* Success green */
-  --success-600: #16a34a;
-  /* Dark success green */
-  --success-700: #15803d;
-  /* Very dark success green */
-
-  --warning-50: #fffbeb;
-  /* Very light amber */
-  --warning-100: #fef3c7;
-  /* Light amber */
-  --warning-500: #f59e0b;
-  /* Warning amber */
-  --warning-600: #d97706;
-  /* Dark warning amber */
-  --warning-700: #b45309;
-  /* Very dark warning amber */
-
-  --error-50: #fef2f2;
-  /* Very light red */
-  --error-100: #fee2e2;
-  /* Light red */
-  --error-500: #ef4444;
-  /* Error red */
-  --error-600: #dc2626;
-  /* Dark error red */
-  --error-700: #b91c1c;
-  /* Very dark error red */
-
-  --info-50: #f0f9ff;
-  /* Very light blue */
-  --info-100: #e0f2fe;
-  /* Light blue */
-  --info-500: #3b82f6;
-  /* Info blue */
-  --info-600: #2563eb;
-  /* Dark info blue */
-  --info-700: #1d4ed8;
-  /* Very dark info blue */
 
   /* NEUTRAL COLORS - Universal Grays */
   --neutral-50: #fafafa;
-  /* Very light gray */
   --neutral-100: #f5f5f5;
-  /* Light gray */
   --neutral-200: #e5e5e5;
-  /* Lighter gray */
   --neutral-300: #d4d4d4;
-  /* Light gray */
   --neutral-400: #a3a3a3;
-  /* Medium gray */
   --neutral-500: #737373;
-  /* Standard gray */
   --neutral-600: #525252;
-  /* Dark gray */
   --neutral-700: #404040;
-  /* Darker gray */
   --neutral-800: #262626;
-  /* Very dark gray */
   --neutral-900: #171717;
-  /* Almost black */
 
-  /* SPECIALTY COLORS - Healthcare Specific */
-  --medical-blue: #0891b2;
-  /* Medical blue */
-  --care-cyan: #06b6d4;
-  /* Care cyan */
-  --trust-navy: #1e3a8a;
-  /* Trust navy */
-  --calm-teal: #0f766e;
-  /* Calm teal */
-  --hope-purple: #7c3aed;
-  /* Hope purple */
+  /* SEMANTIC STATUS COLORS - Minimal & Professional */
+  --status-default: #64748b;
+  --status-default-light: #f1f5f9;
+  --status-default-border: #cbd5e1;
+
+  --status-active: #475569;
+  --status-active-light: #f8fafc;
+  --status-active-border: #94a3b8;
+
+  --status-inactive: #9ca3af;
+  --status-inactive-light: #f9fafb;
+  --status-inactive-border: #e5e7eb;
+
+  --status-subtle: #6b7280;
+  --status-subtle-light: #f3f4f6;
+  --status-subtle-border: #d1d5db;
 
   /* UI FOUNDATION COLORS */
   --surface-primary: #ffffff;
-  /* Primary surface (white) */
   --surface-secondary: #f8fafc;
-  /* Secondary surface */
   --surface-tertiary: #f1f5f9;
-  /* Tertiary surface */
+  --surface-elevated: #ffffff;
+  --surface-overlay: rgba(15, 23, 42, 0.75);
 
   --border-primary: #e2e8f0;
-  /* Primary borders */
   --border-secondary: #cbd5e1;
-  /* Secondary borders */
   --border-accent: #94a3b8;
-  /* Accent borders */
+  --border-strong: #64748b;
 
   /* TEXT COLORS - Optimized for Readability */
-  --text-primary: #171717;
-  /* Primary text (high contrast) */
-  --text-secondary: #525252;
-  /* Secondary text */
-  --text-tertiary: #737373;
-  /* Tertiary text */
-  --text-muted: #a3a3a3;
-  /* Muted text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
   --text-inverse: #ffffff;
-  /* Inverse text (white) */
 
-  /* SEMANTIC ALIASES - For Easy Reference */
+  /* SEMANTIC ALIASES - Monochromatic Focus */
   --primary: var(--primary-600);
-  --secondary: var(--secondary-600);
-  --success: var(--success-500);
-  --warning: var(--warning-500);
-  --danger: var(--error-500);
-  --info: var(--info-500);
+  --secondary: var(--primary-500);
+  --accent: var(--primary-700);
   --light: var(--surface-secondary);
   --white: var(--surface-primary);
   --gray: var(--neutral-500);
@@ -234,20 +123,26 @@ a:hover {
   --info-color: var(--info-500);
 }
 
-/* Global Styles */
+/* Global Styles - Professional Foundation */
 body {
   font-family: var(--font-family);
   background-color: #fafbfc;
   color: var(--text-primary);
-  line-height: 1.65;
+  line-height: 1.6;
   font-size: 0.9375rem;
   overflow-x: hidden;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.011em;
 }
 
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Professional focus states */
+*:focus-visible {
+  outline: 2px solid var(--primary-600);
+  outline-offset: 2px;
 }
 
 /* ===================== THEME UTILITIES ===================== */
@@ -436,19 +331,19 @@ table thead th {
 }
 
 .text-success {
-  color: var(--success-600) !important;
+  color: var(--primary-700) !important;
 }
 
 .text-warning {
-  color: var(--warning-600) !important;
+  color: var(--neutral-600) !important;
 }
 
 .text-danger {
-  color: var(--error-600) !important;
+  color: var(--neutral-700) !important;
 }
 
 .text-info {
-  color: var(--info-600) !important;
+  color: var(--primary-600) !important;
 }
 
 .text-inverse {
@@ -779,37 +674,37 @@ main {
   letter-spacing: -0.01em;
 }
 
-/* Card Variations with Color Coding */
+/* Card Variations - Monochromatic with Subtle Differentiation */
 .dashboard-card.patients {
-  border-top: 3px solid #3b82f6;
+  border-top: 3px solid var(--primary-600);
 }
 
 .dashboard-card.patients i {
-  color: #3b82f6;
+  color: var(--primary-600);
 }
 
 .dashboard-card.doctors {
-  border-top: 3px solid #10b981;
+  border-top: 3px solid var(--primary-700);
 }
 
 .dashboard-card.doctors i {
-  color: #10b981;
+  color: var(--primary-700);
 }
 
 .dashboard-card.appointments {
-  border-top: 3px solid #f59e0b;
+  border-top: 3px solid var(--primary-500);
 }
 
 .dashboard-card.appointments i {
-  color: #f59e0b;
+  color: var(--primary-500);
 }
 
 .dashboard-card.billing {
-  border-top: 3px solid #ef4444;
+  border-top: 3px solid var(--primary-800);
 }
 
 .dashboard-card.billing i {
-  color: #ef4444;
+  color: var(--primary-800);
 }
 
 /* Responsive Dashboard Cards */
@@ -861,12 +756,12 @@ main {
 }
 
 .cs-badge.cs-badge-warning {
-  background: var(--warning-500);
+  background: var(--neutral-600);
   color: #fff;
 }
 
 .cs-badge.cs-badge-success {
-  background: var(--success-500);
+  background: var(--primary-700);
   color: #fff;
 }
 
@@ -894,72 +789,72 @@ main {
 }
 
 .btn-primary {
-  background: #475569;
+  background: var(--primary-600);
   color: var(--text-inverse);
-  border-color: #475569;
+  border-color: var(--primary-600);
 }
 
 .btn-primary:hover {
-  background: #334155;
-  border-color: #334155;
+  background: var(--primary-700);
+  border-color: var(--primary-700);
 }
 
 .btn-success {
-  background: #10b981;
+  background: var(--primary-700);
   color: var(--text-inverse);
-  border-color: #10b981;
+  border-color: var(--primary-700);
 }
 
 .btn-success:hover {
-  background: #059669;
-  border-color: #059669;
+  background: var(--primary-800);
+  border-color: var(--primary-800);
 }
 
 .btn-warning {
-  background: #f59e0b;
+  background: var(--neutral-600);
   color: var(--text-inverse);
-  border-color: #f59e0b;
+  border-color: var(--neutral-600);
 }
 
 .btn-warning:hover {
-  background: #d97706;
-  border-color: #d97706;
+  background: var(--neutral-700);
+  border-color: var(--neutral-700);
 }
 
 .btn-danger {
-  background: #ef4444;
+  background: var(--neutral-700);
   color: var(--text-inverse);
-  border-color: #ef4444;
+  border-color: var(--neutral-700);
 }
 
 .btn-danger:hover {
-  background: #dc2626;
-  border-color: #dc2626;
+  background: var(--neutral-800);
+  border-color: var(--neutral-800);
 }
 
-/* Outline Buttons */
+/* Outline Buttons - Monochromatic */
 .btn-outline-primary {
   background: transparent;
-  color: #475569;
-  border-color: #cbd5e1;
+  color: var(--primary-600);
+  border-color: var(--border-secondary);
 }
 
 .btn-outline-primary:hover {
-  background: #f8fafc;
-  color: #334155;
-  border-color: #94a3b8;
+  background: var(--surface-secondary);
+  color: var(--primary-700);
+  border-color: var(--border-accent);
 }
 
 .btn-outline-success {
   background: transparent;
-  color: #10b981;
-  border-color: #cbd5e1;
+  color: var(--primary-700);
+  border-color: var(--border-secondary);
 }
 
 .btn-outline-success:hover {
-  background: #f0fdf4;
-  color: #059669;
-  border-color: #86efac;
+  background: var(--surface-secondary);
+  color: var(--primary-800);
+  border-color: var(--border-accent);
 }
 
 /* ===================== BUTTON GROUPS ===================== */
@@ -989,26 +884,26 @@ main {
 
 .btn-outline-warning {
   background: transparent;
-  color: #f59e0b;
-  border-color: #cbd5e1;
+  color: var(--neutral-600);
+  border-color: var(--border-secondary);
 }
 
 .btn-outline-warning:hover {
-  background: #fffbeb;
-  color: #d97706;
-  border-color: #fbbf24;
+  background: var(--surface-secondary);
+  color: var(--neutral-700);
+  border-color: var(--border-accent);
 }
 
 .btn-outline-danger {
   background: transparent;
-  color: #ef4444;
-  border-color: #cbd5e1;
+  color: var(--neutral-700);
+  border-color: var(--border-secondary);
 }
 
 .btn-outline-danger:hover {
-  background: #fef2f2;
-  color: #dc2626;
-  border-color: #fca5a5;
+  background: var(--surface-secondary);
+  color: var(--neutral-800);
+  border-color: var(--border-accent);
 }
 
 /* CareSync Pagination */
@@ -1070,34 +965,34 @@ main {
   line-height: 1.2;
 }
 
-/* Enhanced Badge Styles with Better Contrast */
+/* Enhanced Badge Styles - Monochromatic */
 .badge-primary {
-  background: var(--primary);
+  background: var(--primary-600);
   color: white;
 }
 
 .badge-secondary {
-  background: var(--secondary);
+  background: var(--neutral-500);
   color: white;
 }
 
 .badge-success {
-  background: var(--success);
+  background: var(--primary-700);
   color: white;
 }
 
 .badge-warning {
-  background: var(--warning);
-  color: var(--primary);
+  background: var(--neutral-600);
+  color: white;
 }
 
 .badge-danger {
-  background: var(--danger);
+  background: var(--neutral-700);
   color: white;
 }
 
 .badge-info {
-  background: var(--info);
+  background: var(--primary-500);
   color: white;
 }
 
@@ -1391,32 +1286,32 @@ main {
   font-size: 0.9rem;
 }
 
-/* Avatar color variants */
+/* Avatar color variants - Monochromatic */
 .avatar-circle.bg-success {
-  background: #10b981;
+  background: var(--primary-700);
 }
 
 .avatar-circle.bg-warning {
-  background: #f59e0b;
+  background: var(--neutral-600);
 }
 
 .avatar-circle.bg-info {
-  background: #3b82f6;
+  background: var(--primary-600);
 }
 
 .avatar-circle.bg-primary {
-  background: var(--bs-primary, #0d6efd);
+  background: var(--primary-600);
   color: var(--text-inverse);
 }
 
 .avatar-circle.bg-secondary {
-  background: var(--bs-secondary, #6c757d);
+  background: var(--neutral-500);
   color: var(--text-inverse);
 }
 
 .avatar-circle.bg-light {
-  background: var(--bs-primary-bg-subtle, #e7f1ff);
-  color: var(--bs-primary, #0d6efd);
+  background: var(--primary-100);
+  color: var(--primary-700);
 }
 
 /* Avatar image handling */
@@ -1642,7 +1537,7 @@ main {
   font-weight: 500;
 }
 
-/* Bootstrap-like utility classes for badges */
+/* Bootstrap-like utility classes for badges - Monochromatic */
 .bg-light {
   background-color: var(--neutral-100) !important;
   color: var(--text-primary) !important;
@@ -1654,17 +1549,17 @@ main {
 }
 
 .bg-light-info {
-  background-color: var(--info-50) !important;
-  color: var(--info-700) !important;
+  background-color: var(--primary-100) !important;
+  color: var(--primary-700) !important;
 }
 
 .bg-light-success {
-  background-color: var(--success-50) !important;
-  color: var(--success-700) !important;
+  background-color: var(--primary-50) !important;
+  color: var(--primary-800) !important;
 }
 
 .text-info {
-  color: var(--info-600) !important;
+  color: var(--primary-600) !important;
 }
 
 /* Empty State */
@@ -1727,125 +1622,125 @@ main {
   border-radius: 50%;
 }
 
-/* Healthcare Status Badges */
+/* Professional Status Badges - Monochromatic with Subtle Variations */
 .status-scheduled {
-  background-color: #eff6ff;
-  color: #1e40af;
-  border: 1px solid #dbeafe;
+  background-color: var(--primary-100);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-200);
   font-weight: 500;
 }
 
 .status-confirmed {
-  background-color: #f1f5f9;
-  color: #334155;
-  border: 1px solid #e2e8f0;
+  background-color: var(--primary-50);
+  color: var(--primary-800);
+  border: 1px solid var(--primary-200);
   font-weight: 500;
 }
 
 .status-completed {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #dcfce7;
+  background-color: var(--primary-900);
+  color: var(--text-inverse);
+  border: 1px solid var(--primary-900);
   font-weight: 500;
 }
 
 .status-cancelled {
-  background-color: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fee2e2;
+  background-color: var(--neutral-200);
+  color: var(--neutral-700);
+  border: 1px solid var(--neutral-300);
   font-weight: 500;
 }
 
 .status-no_show {
-  background-color: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fef3c7;
+  background-color: var(--neutral-100);
+  color: var(--neutral-600);
+  border: 1px solid var(--neutral-200);
   font-weight: 500;
 }
 
 .status-paid {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #dcfce7;
+  background-color: var(--primary-800);
+  color: var(--text-inverse);
+  border: 1px solid var(--primary-800);
   font-weight: 500;
 }
 
 .status-pending {
-  background-color: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fef3c7;
+  background-color: var(--neutral-100);
+  color: var(--neutral-700);
+  border: 1px solid var(--neutral-200);
   font-weight: 500;
 }
 
 .status-overdue {
-  background-color: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fee2e2;
+  background-color: var(--neutral-300);
+  color: var(--neutral-900);
+  border: 1px solid var(--neutral-400);
   font-weight: 500;
 }
 
-/* Healthcare-Specific Status Colors */
+/* Healthcare-Specific Status - Monochromatic */
 .status-critical {
-  background-color: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fee2e2;
+  background-color: var(--neutral-800);
+  color: var(--text-inverse);
+  border: 1px solid var(--neutral-800);
   font-weight: 500;
 }
 
 .status-stable {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #dcfce7;
+  background-color: var(--primary-700);
+  color: var(--text-inverse);
+  border: 1px solid var(--primary-700);
   font-weight: 500;
 }
 
 .status-monitoring {
-  background-color: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fef3c7;
+  background-color: var(--neutral-500);
+  color: var(--text-inverse);
+  border: 1px solid var(--neutral-500);
   font-weight: 500;
 }
 
 .status-recovered {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #dcfce7;
+  background-color: var(--primary-900);
+  color: var(--text-inverse);
+  border: 1px solid var(--primary-900);
   font-weight: 500;
 }
 
 .status-admitted {
-  background-color: #eff6ff;
-  color: #1e40af;
-  border: 1px solid #dbeafe;
+  background-color: var(--primary-600);
+  color: var(--text-inverse);
+  border: 1px solid var(--primary-600);
   font-weight: 500;
 }
 
 .status-discharged {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #dcfce7;
+  background-color: var(--primary-800);
+  color: var(--text-inverse);
+  border: 1px solid var(--primary-800);
   font-weight: 500;
 }
 
-/* Appointment Row Highlights */
+/* Appointment Row Highlights - Subtle Monochromatic */
 .appointment-today {
   background-color: var(--primary-50);
-  border-left: 4px solid var(--primary-500);
+  border-left: 4px solid var(--primary-600);
 }
 
 .appointment-overdue {
-  background-color: var(--error-50);
-  border-left: 4px solid var(--error-500);
+  background-color: var(--neutral-100);
+  border-left: 4px solid var(--neutral-500);
 }
 
 .appointment-upcoming {
-  background-color: var(--info-50);
-  border-left: 4px solid var(--info-500);
+  background-color: var(--primary-100);
+  border-left: 4px solid var(--primary-500);
 }
 
 .appointment-completed {
-  background-color: var(--success-50);
-  border-left: 4px solid var(--success-500);
+  background-color: var(--surface-secondary);
+  border-left: 4px solid var(--primary-400);
 }
 
 /* ===================== PAGINATION STYLES - Enhanced ===================== */
@@ -2040,27 +1935,27 @@ main {
 }
 
 .alert-success {
-  background: #f0fdf4;
-  border-color: #dcfce7;
-  color: #15803d;
+  background: var(--primary-50);
+  border-color: var(--primary-200);
+  color: var(--primary-800);
 }
 
 .alert-info {
-  background: #eff6ff;
-  border-color: #dbeafe;
-  color: #1e40af;
+  background: var(--primary-100);
+  border-color: var(--primary-200);
+  color: var(--primary-700);
 }
 
 .alert-warning {
-  background: #fffbeb;
-  border-color: #fef3c7;
-  color: #b45309;
+  background: var(--neutral-100);
+  border-color: var(--neutral-200);
+  color: var(--neutral-700);
 }
 
 .alert-danger {
-  background: #fef2f2;
-  border-color: #fee2e2;
-  color: #b91c1c;
+  background: var(--neutral-200);
+  border-color: var(--neutral-300);
+  color: var(--neutral-800);
 }
 
 /* ===================== TOAST NOTIFICATIONS ===================== */
@@ -2073,7 +1968,7 @@ main {
 }
 
 .toast-header {
-  background: #475569;
+  background: var(--primary-600);
   color: var(--text-inverse);
   border-bottom: none;
   padding: 0.75rem 1rem;
@@ -2086,19 +1981,19 @@ main {
 }
 
 .toast.toast-success .toast-header {
-  background: #10b981;
+  background: var(--primary-700);
 }
 
 .toast.toast-error .toast-header {
-  background: #ef4444;
+  background: var(--neutral-700);
 }
 
 .toast.toast-warning .toast-header {
-  background: #f59e0b;
+  background: var(--neutral-600);
 }
 
 .toast.toast-info .toast-header {
-  background: #3b82f6;
+  background: var(--primary-600);
 }
 
 /* ===================== LOADING STATES ===================== */

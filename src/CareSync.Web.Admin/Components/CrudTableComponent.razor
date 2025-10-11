@@ -49,10 +49,10 @@
                                                     }
                                                     else
                                                     {
-                                                        <div class="btn-group" role="group">
+                                                        <div class="btn-group btn-group-sm" role="group">
                                                             @if (AllowEdit)
                                                             {
-                                                                <button class="btn btn-outline-primary btn-sm"
+                                                                <button class="btn btn-outline-secondary btn-sm"
                                                                         @onclick="() => OnEditClicked.InvokeAsync(item)"
                                                                         title="Edit">
                                                                     <i class="fas fa-edit"></i>
@@ -65,7 +65,7 @@
                                                                 var deleteTitle = disableDelete
                                                                     ? "Cannot delete: related appointments, records, or bills exist"
                                                                     : "Delete";
-                                                                <button class="btn btn-outline-danger btn-sm"
+                                                                <button class="btn btn-outline-secondary btn-sm"
                                                                         disabled="@disableDelete"
                                                                         @onclick="() => { if(!disableDelete) OnDeleteClicked.InvokeAsync(item); }"
                                                                         title="@deleteTitle">
@@ -74,7 +74,7 @@
                                                             }
                                                             @if (AllowView)
                                                             {
-                                                                <button class="btn btn-outline-info btn-sm"
+                                                                <button class="btn btn-outline-secondary btn-sm"
                                                                         @onclick="() => OnViewClicked.InvokeAsync(item)"
                                                                         title="View Details">
                                                                     <i class="fas fa-eye"></i>
