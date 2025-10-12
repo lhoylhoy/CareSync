@@ -8,11 +8,9 @@ using CareSync.API.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using Microsoft.Extensions.Logging;
 
 namespace CareSync.API.Extensions;
 
@@ -40,8 +38,7 @@ public static class ServiceCollectionExtensions
             };
         });
 
-        // QUICK WIN #7: Enhanced health checks
-        // Note: Install Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore package for AddDbContextCheck
+        // Health checks: install Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore to enable AddDbContextCheck.
         services.AddHealthChecks();
 
         return services;

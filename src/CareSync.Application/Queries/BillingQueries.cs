@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using CareSync.Application.Common.Mapping;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Billing;
-using CareSync.Domain.Entities;
 using CareSync.Domain.Enums;
 using CareSync.Domain.Interfaces;
 using MediatR;

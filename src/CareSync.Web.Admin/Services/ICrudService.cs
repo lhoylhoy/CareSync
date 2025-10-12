@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace CareSync.Web.Admin.Services;
 
 public interface ICrudService<TDto, TCreateDto, TUpdateDto>

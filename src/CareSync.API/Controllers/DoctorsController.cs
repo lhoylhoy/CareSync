@@ -1,13 +1,9 @@
-using System.Collections.Generic;
 using CareSync.Application.Commands.Doctors;
-using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Doctors;
 using CareSync.Application.Queries.Doctors;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.Extensions.Logging;
 
 namespace CareSync.API.Controllers;
 
@@ -15,7 +11,6 @@ namespace CareSync.API.Controllers;
 [Route("api/[controller]")]
 public class DoctorsController(IMediator mediator, ILogger<DoctorsController> logger, IOutputCacheStore cacheStore) : BaseApiController(mediator)
 {
-    // Note: _mediator is inherited from BaseApiController
     private readonly ILogger<DoctorsController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IOutputCacheStore _cacheStore = cacheStore ?? throw new ArgumentNullException(nameof(cacheStore));
 
@@ -31,7 +26,7 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
 
         if (!hasQueryOverrides)
         {
-            var allResult = await _mediator.Send(new GetAllDoctorsQuery());
+            var allResult = await Mediator.Send(new GetAllDoctorsQuery());
             var response = OkOrProblem(allResult);
             if (response.Result is IActionResult actionResult)
             {
@@ -42,7 +37,7 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
         }
 
         var effectivePageSize = pageSize > 0 ? Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize) : CareSync.Application.Common.PagingDefaults.DefaultPageSize;
-        var pagedResult = await _mediator.Send(new GetDoctorsPagedQuery(
+        var pagedResult = await Mediator.Send(new GetDoctorsPagedQuery(
             page <= 0 ? 1 : page,
             effectivePageSize,
             search,
@@ -61,7 +56,7 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
     [OutputCache(PolicyName = "Doctors-ById")]
     public async Task<ActionResult<DoctorDto>> GetDoctorById(Guid id)
     {
-        var result = await _mediator.Send(new GetDoctorByIdQuery(id));
+        var result = await Mediator.Send(new GetDoctorByIdQuery(id));
         return OkOrNotFound(result);
     }
 
@@ -70,7 +65,7 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<DoctorDto>> CreateDoctor([FromBody] CreateDoctorDto createDoctorDto)
     {
-        var result = await _mediator.Send(new CreateDoctorCommand(createDoctorDto));
+        var result = await Mediator.Send(new CreateDoctorCommand(createDoctorDto));
         if (result.IsSuccess && result.Value is not null)
         {
             await InvalidateDoctorCachesAsync(result.Value.Id, HttpContext.RequestAborted);
@@ -84,7 +79,7 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
     public async Task<ActionResult<DoctorDto>> UpdateDoctor(Guid id, [FromBody] UpdateDoctorDto updateDoctorDto)
     {
         if (id != updateDoctorDto.Id) return BadRequest("ID mismatch between route and body");
-        var result = await _mediator.Send(new UpdateDoctorCommand(updateDoctorDto));
+        var result = await Mediator.Send(new UpdateDoctorCommand(updateDoctorDto));
         if (result.IsSuccess)
         {
             await InvalidateDoctorCachesAsync(id, HttpContext.RequestAborted);
@@ -97,7 +92,7 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<DoctorDto>> UpsertDoctor([FromBody] UpsertDoctorDto upsertDoctorDto)
     {
-        var result = await _mediator.Send(new UpsertDoctorCommand(upsertDoctorDto));
+        var result = await Mediator.Send(new UpsertDoctorCommand(upsertDoctorDto));
         if (result.IsSuccess && result.Value is not null)
         {
             await InvalidateDoctorCachesAsync(result.Value.Id, HttpContext.RequestAborted);
@@ -110,7 +105,7 @@ public class DoctorsController(IMediator mediator, ILogger<DoctorsController> lo
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteDoctor(Guid id)
     {
-        var result = await _mediator.Send(new DeleteDoctorCommand(id));
+        var result = await Mediator.Send(new DeleteDoctorCommand(id));
         if (result.IsSuccess)
         {
             await InvalidateDoctorCachesAsync(id, HttpContext.RequestAborted);

@@ -1,7 +1,6 @@
 using CareSync.Application.Common.Mapping;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Staff;
-using CareSync.Domain.Entities;
 using CareSync.Domain.Interfaces;
 using CareSync.Domain.ValueObjects;
 using MediatR;

@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace CareSync.Domain.Enums;
 
 public enum Department

@@ -64,7 +64,6 @@ public static class ApplicationBuilderExtensions
     {
         app.MapControllers();
 
-        // QUICK WIN #7: Enhanced health check endpoint with detailed JSON response
         app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
         {
             ResponseWriter = async (context, report) =>

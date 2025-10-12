@@ -1,5 +1,4 @@
 using CareSync.Application.Commands.MedicalRecords;
-using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.MedicalRecords;
 using CareSync.Application.Queries.MedicalRecords;
 using MediatR;
@@ -12,7 +11,6 @@ namespace CareSync.API.Controllers;
 [Route("api/[controller]")]
 public class MedicalRecordsController(IMediator mediator) : BaseApiController(mediator)
 {
-    // Note: _mediator is inherited from BaseApiController
 
     /// <summary>
     ///     Get all medical records
@@ -20,7 +18,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MedicalRecordDto>>> GetAllMedicalRecords()
     {
-        var medicalRecords = await _mediator.Send(new GetAllMedicalRecordsQuery());
+        var medicalRecords = await Mediator.Send(new GetAllMedicalRecordsQuery());
         return OkOrProblem(medicalRecords);
     }
 
@@ -30,7 +28,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<MedicalRecordDto>> GetMedicalRecord(Guid id)
     {
-        var medicalRecord = await _mediator.Send(new GetMedicalRecordByIdQuery(id));
+        var medicalRecord = await Mediator.Send(new GetMedicalRecordByIdQuery(id));
         return OkOrNotFound(medicalRecord);
     }
 
@@ -40,7 +38,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     [HttpGet("patient/{patientId:guid}")]
     public async Task<ActionResult<IEnumerable<MedicalRecordDto>>> GetMedicalRecordsByPatient(Guid patientId)
     {
-        var medicalRecords = await _mediator.Send(new GetMedicalRecordsByPatientQuery(patientId));
+        var medicalRecords = await Mediator.Send(new GetMedicalRecordsByPatientQuery(patientId));
         return OkOrProblem(medicalRecords);
     }
 
@@ -50,7 +48,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     [HttpGet("doctor/{doctorId:guid}")]
     public async Task<ActionResult<IEnumerable<MedicalRecordDto>>> GetMedicalRecordsByDoctor(Guid doctorId)
     {
-        var medicalRecords = await _mediator.Send(new GetMedicalRecordsByDoctorQuery(doctorId));
+        var medicalRecords = await Mediator.Send(new GetMedicalRecordsByDoctorQuery(doctorId));
         return OkOrProblem(medicalRecords);
     }
 
@@ -66,24 +64,24 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     {
         if (patientId.HasValue)
         {
-            var medicalRecords = await _mediator.Send(new GetMedicalRecordsByPatientQuery(patientId.Value));
+            var medicalRecords = await Mediator.Send(new GetMedicalRecordsByPatientQuery(patientId.Value));
             return OkOrProblem(medicalRecords);
         }
 
         if (doctorId.HasValue)
         {
-            var medicalRecords = await _mediator.Send(new GetMedicalRecordsByDoctorQuery(doctorId.Value));
+            var medicalRecords = await Mediator.Send(new GetMedicalRecordsByDoctorQuery(doctorId.Value));
             return OkOrProblem(medicalRecords);
         }
 
         if (startDate.HasValue && endDate.HasValue)
         {
-            var medicalRecords = await _mediator.Send(new GetMedicalRecordsByDateRangeQuery(startDate.Value, endDate.Value));
+            var medicalRecords = await Mediator.Send(new GetMedicalRecordsByDateRangeQuery(startDate.Value, endDate.Value));
             return OkOrProblem(medicalRecords);
         }
 
         // If no filters provided, return all records
-        var allRecords = await _mediator.Send(new GetAllMedicalRecordsQuery());
+        var allRecords = await Mediator.Send(new GetAllMedicalRecordsQuery());
         return OkOrProblem(allRecords);
     }
 
@@ -96,7 +94,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var medicalRecord = await _mediator.Send(new CreateMedicalRecordCommand(createMedicalRecordDto));
+        var medicalRecord = await Mediator.Send(new CreateMedicalRecordCommand(createMedicalRecordDto));
         return CreatedOrBadRequest(medicalRecord, nameof(GetMedicalRecord), new { id = medicalRecord.Value?.Id });
     }
 
@@ -106,7 +104,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteMedicalRecord(Guid id)
     {
-        var deleted = await _mediator.Send(new DeleteMedicalRecordCommand(id));
+        var deleted = await Mediator.Send(new DeleteMedicalRecordCommand(id));
         return NoContentOrNotFound(deleted);
     }
 
@@ -121,7 +119,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var medicalRecord = await _mediator.Send(new UpdateMedicalRecordCommand(updateMedicalRecordDto));
+        var medicalRecord = await Mediator.Send(new UpdateMedicalRecordCommand(updateMedicalRecordDto));
         return UpdatedOrNotFound(medicalRecord);
     }
 
@@ -133,7 +131,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var record = await _mediator.Send(new UpsertMedicalRecordCommand(upsertMedicalRecordDto));
+        var record = await Mediator.Send(new UpsertMedicalRecordCommand(upsertMedicalRecordDto));
         return UpsertOkOrBadRequest(record);
     }
 
@@ -144,7 +142,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     public async Task<ActionResult<MedicalRecordDto>> FinalizeMedicalRecord(Guid id, [FromBody] FinalizeMedicalRecordDto request)
     {
         if (id != request.Id) return BadRequest("ID mismatch between route and body");
-        var result = await _mediator.Send(new FinalizeMedicalRecordCommand(request.Id, request.FinalNotes, request.FinalizedBy));
+        var result = await Mediator.Send(new FinalizeMedicalRecordCommand(request.Id, request.FinalNotes, request.FinalizedBy));
         return UpdatedOrNotFound(result);
     }
 
@@ -154,7 +152,7 @@ public class MedicalRecordsController(IMediator mediator) : BaseApiController(me
     [HttpPut("{id:guid}/reopen"), Authorize(Policy = "CanReopenMedicalRecord")]
     public async Task<ActionResult<MedicalRecordDto>> ReopenMedicalRecord(Guid id)
     {
-        var result = await _mediator.Send(new ReopenMedicalRecordCommand(id));
+        var result = await Mediator.Send(new ReopenMedicalRecordCommand(id));
         return UpdatedOrNotFound(result);
     }
 }

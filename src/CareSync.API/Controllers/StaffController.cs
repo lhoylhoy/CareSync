@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
 using CareSync.Application.Commands.Staff;
-using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Staff;
 using CareSync.Application.Queries.Staff;
 using CareSync.Domain.Enums;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CareSync.API.Controllers;
@@ -15,7 +11,6 @@ namespace CareSync.API.Controllers;
 [Route("api/[controller]")]
 public class StaffController(IMediator mediator) : BaseApiController(mediator)
 {
-    // Note: _mediator is inherited from BaseApiController
 
     /// <summary>
     ///     Get all staff members
@@ -31,7 +26,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
 
         if (!hasQueryOverrides)
         {
-            var allResult = await _mediator.Send(new GetAllStaffQuery());
+            var allResult = await Mediator.Send(new GetAllStaffQuery());
             var response = OkOrProblem(allResult);
             if (response.Result is IActionResult actionResult)
             {
@@ -41,7 +36,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
         }
 
         var effectivePageSize = pageSize > 0 ? Math.Min(pageSize, CareSync.Application.Common.PagingDefaults.MaxPageSize) : CareSync.Application.Common.PagingDefaults.DefaultPageSize;
-        var pagedResult = await _mediator.Send(new GetStaffPagedQuery(
+        var pagedResult = await Mediator.Send(new GetStaffPagedQuery(
             page <= 0 ? 1 : page,
             effectivePageSize,
             search,
@@ -62,7 +57,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
     [HttpGet("{id}")]
     public async Task<ActionResult<StaffDto>> GetStaffById(Guid id)
     {
-        var result = await _mediator.Send(new GetStaffByIdQuery(id));
+        var result = await Mediator.Send(new GetStaffByIdQuery(id));
         return OkOrNotFound(result);
     }
 
@@ -73,7 +68,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
     [HttpGet("role/{role}")]
     public async Task<ActionResult<IEnumerable<StaffDto>>> GetStaffByRole(StaffRole role)
     {
-        var result = await _mediator.Send(new GetStaffByRoleQuery(role));
+        var result = await Mediator.Send(new GetStaffByRoleQuery(role));
         return OkOrProblem(result);
     }
 
@@ -85,7 +80,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var result = await _mediator.Send(new CreateStaffCommand(createStaffDto));
+        var result = await Mediator.Send(new CreateStaffCommand(createStaffDto));
         return CreatedOrBadRequest(result, nameof(GetStaffById), new { id = result.Value?.Id });
     }
 
@@ -103,7 +98,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var result = await _mediator.Send(new UpdateStaffCommand(updateStaff));
+        var result = await Mediator.Send(new UpdateStaffCommand(updateStaff));
         return UpdatedOrNotFound(result);
     }
 
@@ -115,7 +110,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        var result = await _mediator.Send(new UpsertStaffCommand(upsertStaffDto));
+        var result = await Mediator.Send(new UpsertStaffCommand(upsertStaffDto));
         return UpdatedOrNotFound(result);
     }
 
@@ -125,7 +120,7 @@ public class StaffController(IMediator mediator) : BaseApiController(mediator)
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteStaff(Guid id)
     {
-        var result = await _mediator.Send(new DeleteStaffCommand(id));
+        var result = await Mediator.Send(new DeleteStaffCommand(id));
         return NoContentOrNotFound(result);
     }
 }

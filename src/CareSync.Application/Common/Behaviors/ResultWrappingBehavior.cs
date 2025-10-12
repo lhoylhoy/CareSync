@@ -1,4 +1,3 @@
-using CareSync.Application.Common.Results;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

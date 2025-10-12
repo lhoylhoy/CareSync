@@ -1,5 +1,4 @@
 using CareSync.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace CareSync.Infrastructure.Data;
 

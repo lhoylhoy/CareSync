@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-
 namespace CareSync.Web.Admin.Common.Filtering;
 
 public sealed class FilterDefinition

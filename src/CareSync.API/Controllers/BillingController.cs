@@ -1,11 +1,9 @@
 using CareSync.Application.Commands.Billing;
-using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Billing;
 using CareSync.Application.Queries.Billing;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.Extensions.Logging;
 
 namespace CareSync.API.Controllers;
 
@@ -13,7 +11,6 @@ namespace CareSync.API.Controllers;
 [Route("api/[controller]")]
 public class BillingController : BaseApiController
 {
-    // Note: _mediator is inherited from BaseApiController
     private readonly IOutputCacheStore _cacheStore;
     private readonly ILogger<BillingController> _logger;
 
@@ -31,7 +28,7 @@ public class BillingController : BaseApiController
     [OutputCache(PolicyName = "Billing-All")]
     public async Task<ActionResult<IEnumerable<BillDto>>> GetAllBills()
     {
-        var result = await _mediator.Send(new GetAllBillsQuery());
+        var result = await Mediator.Send(new GetAllBillsQuery());
         return OkOrProblem(result);
     }
 
@@ -44,7 +41,7 @@ public class BillingController : BaseApiController
     [OutputCache(PolicyName = "Billing-ById")]
     public async Task<ActionResult<BillDto>> GetBill(Guid id)
     {
-        var bill = await _mediator.Send(new GetBillQuery(id));
+        var bill = await Mediator.Send(new GetBillQuery(id));
         return OkOrNotFound(bill);
     }
 
@@ -56,7 +53,7 @@ public class BillingController : BaseApiController
     [HttpGet("patient/{patientId:guid}")]
     public async Task<ActionResult<object>> GetPatientBills(Guid patientId)
     {
-        var bills = await _mediator.Send(new GetPatientBillsQuery(patientId));
+        var bills = await Mediator.Send(new GetPatientBillsQuery(patientId));
         return OkOrProblem(bills);
     }
 
@@ -67,7 +64,7 @@ public class BillingController : BaseApiController
     [HttpGet("outstanding")]
     public async Task<ActionResult<object>> GetOutstandingBills()
     {
-        var bills = await _mediator.Send(new GetOutstandingBillsQuery());
+        var bills = await Mediator.Send(new GetOutstandingBillsQuery());
         return OkOrProblem(bills);
     }
 
@@ -78,7 +75,7 @@ public class BillingController : BaseApiController
     [HttpGet("overdue")]
     public async Task<ActionResult<object>> GetOverdueBills()
     {
-        var bills = await _mediator.Send(new GetOverdueBillsQuery());
+        var bills = await Mediator.Send(new GetOverdueBillsQuery());
         return OkOrProblem(bills);
     }
 
@@ -93,7 +90,7 @@ public class BillingController : BaseApiController
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
-        var summary = await _mediator.Send(new GetBillingSummaryQuery(startDate, endDate));
+        var summary = await Mediator.Send(new GetBillingSummaryQuery(startDate, endDate));
         return OkOrProblem(summary);
     }
 
@@ -108,7 +105,7 @@ public class BillingController : BaseApiController
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
-        var summary = await _mediator.Send(new GetPaymentSummaryQuery(startDate, endDate));
+        var summary = await Mediator.Send(new GetPaymentSummaryQuery(startDate, endDate));
         return OkOrProblem(summary);
     }
 
@@ -120,7 +117,7 @@ public class BillingController : BaseApiController
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateBill([FromBody] CreateBillDto createBill)
     {
-        var billId = await _mediator.Send(new CreateBillCommand(createBill));
+        var billId = await Mediator.Send(new CreateBillCommand(createBill));
         if (billId.IsSuccess && billId.Value != Guid.Empty)
         {
             await InvalidateBillingCachesAsync(billId.Value, HttpContext.RequestAborted);
@@ -137,7 +134,7 @@ public class BillingController : BaseApiController
     [HttpPost("payments")]
     public async Task<ActionResult<Guid>> ProcessPayment([FromBody] ProcessPaymentDto processPayment)
     {
-        var paymentId = await _mediator.Send(new ProcessPaymentCommand(processPayment));
+        var paymentId = await Mediator.Send(new ProcessPaymentCommand(processPayment));
         if (paymentId.IsSuccess)
         {
             await InvalidateBillingCachesAsync(processPayment.BillId, HttpContext.RequestAborted);
@@ -153,7 +150,7 @@ public class BillingController : BaseApiController
     [HttpPost("claims")]
     public async Task<ActionResult<Guid>> CreateInsuranceClaim([FromBody] CreateInsuranceClaimDto createClaim)
     {
-        var claimId = await _mediator.Send(new CreateInsuranceClaimCommand(createClaim));
+        var claimId = await Mediator.Send(new CreateInsuranceClaimCommand(createClaim));
         if (claimId.IsSuccess)
         {
             await InvalidateBillingCachesAsync(createClaim.BillId, HttpContext.RequestAborted);
@@ -171,7 +168,7 @@ public class BillingController : BaseApiController
     [HttpPost("claims/{claimId:guid}/approve")]
     public async Task<ActionResult> ApproveClaim(Guid claimId, [FromBody] decimal approvedAmount, [FromQuery] decimal paidAmount = 0)
     {
-        var approved = await _mediator.Send(new ApproveClaimCommand(claimId, approvedAmount, paidAmount));
+        var approved = await Mediator.Send(new ApproveClaimCommand(claimId, approvedAmount, paidAmount));
         return NoContentOrNotFound(approved);
     }
 
@@ -185,7 +182,7 @@ public class BillingController : BaseApiController
     public async Task<ActionResult> DenyClaim(Guid claimId, [FromBody] string reason)
     {
         if (string.IsNullOrWhiteSpace(reason)) return BadRequest("Denial reason is required");
-        var denied = await _mediator.Send(new DenyClaimCommand(claimId, reason));
+        var denied = await Mediator.Send(new DenyClaimCommand(claimId, reason));
         return NoContentOrNotFound(denied);
     }
 
@@ -199,7 +196,7 @@ public class BillingController : BaseApiController
     public async Task<ActionResult<BillDto>> UpdateBill(Guid id, [FromBody] UpdateBillDto updateBill)
     {
         if (id != updateBill.Id) return BadRequest("ID mismatch between route and body");
-        var bill = await _mediator.Send(new UpdateBillCommand(updateBill));
+        var bill = await Mediator.Send(new UpdateBillCommand(updateBill));
         if (bill.IsSuccess && bill.Value is not null)
         {
             await InvalidateBillingCachesAsync(bill.Value.Id, HttpContext.RequestAborted);
@@ -215,7 +212,7 @@ public class BillingController : BaseApiController
     [HttpPut("upsert")]
     public async Task<ActionResult<BillDto>> UpsertBill([FromBody] UpsertBillDto upsertBill)
     {
-        var bill = await _mediator.Send(new UpsertBillCommand(upsertBill));
+        var bill = await Mediator.Send(new UpsertBillCommand(upsertBill));
         if (bill.IsSuccess && bill.Value is not null)
         {
             await InvalidateBillingCachesAsync(bill.Value.Id, HttpContext.RequestAborted);
@@ -231,7 +228,7 @@ public class BillingController : BaseApiController
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteBill(Guid id)
     {
-        var deleted = await _mediator.Send(new DeleteBillCommand(id));
+        var deleted = await Mediator.Send(new DeleteBillCommand(id));
         if (deleted.IsSuccess)
         {
             await InvalidateBillingCachesAsync(id, HttpContext.RequestAborted);

@@ -1,10 +1,7 @@
 namespace CareSync.Application.Common.Results;
 
 /// <summary>
-/// QUICK WIN #3: Result pattern for cleaner error handling
-/// Represents the result of an operation with success/failure state
-/// Avoids throwing exceptions for business logic failures
-/// Enhanced with helper methods
+/// Represents the result of an operation with success/failure state without relying on exceptions for control flow.
 /// </summary>
 public class Result
 {
@@ -47,9 +44,6 @@ public class Result<T> : Result
     }
 }
 
-/// <summary>
-/// QUICK WIN #3: Extension methods for Result pattern
-/// </summary>
 public static class ResultExtensions
 {
     /// <summary>

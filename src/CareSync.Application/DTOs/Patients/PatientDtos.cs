@@ -1,12 +1,8 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace CareSync.Application.DTOs.Patients;
 
 /// <summary>
-/// Unified Patient DTO - Used for all operations (Create/Read/Update)
-/// QUICK WIN #1: Consolidated from 4 separate DTOs into one flexible DTO
-/// If Id is null → Create new patient
-/// If Id has value → Update existing patient
+/// Unified Patient DTO used for create/read/update operations.
+/// If Id is null → create new patient; otherwise update existing patient.
 /// </summary>
 public record PatientDto(
     Guid? Id,

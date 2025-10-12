@@ -4,8 +4,7 @@ using CareSync.Domain.Enums;
 namespace CareSync.Domain.Extensions;
 
 /// <summary>
-/// QUICK WIN #2: Extension methods for cleaner, more readable code
-/// These helpers encapsulate common operations and business logic
+/// Extension methods that encapsulate common domain logic for reuse across the solution.
 /// </summary>
 public static class PatientExtensions
 {

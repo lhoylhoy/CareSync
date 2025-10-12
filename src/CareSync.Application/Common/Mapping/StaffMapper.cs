@@ -1,6 +1,5 @@
 using CareSync.Application.DTOs.Staff;
 using CareSync.Domain.Entities;
-using CareSync.Domain.Enums;
 
 namespace CareSync.Application.Common.Mapping;
 

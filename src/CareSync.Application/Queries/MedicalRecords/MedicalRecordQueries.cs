@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.MedicalRecords;
 using MediatR;

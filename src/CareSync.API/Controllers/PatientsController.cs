@@ -1,9 +1,7 @@
 using CareSync.Application.Commands.Patients;
-using CareSync.Application.Common.Results;
 using CareSync.Application.DTOs.Patients;
 using CareSync.Application.Queries.Patients;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -13,7 +11,6 @@ namespace CareSync.API.Controllers;
 [Route("api/[controller]")]
 public class PatientsController(IMediator mediator, ILogger<PatientsController> logger, IOutputCacheStore cacheStore) : BaseApiController(mediator)
 {
-    // Note: _mediator is inherited from BaseApiController
     private readonly ILogger<PatientsController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IOutputCacheStore _cacheStore = cacheStore ?? throw new ArgumentNullException(nameof(cacheStore));
 
@@ -22,7 +19,7 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     [ProducesResponseType(typeof(IEnumerable<PatientDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<PatientDto>>> GetAllPatients()
     {
-        var result = await _mediator.Send(new GetAllPatientsQuery());
+        var result = await Mediator.Send(new GetAllPatientsQuery());
         return OkOrProblem(result);
     }
 
@@ -32,7 +29,7 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PatientDto>> GetPatientById(Guid id)
     {
-        var result = await _mediator.Send(new GetPatientByIdQuery(id));
+        var result = await Mediator.Send(new GetPatientByIdQuery(id));
         return OkOrNotFound(result);
     }
 
@@ -41,7 +38,7 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PatientDto>> CreatePatient([FromBody] PatientDto patientDto)
     {
-        var result = await _mediator.Send(new CreatePatientCommand(patientDto));
+        var result = await Mediator.Send(new CreatePatientCommand(patientDto));
         if (result.IsSuccess && result.Value!.Id.HasValue)
         {
             await InvalidatePatientCachesAsync(result.Value.Id.Value, HttpContext.RequestAborted);
@@ -55,7 +52,7 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     public async Task<ActionResult<PatientDto>> UpdatePatient(Guid id, [FromBody] PatientDto patientDto)
     {
         if (id != patientDto.Id) return BadRequest("ID mismatch between route and body");
-        var result = await _mediator.Send(new UpdatePatientCommand(patientDto));
+        var result = await Mediator.Send(new UpdatePatientCommand(patientDto));
         if (result.IsSuccess)
         {
             await InvalidatePatientCachesAsync(id, HttpContext.RequestAborted);
@@ -68,7 +65,7 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PatientDto>> UpsertPatient([FromBody] PatientDto patientDto)
     {
-        var result = await _mediator.Send(new UpsertPatientCommand(patientDto));
+        var result = await Mediator.Send(new UpsertPatientCommand(patientDto));
         if (result.IsSuccess && result.Value is not null && result.Value.Id.HasValue)
         {
             await InvalidatePatientCachesAsync(result.Value.Id.Value, HttpContext.RequestAborted);
@@ -81,7 +78,7 @@ public class PatientsController(IMediator mediator, ILogger<PatientsController> 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeletePatient(Guid id)
     {
-        var result = await _mediator.Send(new DeletePatientCommand(id));
+        var result = await Mediator.Send(new DeletePatientCommand(id));
         if (result.IsSuccess)
         {
             await InvalidatePatientCachesAsync(id, HttpContext.RequestAborted);

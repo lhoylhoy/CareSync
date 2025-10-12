@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Net.Http.Json;
 using CareSync.Application.DTOs.Staff;
 using CareSync.Web.Admin.Services.Contracts;

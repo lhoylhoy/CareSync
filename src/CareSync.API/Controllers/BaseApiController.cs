@@ -1,19 +1,12 @@
 using CareSync.Application.Common.Results;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CareSync.API.Controllers;
 
-/// <summary>
-/// QUICK WIN #6: Enhanced base controller with convenient helper methods
-/// Provides consistent error responses and reduces boilerplate in controllers
-/// </summary>
 public abstract class BaseApiController(IMediator mediator) : ControllerBase
 {
     protected IMediator Mediator { get; } = mediator;
-
-    protected readonly IMediator _mediator = mediator; // Alias for consistency
 
     protected ActionResult<IEnumerable<T>> OkOrProblem<T>(Result<IEnumerable<T>> result)
     {
@@ -78,10 +71,6 @@ public abstract class BaseApiController(IMediator mediator) : ControllerBase
             return NotFound(result.Error);
         return NoContent();
     }
-
-    /// <summary>
-    /// QUICK WIN #6: Additional helper methods
-    /// </summary>
 
     /// <summary>
     /// Returns OK if result is success, BadRequest with error if failure
